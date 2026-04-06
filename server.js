@@ -13,14 +13,14 @@ const core = new ShadowCore();
 
 global.io = io; 
 
-const BOT_TOKEN = "8425088333:AAE647B7sMb7LZ8K1UOZEA0K3DJ8oZbDPHE"; 
+const BOT_TOKEN = "SEU_TOKEN_AQUI"; 
 let bot = null;
 try { 
-    if(BOT_TOKEN && BOT_TOKEN !== "8425088333:AAE647B7sMb7LZ8K1UOZEA0K3DJ8oZbDPHE") {
+    if(BOT_TOKEN && BOT_TOKEN !== "SEU_TOKEN_AQUI") {
         bot = new TelegramBot(BOT_TOKEN, { polling: false }); 
     }
 } 
-catch (e) { console.warn("Grimório Telegram fechado. A Ordem opera sem DMs do Corvo."); }
+catch (e) { console.warn("Grimório Telegram fechado. A Ordem opera sem enviar DMs."); }
 
 // Envio Condicionado para evitar crashes
 const enviarDMSombria = async (tgId, mensagem) => {
@@ -38,15 +38,37 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.post('/api/auth', (req, res) => {
     try {
         const { tgId, tgUsername, nomeSombrio, senha, inviteCode } = req.body;
-        if(!tgId || !senha) return res.status(400).json({erro: "Faltam elementos no Ritual de Entrada (Falta Senha ou ID)."});
         
-        const result = core.despertarViaTelegram(tgId, tgUsername, nomeSombrio, senha, inviteCode);
-        if (result.recusado) return res.status(403).json({erro: result.erro}); 
+        // Validação de Gênese: Permite criar o primeiro sem Telegram se usar a chave mestra
+        const CHAVE_MESTRA = 'SANGUIS_DRACONIS_666';
         
+        if (!tgId && inviteCode !== CHAVE_MESTRA) {
+            return res.status(400).json({erro: "O Selo do Telegram é exigido para mortais."});
+        }
+        
+        const result = core.despertarViaTelegram(
+            tgId || Date.now(),
+            tgUsername || 'Ancestral', 
+            nomeSombrio, 
+            senha || "LILITH", 
+            inviteCode
+        );
+
+        if (result.recusado) {
+            return res.status(403).json({erro: result.erro});
+        }
+
+        if (result.vampiro.geracao === 1) {
+            result.vampiro.sangue = 10000;
+            result.vampiro.pontosAcao = 100;
+            result.vampiro.maxAcao = 100;
+            core._salvarBancoDeDados();
+        }
+
         io.emit('sync_geral'); 
         res.json(result.vampiro);
-    } catch(err) { 
-        console.error(err);
+    } catch(err) {
+        console.error("ERRO NO RITUAL DE AUTENTICAÇÃO:", err);
         res.status(500).json({erro: "A Geometria Sagrada falhou no Rito de Passagem."}); 
     }
 });
@@ -73,6 +95,7 @@ app.post('/api/convidar', async (req, res) => {
 
         res.json({ sucesso: true, msgPronta: mensagemDM, link: conviteLink });
     } catch(err) { 
+        console.error("ERRO NO CONVITE:", err);
         res.status(500).json({erro: "O Corvo Negro falhou."}); 
     }
 });
@@ -86,7 +109,10 @@ app.get('/api/mercado', (req, res) => {
             donoSelo: m.maldicaoArcana ? m.maldicaoArcana.donoNome : null
         }));
         res.json({ mortais, logs: core.logs });
-    } catch(err) { res.status(500).json({erro: "O Vidro Negro estilhaçou-se."}); }
+    } catch(err) { 
+        console.error("ERRO NA LEITURA DO MERCADO:", err);
+        res.status(500).json({erro: "O Vidro Negro estilhaçou-se."}); 
+    }
 });
 
 app.post('/api/atributos/distribuir', (req, res) => { try { res.json(core.distribuirAtributos(req.body.id, req.body.atributo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha no Rito."}); } });
@@ -101,8 +127,15 @@ app.post('/api/leilao/vender', (req, res) => { try { res.json(core.anunciarNoLei
 app.post('/api/leilao/comprar', (req, res) => { try { res.json(core.comprarDoLeilao(req.body.id, parseInt(req.body.anuncioId))); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
 app.post('/api/caca/mapear', async (req, res) => { 
-    try { const r = await core.mapearMortal(req.body.id, req.body.plataforma, req.body.identificador); res.json(r); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"A Visão Astral falhou."}); }
+    try { 
+        const r = await core.mapearMortal(req.body.id, req.body.plataforma, req.body.identificador); 
+        res.json(r); 
+        io.emit('sync_geral'); 
+    } 
+    catch(e){ 
+        console.error("ERRO MAPEAMENTO ASTRAL:", e);
+        res.status(500).json({erro:"A Visão Astral falhou internamente."}); 
+    }
 });
 
 app.post('/api/caca/drenar', (req, res) => { 
@@ -114,7 +147,10 @@ app.post('/api/caca/drenar', (req, res) => {
         }
         res.json(result); 
         io.emit('sync_geral'); 
-    } catch(e){ res.status(500).json({erro:"Erro Oculto ao Sorver."}); } 
+    } catch(e){ 
+        console.error("ERRO AO SORVER:", e);
+        res.status(500).json({erro:"Erro Oculto ao Sorver."}); 
+    } 
 });
 
 app.post('/api/caca/amaldicoar', (req, res) => { try { res.json(core.comprometerMortal(req.body.id, req.body.hash)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Erro no Selo."}); } });
@@ -129,7 +165,10 @@ app.post('/api/pvp/tatico', (req, res) => {
             if(defensor) enviarDMSombria(defensor.tgId, result.alertaDono); 
         }
         res.json(result); io.emit('sync_geral'); 
-    } catch(e){ res.status(500).json({erro:"Erro de Colisão Astral."}); }
+    } catch(e){ 
+        console.error("ERRO DE COLISAO:", e);
+        res.status(500).json({erro:"Erro de Colisão Astral."}); 
+    }
 });
 
 app.post('/api/banco/calice', (req, res) => { try { res.json(core.operarCalice(req.body.id, req.body.quantia, req.body.operacao)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Erro no Cálice."}); } });
@@ -153,7 +192,10 @@ app.get('/api/status/:id', (req, res) => {
             res.json(dados);
         }
         else res.status(404).json({erro: "Sombra Desvanecida."});
-    } catch(e){ res.status(500).json({erro:"A Aura falhou a leitura."}); }
+    } catch(e){ 
+        console.error("ERRO DE LEITURA AURA:", e);
+        res.status(500).json({erro:"A Aura falhou a leitura."}); 
+    }
 });
 
 io.on('connection', (socket) => {
@@ -178,7 +220,7 @@ io.on('connection', (socket) => {
 setInterval(async () => {
     core.tickTemporal();
     io.emit('tick');
-    if (core.logs.global.length > 0 && Math.random() > 0.85) {
+    if (core.logs.global.length > 0 && Math.random() > 0.8) {
         const eventoRecente = core.logs.global[0];
         const falaIa = await core.oraculo.gerarLore(eventoRecente.tipo, eventoRecente.relato);
         io.to('global').emit('nova_mensagem', { canal: 'global', autor: '💀 A MENTE ABISSAL', texto: falaIa, hora: new Date().toLocaleTimeString() });

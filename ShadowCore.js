@@ -80,7 +80,6 @@ class OraculoAbissal {
         else this.climaAstral = 'Espreita Noturna';
     }
 
-    // O Rito de Vidência Global (Noticiário Sombrio do Mundo Real)
     async invocarOolhoQueTudoVe() {
         if (!this.GEMINI_API_KEY) return null;
         try {
@@ -157,10 +156,10 @@ class ShadowCore {
             'sanguis_aeternum': {
                 nome: "Selo de Aemeth", lore: 'Escudo Divino Invertido.',
                 custoAcao: 1, custoSangue: 300, reqLevel: 2, tipo: 'buff',
-                efeito: (atacante, alvo, lua) => { atacante.escudo = true; return `A Tua Aura endureceu. Escudo Activo.`; }
+                efeito: (atacante, alvo, lua) => { atacante.escudo = true; return `Traçaste o pentagrama. O teu Escudo está Activo.`; }
             },
             'maledictio_sanguinis': {
-                nome: "O Olho Mau", lore: 'Corrompe sangue no Cálice inimigo.',
+                nome: "O Olho Mau", lore: 'Corrompe e destrói sangue no Cálice inimigo.',
                 custoAcao: 3, custoSangue: 1000, reqLevel: 5, tipo: 'pvp',
                 efeito: (atacante, alvo, lua) => {
                     let per = lua.id === 'minguante' ? 0.2 : 0.1;
@@ -169,16 +168,16 @@ class ShadowCore {
                 }
             },
             'rito_da_besta': {
-                nome: "Rito de Gamaliel", lore: 'Restaura Fúria usando Sangue.',
+                nome: "Rito de Gamaliel", lore: 'Sacrifício de Sangue para restaurar Fúria.',
                 custoAcao: 0, custoSangue: 800, reqLevel: 3, tipo: 'buff',
                 efeito: (atacante, alvo, lua) => { 
                     let cura = lua.id === 'minguante' ? 6 : 3;
                     atacante.pontosAcao = Math.min(atacante.maxAcao, atacante.pontosAcao + cura); 
-                    return `O sangue ferveu. +${cura} Pontos de Fúria.`; 
+                    return `O sangue ferveu. +${cura} Pontos de Fúria restaurados.`; 
                 }
             },
             'sussurro_bael': {
-                nome: "Sussurro de Bael", lore: 'Magia mental. Rouba Influência do Alvo.',
+                nome: "Sussurro de Bael", lore: 'Rouba Influência Política do Alvo.',
                 custoAcao: 4, custoSangue: 1500, reqLevel: 6, tipo: 'pvp',
                 efeito: (atacante, alvo, lua) => {
                     let cap = lua.id === 'minguante' ? 10 : 5;
@@ -204,14 +203,34 @@ class ShadowCore {
         };
     }
 
+    // ==========================================
+    // PERSISTÊNCIA E PREVENÇÃO DE CORRUPÇÃO
+    // ==========================================
     _invocarRegistosAkashicos() {
         try {
             if (fs.existsSync(this.dbPath)) {
                 const data = JSON.parse(fs.readFileSync(this.dbPath, 'utf8'));
-                this.vampiros = data.vampiros || {}; this.rebanho = data.rebanho || {};
-                this.clans = data.clans || {}; this.leilaoP2P = data.leilaoP2P || [];
+                this.vampiros = data.vampiros || {}; 
+                this.rebanho = data.rebanho || {};
+                this.clans = data.clans || {}; 
+                this.leilaoP2P = data.leilaoP2P || [];
                 this.leilaoIdCounter = data.leilaoIdCounter || 1;
                 this.logs = data.logs || { global: [], caca: [], guerra: [] };
+
+                // Patch de Migração: Impede o Erro 500 se o utilizador for de uma versão anterior
+                for(let id in this.vampiros) {
+                    let v = this.vampiros[id];
+                    if (!v.conquistas) v.conquistas = [];
+                    if (!v.titulos) v.titulos = ['Sangue Frio'];
+                    if (!v.tituloAtual) v.tituloAtual = 'Sangue Frio';
+                    if (!v.atributos) v.atributos = { vontade: 5, gnose: 5, magnetismo: 5, densidade: 5, pontosLivres: 0 };
+                    if (!v.equipamentos) v.equipamentos = { arma: null, armadura: null, amuleto: null };
+                    if (!v.bolsa) v.bolsa = [];
+                    if (!v.inventario) v.inventario = { anima: 0, cinzas: 0, vitae: 0 };
+                    if (!v.poderesDesbloqueados) v.poderesDesbloqueados = ['solve_coagula'];
+                    if (!v.estatisticas) v.estatisticas = { totalDrenado: 0, mortaisSecos: 0, vitoriasPvP: 0 };
+                }
+
                 console.log("🦇 O Rito de Memória foi concluído. Almas resgatadas do Vazio.");
             }
         } catch(e) { console.error("Falha ao invocar os Registos.", e); }
@@ -240,7 +259,7 @@ class ShadowCore {
     _forjarSigilo(plataforma, identificador) {
         const idLimpo = identificador.toLowerCase().trim();
         const dna = this._extrairDnaEspiritual(idLimpo);
-        const torresEnochianas = "EXARP_HCOMA_NANTA_BITOM"; // A Magia Enochiana
+        const torresEnochianas = "EXARP_HCOMA_NANTA_BITOM"; 
         return crypto.createHash('sha3-512').update(`${plataforma.toUpperCase()}::${dna}::${idLimpo}::${torresEnochianas}`).digest('hex').substring(0, 40);
     }
 
@@ -251,7 +270,7 @@ class ShadowCore {
         
         if (localMordida === 'pescoco') { mult = 1.5; risco = 25; } 
         else if (localMordida === 'arteria') { mult = 2.0; risco = 45; } 
-        else if (localMordida === 'extorquir') { mult = 0.5; risco = 10; } // Nova opção de Extorsão
+        else if (localMordida === 'extorquir') { mult = 0.5; risco = 10; } 
 
         if (Math.random() * 100 < risco) return { hash: gotaHash, volume: 0, critico: false, falha: true };
         if (ressonancia > 220) mult *= 1.5; 
@@ -275,13 +294,31 @@ class ShadowCore {
         return evento;
     }
 
+    _verificarConquistas(vampiro) {
+        // Blindagem contra vampiros antigos
+        if (!vampiro.conquistas) vampiro.conquistas = [];
+        if (!vampiro.titulos) vampiro.titulos = ['Sangue Frio'];
+
+        let novas = [];
+        for (let chave in this.conquistas) {
+            const conq = this.conquistas[chave];
+            if (!vampiro.conquistas.includes(conq.id) && conq.requisito(vampiro)) {
+                vampiro.conquistas.push(conq.id);
+                vampiro.titulos.push(conq.titulo);
+                vampiro.influencia += 10; 
+                novas.push(conq.titulo);
+                this._registrarEvento('global', 'ASCENSÃO', `O Vampiro ${vampiro.nome} foi coroado: [${conq.titulo}].`, true);
+            }
+        }
+        return novas;
+    }
+
     // ==========================================
     // O PACTO DE SANGUE (LOGIN)
     // ==========================================
     despertarViaTelegram(tgId, tgUsername, nomeSombrio, senha, inviteCode) {
         const idSombrio = 'SNG_' + crypto.createHash('sha256').update(tgId.toString()).digest('hex').substring(0, 8).toUpperCase();
         
-        // Autenticação Rigorosa
         if(this.vampiros[idSombrio]) {
             const v = this.vampiros[idSombrio];
             const hashTentativa = crypto.pbkdf2Sync(senha, v.id, 10000, 64, 'sha512').toString('hex');
@@ -289,12 +326,11 @@ class ShadowCore {
             return { existente: true, recusado: false, vampiro: v };
         }
 
-        // BLOQUEIO TOTAL: CHAVE MESTRA OU CONVITE
         const CHAVE_MESTRA_PRIMORDIAL = 'SANGUIS_DRACONIS_666';
         let senhor = this.vampiros[inviteCode];
         
         if (!senhor && inviteCode !== CHAVE_MESTRA_PRIMORDIAL) {
-            return { existente: false, recusado: true, erro: "A Ordem Exige Um Convite na URL (?invite=CHAVE). O Portão não se move para ti." };
+            return { existente: false, recusado: true, erro: "A Ordem Exige Um Convite na URL (?invite=CHAVE). O Portão não se move." };
         }
 
         const geracao = senhor ? senhor.geracao + 1 : 1;
@@ -376,64 +412,27 @@ class ShadowCore {
             }
             this._registrarEvento('global', 'ASCENSÃO ASTRAL', `A Aura de ${v.nome} adensou-se. Grau ${v.nivel}.`);
         }
-        let novas = this._verificarConquistas(v);
+        this._verificarConquistas(v);
         this._selarRegistosAkashicos();
     }
 
     // ==========================================
-    // SANTUÁRIOS (CLÃS)
-    // ==========================================
-    fundarClan(vampiroId, nomeClan) {
-        const v = this.vampiros[vampiroId];
-        if (!v || v.sangue < 2000) return { erro: "O Abismo exige 2000 Gts de Oferenda." };
-        if (v.clan !== 'Sangue Ralo') return { erro: "Já tens Aliança." };
-        if (this.clans[nomeClan]) return { erro: "Este nome já ecoa nas sombras." };
-
-        v.sangue -= 2000; v.clan = nomeClan;
-        this.clans[nomeClan] = { nome: nomeClan, lider: v.id, liderNome: v.nome, cofre: 0, membros: [v.id], nivel: 1 };
-
-        const converterLinhagem = (senhorId) => {
-            const s = this.vampiros[senhorId];
-            s.linhagem.forEach(criaId => {
-                const cria = this.vampiros[criaId];
-                if (cria && cria.clan === 'Sangue Ralo') {
-                    cria.clan = nomeClan; this.clans[nomeClan].membros.push(cria.id); converterLinhagem(cria.id);
-                }
-            });
-        };
-        converterLinhagem(v.id);
-        this._registrarEvento('global', 'SANTUÁRIO ERGUIDO', `A linhagem de ${v.nome} fundou o Clã [${nomeClan}].`);
-        this._selarRegistosAkashicos(); return { sucesso: true, relato: `Santuário ${nomeClan} fundado.` };
-    }
-
-    operarCofreClan(vampiroId, quantia, operacao) {
-        const v = this.vampiros[vampiroId];
-        if (!v || v.clan === 'Sangue Ralo') return { erro: "És um Sangue Ralo." };
-        const clan = this.clans[v.clan]; if (!clan) return { erro: "Clã desvanecido." };
-
-        if (operacao === 'depositar') {
-            if (v.sangue < quantia) return { erro: "Falta Sangue." };
-            v.sangue -= quantia; clan.cofre += quantia;
-            this._selarRegistosAkashicos(); return { sucesso: true, relato: `Oferendaste ${quantia} Gts ao Clã.` };
-        } else {
-            if (clan.lider !== v.id) return { erro: "Apenas o Hierofante pode exaurir o Cofre Central." };
-            if (clan.cofre < quantia) return { erro: "Cofre seco." };
-            clan.cofre -= quantia; v.sangue += quantia;
-            this._selarRegistosAkashicos(); return { sucesso: true, relato: `Extraíste ${quantia} Gts do Clã.` };
-        }
-    }
-
-    // ==========================================
-    // A CAÇADA AVANÇADA (AÇÕES MÚLTIPLAS)
+    // A CAÇADA E INFLUÊNCIA LUNAR
     // ==========================================
     async mapearMortal(vampiroId, plataforma, identificador) {
         const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Corpo Astral não encontrado. Atualiza o teu selo." };
         if (v.pontosAcao < 1) return { erro: "O Olho requer Fúria. Descansa." };
 
         let idLimpo = identificador.trim().toLowerCase();
-        if (plataforma === 'telegram' && !idLimpo.startsWith('@') && isNaN(idLimpo)) return { erro: "Telegram exige '@' ou Numérico." };
+        
+        // Auto-Correção para preguiçosos que esquecem o @
+        if ((plataforma === 'telegram' || plataforma === 'instagram' || plataforma === 'tiktok') && !idLimpo.startsWith('@')) {
+            if (isNaN(idLimpo)) { idLimpo = '@' + idLimpo; }
+        }
+
         if (plataforma === 'whatsapp' && idLimpo.replace(/[^0-9]/g, '').length < 8) return { erro: "Número Inválido." };
-        if (idLimpo.length < 3) return { erro: "Sílaba fraca demais." };
+        if (idLimpo.length < 3) return { erro: "Identidade demasiado fraca para mapeamento." };
 
         const hashAlma = this._forjarSigilo(plataforma, idLimpo);
         v.pontosAcao -= 1; this.ganharXP(vampiroId, 5); 
@@ -444,24 +443,24 @@ class ShadowCore {
         if (plataforma === 'whatsapp') hpBase *= 1.5;
 
         this.rebanho[hashAlma] = {
-            hash: hashAlma, identificadorVisivel: identificador.trim(),
+            hash: hashAlma, identificadorVisivel: idLimpo, // Guarda com o @ para melhor visualização
             plataforma, qualidade: "Sangue Mundano", sangueMax: hpBase, sangueAtual: hpBase, estado: 'Vibrante',
             maldicaoArcana: null, registroMordidas: [], leituraAura: "Lendo as teias do destino..."
         };
         
-        this._registrarEvento('caca', 'A TEIA CRESCE', `${identificador.trim()} foi atado ao Matadouro por ${v.nome}.`);
-        this._selarRegistosAkashicos();
+        this._registrarEvento('caca', 'A TEIA AUMENTA', `A Roda girou. O mortal ${idLimpo} foi atado ao Matadouro por ${v.nome}.`);
+        this._salvarBancoDeDados();
 
-        this.oraculo.lerAuraMortal(identificador, plataforma).then(dadosIA => {
+        this.oraculo.lerAuraMortal(idLimpo, plataforma).then(dadosIA => {
             if(this.rebanho[hashAlma]) {
                 this.rebanho[hashAlma].leituraAura = dadosIA.aura;
                 if (dadosIA.fama) {
                     this.rebanho[hashAlma].sangueMax *= 10; 
                     this.rebanho[hashAlma].sangueAtual *= 10;
-                    this.rebanho[hashAlma].qualidade = "Sangue da Realeza (Alta Influência)";
-                    this._registrarEvento('global', 'ALMA CELESTIAL', `O Radar detetou uma figura de extremo poder no ${plataforma}.`);
+                    this.rebanho[hashAlma].qualidade = "Sangue Real (Fama)";
+                    this._registrarEvento('global', 'ALMA MASSIVA', `O Radar Cósmico detetou uma figura célebre no ${plataforma}. O Banquete está servido.`);
                 }
-                this._selarRegistosAkashicos();
+                this._salvarBancoDeDados();
                 if (global.io) global.io.emit('aura_atualizada', hashAlma);
             }
         });
@@ -479,7 +478,8 @@ class ShadowCore {
         vampiro.sangue -= 800;
         mortal.maldicaoArcana = { selo: crypto.randomBytes(8).toString('hex'), donoId: vampiro.id, donoNome: vampiro.nome };
         this._registrarEvento('caca', 'CORRUPÇÃO ASTRAL', `O corpo de ${mortal.identificadorVisivel} pertence a ${vampiro.nome}.`);
-        this._selarRegistosAkashicos(); return { sucesso: true, relato: "Selo cravado. O gado é teu." };
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: "Selo cravado. O gado é teu." };
     }
 
     drenarMortal(vampiroId, hashMortal, localMordida) {
@@ -492,32 +492,14 @@ class ShadowCore {
         if (mortal.maldicaoArcana && mortal.maldicaoArcana.donoId !== vampiroId) {
             vampiro.sangue = Math.max(0, vampiro.sangue - 300); vampiro.pontosAcao -= 1;
             let rel = { erro: `CHOQUE MAGICKO! O Selo de ${mortal.maldicaoArcana.donoNome} queimou as tuas veias (-300 Gts).`, mortal };
-            rel.alertaDono = `O vampiro ${vampiro.nome} tentou beber do teu rebanho [${mortal.identificadorVisivel}] e foi queimado pelo teu Selo.`;
+            rel.alertaDono = `O vampiro ${vampiro.nome} tentou beber do teu mortal [${mortal.identificadorVisivel}] e foi queimado pelo teu Selo.`;
             rel.donoId = mortal.maldicaoArcana.donoId;
-            this._selarRegistosAkashicos(); return rel;
+            this._salvarBancoDeDados(); return rel;
         }
 
         vampiro.pontosAcao -= 1;
-        const atr = this._obterAtributosTotais(vampiro);
         
-        // Ação Especial: Extorquir Influência em vez de Sangue
-        if (localMordida === 'extorquir') {
-            if (mortal.qualidade !== "Sangue da Realeza (Alta Influência)") return { erro: "Este humano não possui Riqueza ou Fama para Extorquir.", mortal };
-            let ganho = Math.floor(Math.random() * 5) + 1;
-            vampiro.influencia += ganho;
-            mortal.registroMordidas.unshift({ predador: vampiro.nome, local: "HIPNOSE E EXTORSÃO", dano: 0, data: Date.now() });
-            this.ganharXP(vampiroId, 30); this._selarRegistosAkashicos();
-            return { roubo: 0, relato: `Hipnotizaste o VIP. Recebeste favores e riquezas (+${ganho} Influência). O Sangue ficou intacto.`, mortal, lootMsg: "" };
-        }
-
-        // Ação Especial: Rito Frio (Guarda direto no Cálice com pouco dano à vítima)
-        if (localMordida === 'rito_frio') {
-            vampiro.calice += 50; mortal.sangueAtual -= 20;
-            mortal.registroMordidas.unshift({ predador: vampiro.nome, local: "SANGUESSUGA LENTA", dano: 20, data: Date.now() });
-            this._selarRegistosAkashicos();
-            return { roubo: 0, relato: `A extração foi cirúrgica e lenta. A vítima quase não notou (-20 HP). Ganhaste 50 Gts direto no teu Cálice Protegido.`, mortal, lootMsg: "" };
-        }
-
+        const atr = this._obterAtributosTotais(vampiro);
         const bonusMag = Math.floor(atr.magnetismo * 10); 
         let mordidaBase = Math.floor(Math.random() * 80) + 40 + bonusMag;
         
@@ -529,7 +511,7 @@ class ShadowCore {
         if (lua.id === 'nova') conjuracao.falha = false;
 
         if (conjuracao.falha) {
-            vampiro.sangue = Math.max(0, vampiro.sangue - 50); this._selarRegistosAkashicos();
+            vampiro.sangue = Math.max(0, vampiro.sangue - 50); this._salvarBancoDeDados();
             return { erro: `A aura do humano repeliu-te (-50 Gts).`, mortal };
         }
 
@@ -555,8 +537,55 @@ class ShadowCore {
             this._registrarEvento('global', 'O LIMBO', `Fiação Cortada. O mortal ${mortal.identificadorVisivel} secou completamente por ${vampiro.nome}.`);
         }
         
-        this._selarRegistosAkashicos();
+        this._salvarBancoDeDados();
         return { roubo: rouboFinal, relato, mortal, lootMsg };
+    }
+
+    // ==========================================
+    // SANTUÁRIOS (CLÃS)
+    // ==========================================
+    fundarClan(vampiroId, nomeClan) {
+        const v = this.vampiros[vampiroId];
+        if (!v || v.sangue < 2000) return { erro: "O Abismo exige 2000 Gts para erguer um Santuário." };
+        if (v.clan !== 'Sangue Ralo') return { erro: "Já juraste fidelidade a um Clã." };
+        if (this.clans[nomeClan]) return { erro: "Este nome já ecoa nas sombras." };
+
+        v.sangue -= 2000; v.clan = nomeClan;
+        this.clans[nomeClan] = { nome: nomeClan, lider: v.id, liderNome: v.nome, cofre: 0, membros: [v.id], nivel: 1 };
+
+        const converterLinhagem = (senhorId) => {
+            const s = this.vampiros[senhorId];
+            s.linhagem.forEach(criaId => {
+                const cria = this.vampiros[criaId];
+                if (cria && cria.clan === 'Sangue Ralo') {
+                    cria.clan = nomeClan; this.clans[nomeClan].membros.push(cria.id); converterLinhagem(cria.id);
+                }
+            });
+        };
+        converterLinhagem(v.id);
+        this._registrarEvento('global', 'SANTUÁRIO ERGUIDO', `A linhagem de ${v.nome} fundou o Clã [${nomeClan}].`);
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: `O Santuário ${nomeClan} foi fundado.` };
+    }
+
+    operarCofreClan(vampiroId, quantia, operacao) {
+        const v = this.vampiros[vampiroId];
+        if (!v || v.clan === 'Sangue Ralo') return { erro: "És um Sangue Ralo." };
+        const clan = this.clans[v.clan];
+        if (!clan) return { erro: "Clã desvanecido." };
+
+        if (operacao === 'depositar') {
+            if (v.sangue < quantia) return { erro: "Falta Sangue para doar." };
+            v.sangue -= quantia; clan.cofre += quantia;
+            this._salvarBancoDeDados();
+            return { sucesso: true, relato: `Oferendaste ${quantia} Gts ao Clã.` };
+        } else {
+            if (clan.lider !== v.id) return { erro: "Apenas o Hierofante (Líder) pode exaurir o Cofre." };
+            if (clan.cofre < quantia) return { erro: "Cofre seco." };
+            clan.cofre -= quantia; v.sangue += quantia;
+            this._salvarBancoDeDados();
+            return { sucesso: true, relato: `Extraíste ${quantia} Gts do Clã.` };
+        }
     }
 
     // ==========================================
@@ -570,11 +599,11 @@ class ShadowCore {
         if (atacante.pontosAcao < 3) return { erro: "A Guerra exige 3 Fúrias." };
         if (defensor.estado === 'Banido') return { erro: "Lutar contra pó não traz glória." };
 
-        let dmAlerta = `A TUA AURA FOI ATACADA!\n${atacante.nome} tentou emboscar-te. O combate:\n`;
+        let dmAlerta = `A TUA AURA FOI ATACADA!\n${atacante.nome} tentou emboscar-te. O combate desenrolou-se:\n`;
 
         if (defensor.escudo) {
-            atacante.pontosAcao -= 3; defensor.escudo = false; this._selarRegistosAkashicos();
-            return { sucesso: false, relato: `O Pentáculo protegeu ${defensor.nome}! Escudo quebrou.`, alertaDono: dmAlerta + "O teu Escudo Arcano salvou-te, mas foi destruído.", donoId: defensor.id };
+            atacante.pontosAcao -= 3; defensor.escudo = false; this._salvarBancoDeDados();
+            return { sucesso: false, relato: `O Pentáculo protegeu ${defensor.nome}! Escudo quebrou.`, alertaDono: dmAlerta + "O teu Escudo Arcano salvou-te de perder Sangue, mas foi destruído.", donoId: defensor.id };
         }
 
         atacante.pontosAcao -= 3;
@@ -589,6 +618,7 @@ class ShadowCore {
 
         poderAtaque += Math.floor(Math.random() * 50); poderDefesa += Math.floor(Math.random() * 50);
         if (atacante.geracao < defensor.geracao) poderAtaque += 50; 
+        
         if (lua.id === 'cheia') poderAtaque = Math.floor(poderAtaque * 1.3);
 
         let danoLiquido = poderAtaque - poderDefesa;
@@ -598,10 +628,8 @@ class ShadowCore {
             const danoFinal = Math.floor(danoLiquido * 3);
             defensor.sangue -= danoFinal; atacante.sangue += danoFinal;
             relato += `A aura inimiga rasgou! Sorbeste ${danoFinal} Gts.`;
-            resultadoDM = `As tuas defesas falharam. Perdeste ${danoFinal} Gts para o atacante.`;
-            atacante.estatisticas.vitoriasPvP += 1; 
-            if(defensor.influencia > 0 && Math.random() > 0.5) { defensor.influencia -= 1; atacante.influencia += 1; relato += " Roubaste Prestígio!"; }
-            this.ganharXP(atacanteId, 50);
+            resultadoDM = `As tuas defesas falharam. Perdeste ${danoFinal} Gts de sangue para o atacante.`;
+            atacante.estatisticas.vitoriasPvP += 1; this.ganharXP(atacanteId, 50);
             
             if (Math.random() > 0.85) {
                 const drop = ForjaDraconiana.gerarReliquia(defensor.nivel);
@@ -611,7 +639,7 @@ class ShadowCore {
             const danoCounter = Math.abs(danoLiquido) * 2 + 50;
             atacante.sangue -= danoCounter; defensor.sangue += danoCounter;
             relato += `Falha crítica! As defesas de ${defensor.nome} reflectiram. Perdeste ${danoCounter} Gts.`;
-            resultadoDM = `Tu resististe à investida e contra-atacaste. Ganhaste ${danoCounter} Gts!`;
+            resultadoDM = `Tu resististe à investida e contra-atacaste no subconsciente dele. Ganhaste ${danoCounter} Gts do sangue dele!`;
             defensor.estatisticas.vitoriasPvP += 1; this.ganharXP(defensorId, 40);
         }
 
@@ -619,11 +647,11 @@ class ShadowCore {
         defensor.historicoCombate.unshift(`Sofreste investida de ${atacante.nome}: ${relato}`);
         this._registrarEvento('guerra', 'DUELO DE SANGUE', `${atacante.nome} colidiu com ${defensor.nome}.`);
         
-        this._selarRegistosAkashicos();
+        this._salvarBancoDeDados();
         return { sucesso: true, relato, alertaDono: dmAlerta + resultadoDM, donoId: defensor.id };
     }
 
-    // Leilao, Alquimia e Magia - Funcionais
+    // Leilao
     anunciarNoLeilao(vampiroId, tipo, quantiaOuHash, preco) {
         const v = this.vampiros[vampiroId]; if (!v) return { erro: "Fantasma." }; if (preco <= 0) return { erro: "Sem valor." };
         let anuncio = { id: this.leilaoIdCounter++, vendedorId: v.id, vendedorNome: v.nome, tipo, preco, data: Date.now() };
@@ -635,7 +663,7 @@ class ShadowCore {
             if (!v.inventario[tipo] || v.inventario[tipo] < quantiaOuHash) return { erro: "Inventário vazio." };
             v.inventario[tipo] -= quantiaOuHash; anuncio.quantia = quantiaOuHash;
         }
-        this.leilaoP2P.push(anuncio); this._selarRegistosAkashicos(); return { sucesso: true, relato: "Contrato assinado." };
+        this.leilaoP2P.push(anuncio); this._salvarBancoDeDados(); return { sucesso: true, relato: "Contrato assinado." };
     }
 
     comprarDoLeilao(compradorId, anuncioId) {
@@ -649,7 +677,7 @@ class ShadowCore {
             const mortal = this.rebanho[anuncio.hashMortal];
             if (mortal) { mortal.maldicaoArcana.donoId = comprador.id; mortal.maldicaoArcana.donoNome = comprador.nome; mortal.estado = 'Vibrante'; }
         } else comprador.inventario[anuncio.tipo] += anuncio.quantia;
-        this.leilaoP2P.splice(idx, 1); this._selarRegistosAkashicos(); return { sucesso: true, relato: "Transação efetuada." };
+        this.leilaoP2P.splice(idx, 1); this._salvarBancoDeDados(); return { sucesso: true, relato: "Transação efetuada." };
     }
 
     fabricarAlquimia(vampiroId, receitaId) {
@@ -661,7 +689,7 @@ class ShadowCore {
         if (receitaId === 'amuleto_sombra') v.escudo = true;
         if (receitaId === 'lagrima_prata') { v.pontosAcao = Math.min(v.maxAcao, v.pontosAcao + 1); }
         if (receitaId === 'pedra_filosofal_negra') v.atributos.pontosLivres += 1;
-        this.ganharXP(vampiroId, 30); this._selarRegistosAkashicos(); return { sucesso: true, relato: `A Forja brilhou. ${rec.nome} sintetizado.` };
+        this.ganharXP(vampiroId, 30); this._salvarBancoDeDados(); return { sucesso: true, relato: `A Forja brilhou. ${rec.nome} sintetizado.` };
     }
 
     conjurarRitual(vampiroId, ritualId, alvoId) {
@@ -676,23 +704,23 @@ class ShadowCore {
         v.pontosAcao -= ritual.custoAcao; v.sangue -= ritual.custoSangue;
         const resultado = ritual.efeito(v, alvo, lua); this.ganharXP(vampiroId, 25);
         this._registrarEvento('global', 'VÓRTICE MÁGICO', `${v.nome} invocou [${ritual.nome}].`);
-        this._selarRegistosAkashicos();
+        this._salvarBancoDeDados();
         return { sucesso: true, relato: resultado };
     }
 
-    // Cálice e Entropia (Com Timer Oculto da IA)
+    // Cálice
     operarCalice(id, quantia, operacao) {
         const v = this.vampiros[id]; if (!v) return { erro: "Vazio." };
         if (operacao === 'depositar') {
             if (v.sangue < quantia) return { erro: "Sangue Escasso." };
-            v.sangue -= quantia; v.calice += quantia; this._selarRegistosAkashicos(); return { sucesso: true, relato: `Selo trancado. ${quantia} Gts no Cofre.` };
+            v.sangue -= quantia; v.calice += quantia; this._salvarBancoDeDados(); return { sucesso: true, relato: `Selo trancado. ${quantia} Gts no Cofre.` };
         } else {
             if (v.calice < quantia) return { erro: "O Cálice tem o fundo seco." };
-            v.calice -= quantia; v.sangue += quantia; this._selarRegistosAkashicos(); return { sucesso: true, relato: `A tampa remove-se. O fluxo regressou (${quantia} Gts).` };
+            v.calice -= quantia; v.sangue += quantia; this._salvarBancoDeDados(); return { sucesso: true, relato: `A tampa remove-se. O fluxo regressou (${quantia} Gts).` };
         }
     }
 
-    async tickTemporal() {
+    tickTemporal() {
         const lua = AstrolabioLunar.obterFaseAtual();
         
         for (let hash in this.rebanho) {
@@ -713,17 +741,7 @@ class ShadowCore {
             if (this.clans[c].cofre > 0) this.clans[c].cofre += Math.floor(this.clans[c].cofre * 0.01);
         }
         
-        // Auto Save Periódico
-        this._selarRegistosAkashicos();
-
-        // O OLHO QUE TUDO VÊ (Ação Espontânea da IA)
-        // A cada ~30 minutos de ticks (simulado aqui de forma aleatória e rara para não estourar API livre)
-        if (Math.random() > 0.98) {
-            const visao = await this.oraculo.invocarOolhoQueTudoVe();
-            if (visao && global.io) {
-                global.io.emit('nova_mensagem', { canal: 'global', autor: '👁️ O OLHO', texto: visao, hora: new Date().toLocaleTimeString() });
-            }
-        }
+        this._salvarBancoDeDados();
     }
 }
 module.exports = { ShadowCore, AstrolabioLunar };
