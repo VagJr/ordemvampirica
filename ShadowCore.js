@@ -66,8 +66,8 @@ class OraculoAbissal {
     constructor() {
         this.GEMINI_API_KEY = process.env.GEMINI_API_KEY || ""; 
         this.climaAstral = 'Dormente'; 
-        // Usando o modelo mais atualizado para ser mais vivo
-        this.endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+        // Usamos v1beta para ter acesso ao Google Search Grounding e JSON nativo
+        this.endpoint = "[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent)";
     }
 
     analisarClimaAstral(logsGlobal) {
@@ -77,47 +77,103 @@ class OraculoAbissal {
         else this.climaAstral = 'Espreita Noturna';
     }
 
-    async gerarLore(evento, detalhes) {
-        if (!this.GEMINI_API_KEY) return `👁️ O Oráculo: As correntes astrais moveram-se. ${detalhes}`;
-        try {
-            const lua = AstrolabioLunar.obterFaseAtual();
-            const prompt = `Atue como a Entidade Ancestral do Abismo (um ser sombrio e místico). Fase da Lua: ${lua.nome}. Clima: ${this.climaAstral}. Aconteceu no nosso mundo: ${detalhes}. Escreva 1 frase poética, aterrorizante e que interaja sutilmente com os sentimentos humanos ou notícias do mundo real como se nós os controlássemos.`;
-            const response = await fetch(`${this.endpoint}?key=${this.GEMINI_API_KEY}`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            const data = await response.json();
-            return `👁️ A Voz do Abismo: ${data.candidates[0].content.parts[0].text}`;
-        } catch (e) { return `👁️ O Oráculo dita: O Sangue encontrou o seu curso.`; }
+    // O Rito de Invocação Base (Processa a magia suja do fetch)
+    async _invocarGemini(prompt, usarBusca = false, modoJson = false) {
+        if (!this.GEMINI_API_KEY) throw new Error("Chave do Oráculo ausente.");
+        
+        const payload = {
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { 
+                temperature: 0.9, // Mais alto = mais criatividade e menos repetição
+                responseMimeType: modoJson ? "application/json" : "text/plain" 
+            }
+        };
+
+        // É isto que permite à IA vasculhar a internet humana em tempo real
+        if (usarBusca) {
+            payload.tools = [{ googleSearch: {} }];
+        }
+
+        const response = await fetch(`${this.endpoint}?key=${this.GEMINI_API_KEY}`, {
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const erroApi = await response.text();
+            console.error("⚠️ O Abismo Rejeitou a Conexão (Erro Gemini API):", erroApi);
+            throw new Error("Falha na Magia");
+        }
+
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text;
     }
 
-    // NOVA FUNÇÃO: O Oráculo conversa com os jogadores
+    async gerarLore(evento, detalhes) {
+        if (!this.GEMINI_API_KEY) return `👁️ O Oráculo: As correntes astrais moveram-se.`;
+        try {
+            const lua = AstrolabioLunar.obterFaseAtual();
+            // 50% de chance de fundir os eventos do jogo com o noticiário humano real
+            const trazerNoticia = Math.random() > 0.5; 
+            
+            let prompt = "";
+            if (trazerNoticia) {
+                prompt = `Você é o 'Oráculo Abissal', a entidade milenar de pura magia negra. A Fase Lunar é: ${lua.nome}. 
+                Faça uma busca AGORA pelas notícias mais impactantes no mundo real humano (política, tragédias, economia, fofocas de famosos). 
+                Escolha UMA notícia real de hoje e escreva 1 a 2 frases assumindo que fomos nós, a Ordem de Vampiros, que manipulamos esse evento através das sombras. Seja sombrio, poético e nunca repita a mesma narrativa.`;
+            } else {
+                prompt = `Você é o 'Oráculo Abissal', a entidade de pura magia negra. A Fase Lunar é: ${lua.nome}. Clima do jogo: ${this.climaAstral}. 
+                Aconteceu este evento no nosso submundo vampírico agora: "${detalhes}". 
+                Escreva 1 frase aterrorizante e poética anunciando isso para os clãs. Nunca repita frases antigas.`;
+            }
+
+            const texto = await this._invocarGemini(prompt, trazerNoticia, false);
+            return `👁️ A Voz do Abismo: ${texto.trim()}`;
+        } catch (e) { 
+            return `👁️ O Oráculo dita: O Sangue segue o seu curso silencioso hoje.`; 
+        }
+    }
+
     async conversarNoChat(nomeVampiro, mensagemHumana) {
         if (!this.GEMINI_API_KEY) return `Minhas correntes estão seladas.`;
         try {
-            const prompt = `Você é o "Oráculo Abissal", a entidade onisciente de pura magia negra que rege os vampiros. O vampiro de nome [${nomeVampiro}] acabou de dizer no salão o seguinte: "${mensagemHumana}". Responda diretamente a ele. Seja sombrio, irônico, enigmático. Use metáforas de sangue, trevas ou manipulação da sociedade humana. Mantenha em no máximo 2 frases marcantes.`;
-            const response = await fetch(`${this.endpoint}?key=${this.GEMINI_API_KEY}`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            const data = await response.json();
-            return data.candidates[0].content.parts[0].text;
-        } catch (e) { return `Teus sussurros se perdem na tempestade astral, criatura.`; }
+            const prompt = `Você é o "Oráculo Abissal", a entidade onisciente que rege os vampiros. 
+            O vampiro [${nomeVampiro}] acabou de dizer no salão o seguinte: "${mensagemHumana}". 
+            Responda DIRETAMENTE a ele. Seja irônico, enigmático ou cruel, dependendo da arrogância ou tom dele. 
+            Use metáforas de sangue, sombras e poder. Limite-se a 2 frases marcantes. NUNCA diga saudações humanas normais.`;
+            
+            const texto = await this._invocarGemini(prompt, false, false);
+            return texto.trim();
+        } catch (e) { 
+            return `Teus sussurros se perdem na tempestade astral, criatura.`; 
+        }
     }
 
     async lerAuraMortal(identificador, plataforma) {
-        if (!this.GEMINI_API_KEY) return { fama: false, aura: "Aura mundana e densa. Alma comum." };
+        if (!this.GEMINI_API_KEY) return { fama: false, multiplicador: 1, aura: "Aura mundana. Alma cega." };
         try {
-            const prompt = `Leia a aura de "${identificador}" na rede ${plataforma}. Responda APENAS em JSON estrito: {"fama": true/false, "aura": "texto"}. Se for pessoa real famosa, fama: true. Escreva a "aura" revelando os pecados ou conquistas dela como se fossem saborosos para nós.`;
-            const response = await fetch(`${this.endpoint}?key=${this.GEMINI_API_KEY}`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-            });
-            const data = await response.json();
-            const text = data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
-            return JSON.parse(text);
-        } catch (e) { return { fama: false, aura: "As brumas escondem os pecados desta alma." }; }
+            const prompt = `Você é um Escâner de Almas Obscuro. 
+            Use a busca na internet e pesquise agressivamente por "${identificador}" na rede "${plataforma}". 
+            Se encontrar uma pessoa real e for alguém conhecido/influente, crie um lore sombrio baseado nos FATOS REAIS que você achou dela. 
+            Se não achar NADA e for apenas um zé-ninguém, crie um lore procedural sério focado nos medos e pecados rotineiros de um humano comum.
+            
+            Obrigatório retornar APENAS neste formato JSON:
+            {
+                "fama": true ou false (true se achou algo na internet sobre ela, false se inventou),
+                "multiplicador": um número de 1 a 15 (1 para desconhecidos, 5 para influencers médios, 15 para celebridades globais),
+                "aura": "Texto narrativo de 2 a 3 frases descrevendo a essência dessa pessoa com base nos fatos que encontrou (ou inventou). Cite a profissão ou fatos reais dela como 'especiarias' para o banquete vampírico."
+            }`;
+
+            // Passamos "true" para usar a busca no Google e "true" para forçar MimeType application/json (evita erros de parsing)
+            const texto = await this._invocarGemini(prompt, true, true);
+            return JSON.parse(texto);
+        } catch (e) { 
+            console.error("Falha ao LER AURA:", e);
+            return { fama: false, multiplicador: 1, aura: "As brumas escondem a vida mortal desta presa. Sangue comum." }; 
+        }
     }
+}
 }
 
 // ==========================================
@@ -442,12 +498,17 @@ class ShadowCore {
         this.oraculo.lerAuraMortal(idLimpo, plataforma).then(dadosIA => {
             if(this.rebanho[hashAlma]) {
                 this.rebanho[hashAlma].leituraAura = dadosIA.aura;
-                if (dadosIA.fama) {
-                    this.rebanho[hashAlma].sangueMax *= 10; 
-                    this.rebanho[hashAlma].sangueAtual *= 10;
-                    this.rebanho[hashAlma].qualidade = "Sangue Real (Fama)";
-                    this._registrarEvento('global', 'ALMA MASSIVA', `Figura célebre no ${plataforma}. O Banquete está servido.`);
+                
+                let mult = dadosIA.multiplicador || 1;
+                
+                if (mult > 1) {
+                    this.rebanho[hashAlma].sangueMax *= mult; 
+                    this.rebanho[hashAlma].sangueAtual *= mult;
+                    this.rebanho[hashAlma].qualidade = dadosIA.fama ? `Sangue Real (Notoriedade Nv.${mult})` : `Pecador Denso (Nv.${mult})`;
+                    
+                    this._registrarEvento('global', 'ALMA MASSIVA', `A Ordem cheirou sangue de valor no ${plataforma}. Uma presa Nv.${mult} foi descoberta.`);
                 }
+                
                 this._salvarBancoDeDados();
                 if (global.io) global.io.emit('aura_atualizada', hashAlma);
             }
