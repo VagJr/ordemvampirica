@@ -174,7 +174,6 @@ class OraculoAbissal {
         }
     }
 }
-}
 
 // ==========================================
 // RITUAL MAIOR: O NÚCLEO DA ORDEM COM MONGODB
