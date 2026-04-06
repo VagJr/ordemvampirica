@@ -94,8 +94,8 @@
         
         <div class="disclaimer-box">
             <strong>⚠️ O CÍRCULO FECHADO</strong>
-            Este Santuário opera com dinâmicas de <em>Magia Negra e Feitiçaria Oculta</em> reais aplicadas às Redes Sociais. Os registos mapeiam as almas digitais para o nosso Altar. A Porta não se abre por vontade própria. <b>Precisas de um Convite na URL (?invite=CHAVE).</b><br>
-            Se já és membro, a chave não é necessária, apenas o Nome e a Senha.
+            A Porta não se abre por vontade própria. A Primeira Alma reinará se o Abismo estiver vazio. Os próximos exigem <b>Convite</b>.<br>
+            Apenas Nome e Senha são necessários para regresso.
         </div>
 
         <div id="msg-erro-login" style="color: var(--sangue-claro); text-align: center; font-weight: bold; margin: 10px 0;"></div>
@@ -407,47 +407,40 @@
     }
 
     async function auth() {
-    const nome = document.getElementById('in-nome').value;
-    const senha = document.getElementById('in-senha').value;
-    if (!nome || !senha) { safeSet('msg-erro-login', "O Rito pede Nome Sombrio e Palavra-Passe."); return; }
+        const nome = document.getElementById('in-nome').value;
+        const senha = document.getElementById('in-senha').value;
+        if (!nome || !senha) { safeSet('msg-erro-login', "O Rito pede Nome Sombrio e Palavra-Passe."); return; }
 
-    // RITO DE GÊNESE: Força a chave mestra se for o primeiro acesso do dono
-    const urlParams = new URLSearchParams(window.location.search);
-    const inviteCode = tg.initDataUnsafe?.start_param || urlParams.get('invite') || 'SANGUIS_DRACONIS_666'; 
-    
-    document.getElementById('btn-auth').style.display = 'none';
-    safeSet('msg-erro-login', "A Recitar Cânticos de Invocação...");
-
-    try {
-        const res = await fetch('/api/auth', {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ 
-                tgId: idAcesso, 
-                tgUsername: tgUser?.username, 
-                nomeSombrio: nome, 
-                senha, 
-                inviteCode // Enviando a chave mestra injetada acima
-            })
-        });
-        const dados = await res.json();
+        const inviteCode = tg.initDataUnsafe?.start_param || new URLSearchParams(window.location.search).get('invite');
         
-        if (dados.erro) {
-            safeSet('msg-erro-login', dados.erro);
+        document.getElementById('btn-auth').style.display = 'none';
+        safeSet('msg-erro-login', "A Recitar Cânticos de Invocação...");
+
+        try {
+            const res = await fetch('/api/auth', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ tgId: idAcesso, tgUsername: tgUser?.username, nomeSombrio: nome, senha, inviteCode })
+            });
+            const dados = await res.json();
+            
+            if (dados.erro) {
+                safeSet('msg-erro-login', dados.erro);
+                document.getElementById('btn-auth').style.display = 'block';
+                return;
+            }
+
+            meuVampiro = dados;
+            document.getElementById('ui-login').classList.add('oculto');
+            document.getElementById('ui-main').classList.remove('oculto');
+            
+            socket.emit('entrar_chat', { idVampiro: meuVampiro.id, clan: meuVampiro.clan });
+            syncUI(); carregarMercado(); 
+        } catch (e) {
+            safeSet('msg-erro-login', "O Portão não cedeu à Magia.");
             document.getElementById('btn-auth').style.display = 'block';
-            return;
         }
-
-        meuVampiro = dados;
-        document.getElementById('ui-login').classList.add('oculto');
-        document.getElementById('ui-main').classList.remove('oculto');
-        
-        socket.emit('entrar_chat', { idVampiro: meuVampiro.id, clan: meuVampiro.clan });
-        syncUI(); carregarMercado(); 
-    } catch (e) {
-        safeSet('msg-erro-login', "O Portão não cedeu à Magia.");
-        document.getElementById('btn-auth').style.display = 'block';
     }
-}
+
     function syncUI() {
         if(!meuVampiro) return;
         if(meuVampiro.estado === 'Banido') return document.body.innerHTML = "<div style='display:flex; justify-content:center; align-items:center; height:100vh;'><h1 style='color:red; text-align:center;'>A TUA ALMA FOI RECLAMADA PELO ABISMO.</h1></div>";
@@ -470,18 +463,15 @@
         safeSet('inv-cinzas', meuVampiro.inventario.cinzas);
         safeSet('inv-vitae', meuVampiro.inventario.vitae);
 
-        // Lua Astrolabio
         if (meuVampiro.faseLua) {
             safeSet('lua-icone', meuVampiro.faseLua.icone);
             safeSet('lua-nome', meuVampiro.faseLua.nome);
             safeSet('lua-buff', meuVampiro.faseLua.buff);
         }
 
-        // Títulos
         const titulosOpts = meuVampiro.titulos.map(t => `<option value="${t}" ${t === meuVampiro.tituloAtual ? 'selected' : ''}>${t}</option>`).join('');
         safeSet('lista-titulos', titulosOpts, true);
 
-        // Atributos
         const atrBase = meuVampiro.atributos;
         const atrTot = meuVampiro.atributosTotais || atrBase;
         
@@ -548,12 +538,11 @@
     async function mudarTitulo() {
         const val = document.getElementById('lista-titulos').value;
         try {
-            const res = await fetch('/api/perfil/titulo', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, titulo: val }) });
+            await fetch('/api/perfil/titulo', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, titulo: val }) });
             syncStatus();
         } catch(e) { }
     }
 
-    // --- GAMEPLAY MÁGICO ---
     socket.on('aura_atualizada', (hash) => { if(hash === hashAlvoAtual) abrirPresaMercado(hash); });
 
     async function carregarMercado() {
@@ -568,7 +557,6 @@
             }).join('');
             safeSet('lista-mercado', htmlMercado, true);
             
-            // Distribuir Logs
             const logsGlobal = dados.logs.global.map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> ${l.relato}</div>`).join('');
             safeSet('log-global', logsGlobal, true);
             
