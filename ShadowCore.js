@@ -207,7 +207,7 @@ class ShadowCore {
         const idLimpo = identificador.toLowerCase().trim();
         const dna = this._extrairDnaEspiritual(idLimpo);
         const torres = "EXARP_HCOMA_NANTA_BITOM"; 
-        return crypto.createHash('sha3-512').update(`${plataforma.toUpperCase()}::${dna}::${idLimpo}::${torres}`).digest('hex').substring(0, 40);
+        return crypto.createHash('sha512').update(`${plataforma.toUpperCase()}::${dna}::${idLimpo}::${torres}`).digest('hex').substring(0, 40);
     }
 
     _conjurarGotaDeSangue(hashAlma, vampiroSigilo, quantiaBase, localMordida) {
@@ -366,6 +366,26 @@ class ShadowCore {
         }
         this._verificarConquistas(v);
         this._salvarBancoDeDados();
+    }
+	
+	_verificarConquistas(vampiro) {
+        if (!vampiro || !vampiro.conquistas) return;
+        
+        for (let key in this.conquistas) {
+            let conquista = this.conquistas[key];
+            
+            // Se a alma ainda não obteve a conquista, mas agora cumpre os requisitos
+            if (!vampiro.conquistas.includes(conquista.id) && conquista.requisito(vampiro)) {
+                vampiro.conquistas.push(conquista.id);
+                
+                // Concede o Título Sombrio
+                if (!vampiro.titulos.includes(conquista.titulo)) {
+                    vampiro.titulos.push(conquista.titulo);
+                }
+                
+                this._registrarEvento('global', 'ASCENSÃO PROFANA', `O Abismo sussurra um novo nome. ${vampiro.nome} foi reconhecido como [${conquista.titulo}].`);
+            }
+        }
     }
 
     // ==========================================
