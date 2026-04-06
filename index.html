@@ -3,17 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SANGUINIS | O Culto Obscuro</title>
+    <title>SANGUINIS | O Pacto do Sangue</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap');
         
-        :root { --sangue: #8a0303; --sangue-claro: #ff1e2f; --bg: #030303; --panel: #0a0505; --text: #b0b0b0; --ouro: #c5a059; --xp: #5985c5;}
+        :root { --sangue: #8a0303; --sangue-claro: #ff1e2f; --bg: #030303; --panel: #0a0505; --text: #b0b0b0; --ouro: #c5a059; --xp: #5985c5; --magia: #800080;}
         
         body { background: var(--bg); color: var(--text); font-family: 'Crimson Text', serif; margin: 0; padding: 10px; font-size: 16px; background-image: radial-gradient(circle at top, #110000 0%, #000 100%);}
         
-        /* Alertas da Ordem */
+        /* THE JUICE: Animações de Sangue e Imersão */
+        .blood-splash { position: fixed; top: 0; left: 0; pointer-events: none; width: 100vw; height: 100vh; background: radial-gradient(circle, transparent 20%, rgba(138, 3, 3, 0.9) 100%); z-index: 9999; animation: splashFade 1.5s forwards; }
+        @keyframes splashFade { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.1); } }
+        
+        @keyframes pulse-vibrante { 0% { box-shadow: inset 0 0 5px rgba(255, 30, 47, 0.1); border-left-color: var(--sangue-claro); } 50% { box-shadow: inset 0 0 25px rgba(255, 30, 47, 0.4); border-left-color: #fff; } 100% { box-shadow: inset 0 0 5px rgba(255, 30, 47, 0.1); border-left-color: var(--sangue-claro); } }
+        .estado-vibrante { animation: pulse-vibrante 2s infinite; }
+        .estado-limbo { filter: grayscale(100%); opacity: 0.6; border-left-color: #333 !important; }
+        .estado-leilao { border-style: dashed !important; border-color: var(--ouro) !important; background: #110b00 !important; }
+
         .disclaimer-box { background: #1a0000; border: 1px solid #f00; color: #ffcccc; padding: 15px; font-size: 0.85em; margin-bottom: 20px; font-family: sans-serif; box-shadow: 0 0 15px rgba(255,0,0,0.3);}
         .disclaimer-box strong { font-family: 'Cinzel', serif; font-size: 1.2em; display:block; margin-bottom: 5px; color: #ff3333;}
 
@@ -40,14 +48,12 @@
         .ouro { color: var(--ouro); font-weight: bold; }
         .xp-text { color: var(--xp); font-weight: bold; }
         
-        /* Astrolábio Lunar Elegante */
         .lua-box { background: #000; border: 1px solid #333; padding: 20px; text-align: center; margin-bottom: 15px; box-shadow: inset 0 0 30px rgba(255,255,255,0.05); position: relative; overflow: hidden;}
         .lua-icone { font-size: 4rem; margin: 0; line-height: 1; text-shadow: 0 0 20px rgba(255,255,255,0.5);}
         .lua-nome { font-family: 'Cinzel', serif; font-size: 1.8em; color: #fff; text-shadow: 0 0 5px #fff; margin-bottom: 5px; margin-top: 10px;}
         .lua-buff { font-size: 0.9em; color: var(--ouro); font-style: italic; margin-top: 5px; font-weight: bold;}
         .lua-lore { font-size: 0.75em; color: #666; margin-top: 10px; line-height: 1.4; border-top: 1px dashed #222; padding-top: 10px;}
 
-        /* Cálice Pessoal e Cofre Clã */
         .calice-wrapper { position: relative; width: 120px; height: 160px; margin: 20px auto; }
         .calice-vidro { position: absolute; top:0; left:0; width: 100%; height: 100%; border: 4px solid var(--ouro); border-radius: 5px 5px 60px 60px; z-index: 10; pointer-events: none; box-shadow: inset 0 0 30px rgba(0,0,0,1); border-top: 0;}
         .calice-conteudo { position: absolute; bottom:0; left:0; width: 100%; height: 100%; border-radius: 5px 5px 60px 60px; overflow: hidden; background: #0a0000; }
@@ -76,7 +82,7 @@
 
         .chat-container { height: 300px; background: #0a0505; border: 1px solid #300; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; border-left: 2px solid var(--sangue);}
         .chat-msg { background: #111; padding: 10px; border-radius: 0; border-left: 2px solid #555; font-size: 0.95em; word-wrap: break-word;}
-        .chat-msg.ia { border-color: var(--sangue-claro); background: #2a0000; color: #ffcccc; font-style: italic;}
+        .chat-msg.ia { border-color: var(--ouro); background: #1a1000; color: #ffebcc; font-style: italic;}
         .chat-autor { font-weight: bold; color: var(--ouro); margin-right: 5px; font-family: 'Cinzel', serif;}
 
         .attr-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dashed #222;}
@@ -88,24 +94,22 @@
 </head>
 <body>
 
-    <!-- PORTÃO DA NOITE -->
     <div id="ui-login" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; font-size: 2.2rem;">A Ordem de Sangue</h2>
         
         <div class="disclaimer-box">
-            <strong>⚠️ O CÍRCULO FECHADO</strong>
-            A Porta não se abre por vontade própria. A Primeira Alma reinará se o Abismo estiver vazio. Os próximos exigem <b>Convite</b>.<br>
-            Apenas Nome e Senha são necessários para regresso.
+            <strong>⚠️ O PACTO GOÉTICO</strong>
+            A Porta não se abre por vontade mundana. O Primeiro a entrar assume o Manto Ancestral. Os restantes exigem <b>Convite</b> para misturar a aura com a Cifra Enociana.<br>
+            Apenas Nome e Senha são necessários para o regresso.
         </div>
 
         <div id="msg-erro-login" style="color: var(--sangue-claro); text-align: center; font-weight: bold; margin: 10px 0;"></div>
         <p class="ouro" style="text-align: center; font-style: italic;" id="tg-name">[Lendo Fio do Destino...]</p>
         <input type="text" id="in-nome" placeholder="O Teu Nome Oculto">
         <input type="password" id="in-senha" placeholder="A Tua Palavra-Passe Sagrada">
-        <button onclick="auth()" id="btn-auth">Assinar Pacto / Entrar</button>
+        <button onclick="auth()" id="btn-auth">Fundir o Sangue (Assinar Pacto)</button>
     </div>
 
-    <!-- O ESPELHO NEGRO (HUD Principal) -->
     <div id="ui-main" class="oculto">
         <div class="card" style="padding: 10px 15px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
@@ -135,7 +139,6 @@
             <button onclick="nav('banco', this)">Cálice</button>
         </div>
 
-        <!-- ABA: ASTROLÁBIO LUNAR -->
         <div id="aba-astrolabio" class="aba oculto">
             <div class="card">
                 <h3 style="text-align: center;">O Firmamento Hermético</h3>
@@ -155,7 +158,6 @@
             </div>
         </div>
 
-        <!-- ABA: O GRIMÓRIO (Perfil, Atributos e Inventário) -->
         <div id="aba-perfil" class="aba oculto">
             <div class="card">
                 <h3>A Identidade</h3>
@@ -188,13 +190,16 @@
             </div>
 
             <div class="card">
-                <h3>O Convite de Caim</h3>
+                <h3>O Convite Universal (Link Físico)</h3>
+                <button class="btn-magick" onclick="gerarConviteUniversal()">Partilhar Link Universal (Qualquer Rede)</button>
+                <p id="invite-status" style="text-align: center; color: var(--ouro); font-size: 0.85em; margin-top:10px;"></p>
+                <div style="border-top: 1px dashed #333; margin: 15px 0;"></div>
+                <h3>Convite Direto (Telegram)</h3>
                 <input type="text" id="target-telegram" placeholder="@username do Telegram a Convidar">
-                <button class="btn-magick" onclick="gerarConviteBot()">Sussurrar O Abraço</button>
+                <button class="btn-magick" onclick="gerarConviteBot()">Sussurrar O Abraço via Bot</button>
             </div>
         </div>
 
-        <!-- ABA: A TEIA MORTAL (Redes Sociais / Caça) -->
         <div id="aba-caca" class="aba">
             <div class="card">
                 <h3>A Gematria (Invocação do Mortal)</h3>
@@ -220,17 +225,14 @@
                 <div id="doc-aura" style="font-size: 0.85em; color: #aaa; font-style: italic; border-left: 2px solid var(--sangue-claro); padding-left: 10px; margin-bottom: 15px; background: #110000; padding: 10px;"></div>
                 <div id="doc-status-extra" style="font-size: 0.85em; color: purple; margin-bottom: 10px; font-weight: bold;"></div>
                 <select id="local-mordida">
-    <option value="pescoco">Garganta (Alto Dano | 25% Risco Falha)</option>
-    <option value="arteria">Artéria (Massivo | 45% Risco Falha)</option>
-    <option value="pulso" selected>Pulso de Prata (Lento e Seguro)</option>
-    <option value="rito_frio" style="color:var(--ouro)">Rito Frio (Directo p/ Cálice, Danifica pouco a Presa)</option>
-    
-    <!-- NOVAS INTERAÇÕES -->
-    <option value="caricia" style="color:#ffb6c1; font-weight:bold;">Carícia Maléfica (Apenas Saborear a Veia | 0% Risco de Choque)</option>
-    <option value="purificar" style="color:#00ffff; font-weight:bold;">Purificação Sombria (Gaste 200 Gts de TI para Curar +1000 HP da Presa)</option>
-    
-    <option value="extorquir" style="color:purple">Hipnose Oculta (Rouba Influência em vez de Sangue)</option>
-</select>
+                    <option value="pescoco">Garganta (Alto Dano | 25% Risco Falha)</option>
+                    <option value="arteria">Artéria (Massivo | 45% Risco Falha)</option>
+                    <option value="pulso" selected>Pulso de Prata (Lento e Seguro)</option>
+                    <option value="rito_frio" style="color:var(--ouro)">Rito Frio (Directo p/ Cálice, Danifica pouco a Presa)</option>
+                    <option value="caricia" style="color:#ffb6c1; font-weight:bold;">Carícia Maléfica (Saborear a Veia | 0% Choque)</option>
+                    <option value="purificar" style="color:#00ffff; font-weight:bold;">Purificação Sombria (-200 Gts. Cura +1000 HP da Presa)</option>
+                    <option value="extorquir" style="color:purple">Hipnose Oculta (Rouba Influência em vez de Sangue)</option>
+                </select>
                 <div class="grid-2">
                     <button id="btn-drenar" onclick="drenarAtual()">Executar Acto</button>
                     <button id="btn-maldicao" onclick="amaldicoarPresa()" style="border-color: purple; color: #f0f; background: transparent;" title="800 Gts">Cravar Domínio</button>
@@ -248,7 +250,6 @@
             </div>
         </div>
 
-        <!-- ABA: COMBATE (PvP) -->
         <div id="aba-pvp" class="aba oculto">
             <div class="card">
                 <h3>O Duelo de Sombras (PvP)</h3>
@@ -267,7 +268,6 @@
             </div>
         </div>
 
-        <!-- ABA: LEILAO E CHAT -->
         <div id="aba-leilao" class="aba oculto">
             <div class="card">
                 <h3>A Feira das Almas</h3>
@@ -308,7 +308,6 @@
             </div>
         </div>
 
-        <!-- ABA: MAGIA E ALQUIMIA -->
         <div id="aba-magia" class="aba oculto">
             <div class="card">
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; text-align: center; margin-bottom: 15px;">
@@ -316,20 +315,21 @@
                     <div style="background: #000; border: 1px solid var(--ouro); padding: 8px;">Cinzas<br><span id="inv-cinzas" style="font-size: 1.6em; color: var(--sangue-claro);">0</span></div>
                     <div style="background: #000; border: 1px solid var(--ouro); padding: 8px;">Vitae<br><span id="inv-vitae" style="font-size: 1.6em; color: var(--sangue-claro);">0</span></div>
                 </div>
-                <h3>A Forja Oculta</h3>
-                <select id="lista-alquimia"></select>
-                <button class="btn-magick" onclick="forjarAlquimia()">Forjar Item</button>
+                <h3>O Caldeirão Alquímico</h3>
+                <select id="lista-alquimia" style="height: auto; padding: 15px;"></select>
+                <button class="btn-magick" onclick="forjarAlquimia()">Sintetizar no Caldeirão</button>
+                <div id="craft-result" style="margin-top: 10px; color: var(--ouro); font-style: italic;"></div>
             </div>
             <div class="card">
-                <h3>A Chave Menor (Rituais)</h3>
-                <select id="lista-magia" style="border-color: var(--sangue);"></select>
-                <select id="lista-alvos-magia"></select>
-                <button class="btn-magick" onclick="conjurarMagia()">Proferir as Sílabas</button>
+                <h3>Magia Alta (Rituais)</h3>
+                <p style="font-size: 0.8em; color: #888; margin-bottom: 10px;">Exige Fúria e Gts de Sangue. A Lua Minguante redobra os efeitos.</p>
+                <select id="lista-magia" style="border-color: var(--sangue); padding: 15px;"></select>
+                <select id="lista-alvos-magia" style="margin-top: 10px;"></select>
+                <button class="btn-magick" onclick="conjurarMagia()">Proferir as Sílabas de Poder</button>
                 <div id="magia-result" style="margin-top: 10px; color: var(--ouro); font-style: italic;"></div>
             </div>
         </div>
         
-        <!-- ABA: SANTUÁRIO (CLÃ) -->
         <div id="aba-clan" class="aba oculto">
             <div class="card" id="ui-no-clan">
                 <h3 style="text-align: center;">Fundar um Santuário (Clã)</h3>
@@ -341,12 +341,12 @@
             <div class="card oculto" id="ui-in-clan">
                 <h3 style="text-align: center;">Santuário: <span id="ui-clan-nome" class="destaque"></span></h3>
                 <div class="grid-2" style="margin-bottom: 10px; text-align: center;">
-                    <div class="perfil-stat" style="font-size:0.8em;">Líder<br><span id="ui-clan-lider" style="font-size:1em; color:#fff;"></span></div>
-                    <div class="perfil-stat" style="font-size:0.8em;">Membros<br><span id="ui-clan-membros" style="font-size:1em;">0</span></div>
+                    <div class="perfil-stat" style="font-size:0.8em;">Hierofante<br><span id="ui-clan-lider" style="font-size:1em; color:#fff;"></span></div>
+                    <div class="perfil-stat" style="font-size:0.8em;">Acólitos<br><span id="ui-clan-membros" style="font-size:1em;">0</span></div>
                 </div>
                 
-                <h3 style="text-align: center; margin-top: 20px;">Cofre Sanguíneo do Clã</h3>
-                <p style="text-align: center; font-style: italic; font-size:0.85em; color: #888;">O Sangue partilhado rende 1% ao minuto. Alimenta a glória do teu Clã.</p>
+                <h3 style="text-align: center; margin-top: 20px;">Cofre Sanguíneo</h3>
+                <p style="text-align: center; font-style: italic; font-size:0.85em; color: #888;">A herança comum floresce a 1% ao minuto na escuridão.</p>
                 <h2 style="text-align: center; font-family: 'Cinzel', serif;"><span id="ui-clan-cofre">0</span> Gts</h2>
                 
                 <div class="grid-2" style="margin-top: 15px;">
@@ -359,11 +359,10 @@
             </div>
         </div>
 
-        <!-- ABA: O CÁLICE PESSOAL -->
         <div id="aba-banco" class="aba oculto">
             <div class="card">
-                <h3 style="text-align: center;">O Cálice Pessoal</h3>
-                <p style="text-align: center; font-style: italic; font-size:0.85em; color: #888;">O Sangue repousado no Cálice rende 2% de juros da Escuridão.</p>
+                <h3 style="text-align: center;">O Cálice de Cristal Negro</h3>
+                <p style="text-align: center; font-style: italic; font-size:0.85em; color: #888;">O Sangue aqui selado atrai a magia negra, rendendo 2% passivamente.</p>
                 <div class="calice-wrapper">
                     <div class="calice-vidro"></div>
                     <div class="calice-conteudo"><div class="liquido-fill" id="calice-fill"><div class="liquido-wave"></div></div></div>
@@ -400,6 +399,14 @@
         const el = document.getElementById(id);
         if(el) { if(isHTML) el.innerHTML = val; else el.innerText = val; }
     }
+    
+    // A MAGIA DO SUCO (JUICE)
+    function jorrarSangue() {
+        const splash = document.createElement('div');
+        splash.className = 'blood-splash';
+        document.body.appendChild(splash);
+        setTimeout(() => splash.remove(), 1500);
+    }
 
     function nav(abaId, btn) {
         document.querySelectorAll('.aba').forEach(el => el.classList.add('oculto'));
@@ -416,10 +423,12 @@
         const senha = document.getElementById('in-senha').value;
         if (!nome || !senha) { safeSet('msg-erro-login', "O Rito pede Nome Sombrio e Palavra-Passe."); return; }
 
-        const inviteCode = tg.initDataUnsafe?.start_param || new URLSearchParams(window.location.search).get('invite');
+        // MISTÉRIO RESOLVIDO: O Convite Universal lê o ID tanto do Telegram como do Link Web Normal
+        const urlParams = new URLSearchParams(window.location.search);
+        const inviteCode = tg.initDataUnsafe?.start_param || urlParams.get('invite');
         
         document.getElementById('btn-auth').style.display = 'none';
-        safeSet('msg-erro-login', "A Recitar Cânticos de Invocação...");
+        safeSet('msg-erro-login', "A Recitar Cânticos de Goécia...");
 
         try {
             const res = await fetch('/api/auth', {
@@ -437,18 +446,19 @@
             meuVampiro = dados;
             document.getElementById('ui-login').classList.add('oculto');
             document.getElementById('ui-main').classList.remove('oculto');
+            jorrarSangue();
             
             socket.emit('entrar_chat', { idVampiro: meuVampiro.id, clan: meuVampiro.clan });
             syncUI(); carregarMercado(); 
         } catch (e) {
-            safeSet('msg-erro-login', "O Portão não cedeu à Magia.");
+            safeSet('msg-erro-login', "O Portão enrijeceu. A magia falhou.");
             document.getElementById('btn-auth').style.display = 'block';
         }
     }
 
     function syncUI() {
         if(!meuVampiro) return;
-        if(meuVampiro.estado === 'Banido') return document.body.innerHTML = "<div style='display:flex; justify-content:center; align-items:center; height:100vh;'><h1 style='color:red; text-align:center;'>A TUA ALMA FOI RECLAMADA PELO ABISMO.</h1></div>";
+        if(meuVampiro.estado === 'Banido') return document.body.innerHTML = "<div style='display:flex; justify-content:center; align-items:center; height:100vh;'><h1 style='color:red; text-align:center;'>A TUA ALMA FOI DEVORADA PELO ABISMO.<br>O TEU SANGUE SECRETOU.</h1></div>";
         
         safeSet('ui-meu-nome', meuVampiro.nome);
         safeSet('ui-titulo', meuVampiro.tituloAtual);
@@ -457,7 +467,6 @@
         safeSet('ui-acao', meuVampiro.pontosAcao);
         safeSet('ui-max-acao', meuVampiro.maxAcao);
         safeSet('ui-nivel', meuVampiro.nivel);
-        safeSet('ui-xp', meuVampiro.xp);
         safeSet('ui-xpprox', meuVampiro.xpProx);
         safeSet('ui-influencia', meuVampiro.influencia);
         
@@ -493,12 +502,12 @@
         safeSet('eq-amuleto', eq.amuleto ? `${eq.amuleto.nome}` : 'Aura Vazia (Sem Amuleto)');
 
         if (meuVampiro.bolsa.length === 0) {
-            safeSet('lista-bolsa', "<p style='color:#555;font-size:0.8em;text-align:center;'>A tua bolsa tem apenas teias de aranha.</p>", true);
+            safeSet('lista-bolsa', "<p style='color:#555;font-size:0.8em;text-align:center;'>A tua caixa está oca.</p>", true);
         } else {
             const htmlBolsa = meuVampiro.bolsa.map(i => `
                 <div style="border: 1px solid #333; padding: 10px; margin-bottom: 5px; background: #050505;">
                     <strong style="color:var(--ouro);">${i.nome}</strong> <span style="font-size:0.7em;color:#888;">[${i.raridade}]</span><br>
-                    <button class="btn-magick" onclick="equiparItem('${i.id}')" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto;">Equipar</button>
+                    <button class="btn-magick" onclick="equiparItem('${i.id}')" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto;">Assimilar Artefacto</button>
                 </div>
             `).join('');
             safeSet('lista-bolsa', htmlBolsa, true);
@@ -529,7 +538,7 @@
     async function uparAtr(nome) {
         try {
             const res = await fetch('/api/atributos/distribuir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, atributo: nome }) });
-            const dados = await res.json(); if(dados.erro) alert(dados.erro); syncStatus();
+            const dados = await res.json(); if(dados.erro) alert(dados.erro); else jorrarSangue(); syncStatus();
         } catch(e) { }
     }
 
@@ -554,8 +563,9 @@
         try {
             const res = await fetch('/api/mercado'); const dados = await res.json();
             const htmlMercado = dados.mortais.map(m => {
-                let label = m.estado === 'Limbo' ? 'CRIPTA' : (m.estado === 'No Leilao' ? 'TRANCADO' : m.hp);
-                return `<div class="item-mercado" onclick="abrirPresaMercado('${m.hash}')">
+                let label = m.estado === 'Limbo' ? 'CADÁVER' : (m.estado === 'No Leilao' ? 'SELADO' : `${m.hp} HP`);
+                let classEstado = m.estado === 'Vibrante' ? 'estado-vibrante' : (m.estado === 'Limbo' ? 'estado-limbo' : 'estado-leilao');
+                return `<div class="item-mercado ${classEstado}" onclick="abrirPresaMercado('${m.hash}')">
                     <div><strong style="color:var(--ouro);">${m.id}</strong> <br><span style="font-size: 0.75em; color: #888;">[${m.plataforma.toUpperCase()}]</span></div>
                     <div style="text-align: right;"><span class="${m.estado==='Vibrante'?'destaque':''}">${label}</span></div>
                 </div>`;
@@ -588,11 +598,11 @@
             safeSet('doc-hp', m.estado === 'Limbo' ? 0 : m.hp);
             safeSet('doc-qualidade', m.qualidade);
             safeSet('doc-aura', m.leituraAura);
-            safeSet('doc-status-extra', m.donoSelo ? `⚠️ POSSUÍDO POR: ${m.donoSelo}` : '🔓 ALVO LIVRE');
+            safeSet('doc-status-extra', m.donoSelo ? `⚠️ ESCRAVO DE: ${m.donoSelo}` : '🔓 ALMA LIVRE');
             
             const btn = document.getElementById('btn-drenar');
             if(btn) {
-                if(m.estado === 'Limbo' || m.estado === 'No Leilao') { btn.innerText = "AURA BLOQUEADA"; btn.disabled = true; } 
+                if(m.estado === 'Limbo' || m.estado === 'No Leilao') { btn.innerText = "SANGUE INACESSÍVEL"; btn.disabled = true; } 
                 else { btn.innerText = "EXECUTAR ACÇÃO"; btn.disabled = false; }
             }
             if(elDoc) elDoc.scrollIntoView({behavior: "smooth"});
@@ -601,7 +611,7 @@
 
     async function mapearNovoAlvo() {
         const p = document.getElementById('osint-plat').value, i = document.getElementById('osint-target').value;
-        document.getElementById('osint-target').value = "O Olho Lê...";
+        document.getElementById('osint-target').value = "Invocando o Olho Astral...";
         try {
             const res = await fetch('/api/caca/mapear', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: meuVampiro.id, plataforma: p, identificador: i }) });
             const dados = await res.json();
@@ -621,6 +631,7 @@
             const hDiv = document.getElementById('doc-hist');
             if(hDiv) hDiv.innerHTML = `<div>- [${new Date().toLocaleTimeString()}] ${dados.relato}</div>` + hDiv.innerHTML;
             
+            if(dados.roubo > 0) jorrarSangue();
             syncStatus(); abrirPresaMercado(hashAlvoAtual); 
         } catch(e) { }
     }
@@ -636,7 +647,7 @@
     function attVendaInput() {
         const t = document.getElementById('venda-tipo').value;
         const q = document.getElementById('venda-quantia');
-        if(q) q.placeholder = t === 'mortal' ? "Sigilo da Alma" : "Quantidade Numérica";
+        if(q) q.placeholder = t === 'mortal' ? "Sigilo da Alma (Hash)" : "Quantidade Numérica";
     }
 
     async function carregarLeilao() {
@@ -645,12 +656,12 @@
             const htmlLeilao = dados.map(a => `
                 <div class="item-leilao">
                     <div>
-                        <strong style="color:#fff; font-family: 'Cinzel', serif;">${a.tipo === 'mortal' ? 'Selo de: ' + a.nomeMortal : a.quantia + 'x ' + a.tipo.toUpperCase()}</strong><br>
-                        <span style="font-size:0.75em; color:#888;">Por: ${a.vendedorNome}</span>
+                        <strong style="color:#fff; font-family: 'Cinzel', serif;">${a.tipo === 'mortal' ? 'Selo: ' + a.nomeMortal : a.quantia + 'x ' + a.tipo.toUpperCase()}</strong><br>
+                        <span style="font-size:0.75em; color:#888;">Escrito por: ${a.vendedorNome}</span>
                     </div>
                     <div style="text-align: right;">
                         <span class="destaque" style="font-size:1.2em;">${a.preco} Gts</span><br>
-                        <button onclick="comprarLeilao(${a.id})" class="btn-magick" style="padding: 5px; font-size:0.7em; margin-top:5px; width:auto;">Reivindicar Pacto</button>
+                        <button onclick="comprarLeilao(${a.id})" class="btn-magick" style="padding: 5px; font-size:0.7em; margin-top:5px; width:auto;">Sedar Trato</button>
                     </div>
                 </div>
             `).join('');
@@ -677,7 +688,9 @@
         const defId = document.getElementById('lista-alvos-pvp').value;
         try {
             const res = await fetch('/api/pvp/tatico', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ atacanteId: meuVampiro.id, defensorId: defId, postura }) });
-            const dados = await res.json(); safeSet('pvp-result', dados.erro || dados.relato); syncStatus();
+            const dados = await res.json(); safeSet('pvp-result', dados.erro || dados.relato); 
+            if(!dados.erro) jorrarSangue();
+            syncStatus();
         } catch(e){}
     }
 
@@ -685,7 +698,9 @@
         const m = document.getElementById('lista-alquimia').value;
         try {
             const res = await fetch('/api/alquimia/forjar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, receitaId: m }) });
-            const dados = await res.json(); safeSet('craft-result', dados.erro || dados.relato); syncStatus();
+            const dados = await res.json(); safeSet('craft-result', dados.erro || dados.relato); 
+            if(!dados.erro) jorrarSangue();
+            syncStatus();
         } catch(e){}
     }
 
@@ -693,7 +708,9 @@
         const m = document.getElementById('lista-magia').value, a = document.getElementById('lista-alvos-magia').value;
         try {
             const res = await fetch('/api/magia/conjurar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ atacanteId: meuVampiro.id, ritualId: m, alvoId: a }) });
-            const dados = await res.json(); safeSet('magia-result', dados.erro || dados.relato); syncStatus();
+            const dados = await res.json(); safeSet('magia-result', dados.erro || dados.relato); 
+            if(!dados.erro) jorrarSangue();
+            syncStatus();
         } catch(e){}
     }
 
@@ -729,16 +746,24 @@
         } catch(e){}
     }
 
+    // CORREÇÃO MESTRA: Forja e Altar
     async function carregarSocial() {
         try {
             const res = await fetch('/api/social/' + meuVampiro.id); const dados = await res.json();
             const opts = dados.alvos.map(a => `<option value="${a.id}">[${a.titulo || 'Mortal'}] ${a.nome} (Grau ${a.nivel})</option>`).join('');
             safeSet('lista-alvos-pvp', opts, true); safeSet('chat-alvo-privado', opts, true); safeSet('lista-alvos-magia', opts, true);
             
-            const htmlMagia = Object.keys(dados.grimorio).map(k => meuVampiro.poderesDesbloqueados.includes(k) ? `<option value="${k}">${dados.grimorio[k].nome} [Exige ${dados.grimorio[k].custoSangue} Gts]</option>` : '').join('');
+            // Corrige a renderização dos Rituais
+            const htmlMagia = Object.keys(dados.grimorio).map(k => meuVampiro.poderesDesbloqueados.includes(k) 
+                ? `<option value="${k}">${dados.grimorio[k].nome} [Custo: ${dados.grimorio[k].custoSangue} Gts / ${dados.grimorio[k].custoAcao} Fúria]</option>` 
+                : '').join('');
             safeSet('lista-magia', htmlMagia, true);
             
-            const htmlAlquimia = Object.keys(dados.alquimia).map(k => `<option value="${k}">${dados.alquimia[k].nome}</option>`).join('');
+            // Corrige a renderização das Poções/Forja
+            const htmlAlquimia = Object.keys(dados.alquimia).map(k => {
+                let req = dados.alquimia[k].custo;
+                return `<option value="${k}">${dados.alquimia[k].nome} [Custo: ${req.gts} Gts | ${req.anima||0} Anima | ${req.cinzas||0} Cinzas | ${req.vitae||0} Vitae]</option>`;
+            }).join('');
             safeSet('lista-alquimia', htmlAlquimia, true);
         } catch(e){}
     }
@@ -757,13 +782,20 @@
     }
 
     socket.on('nova_mensagem', (dados) => {
-        const box = document.getElementById('chat-box');
-        if(!box) return;
+        const box = document.getElementById('chat-box'); if(!box) return;
         let cssClass = dados.canal;
         if(dados.autor.includes('ORÁCULO') || dados.autor.includes('ABISSAL')) cssClass = 'ia';
         box.innerHTML += `<div class="chat-msg ${cssClass}"><span class="chat-autor">${dados.autor}:</span>${dados.texto} <span class="chat-time">${dados.hora}</span></div>`;
         box.scrollTop = box.scrollHeight;
     });
+
+    // O CONVITE UNIVERSAL FORA DO TELEGRAM
+    function gerarConviteUniversal() {
+        const webLink = `${window.location.origin}/?invite=${meuVampiro.id}`;
+        navigator.clipboard.writeText(webLink).then(() => {
+            safeSet('invite-status', `Link Mágico copiado para o ClipBoard:\n${webLink}`);
+        });
+    }
 
     async function gerarConviteBot() {
         const tgt = document.getElementById('target-telegram').value;

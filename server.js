@@ -83,7 +83,6 @@ async function inicializarServidor() {
     server.listen(3000, () => console.log('🩸 O Portão abriu-se na porta 3000.'));
 }
 
-// Inicia o servidor apenas após plugar no Atlas
 inicializarServidor();
 
 // ==========================================
@@ -95,12 +94,9 @@ app.post('/api/auth', (req, res) => {
     try {
         const { tgId, tgUsername, nomeSombrio, senha, inviteCode } = req.body;
         
-        // Validação de Gênese: O primeiro usuário a entrar torna-se o Ancestral
         const isFirstVampire = Object.keys(core.vampiros).length === 0;
 
-        if (!tgId) {
-            return res.status(400).json({erro: "O Selo do Telegram é exigido para transmutação."});
-        }
+        if (!tgId) return res.status(400).json({erro: "O Selo Astral (ID) é exigido para transmutação."});
         
         const result = core.despertarViaTelegram(
             tgId || Date.now(),
@@ -110,9 +106,7 @@ app.post('/api/auth', (req, res) => {
             inviteCode
         );
 
-        if (result.recusado) {
-            return res.status(403).json({erro: result.erro});
-        }
+        if (result.recusado) return res.status(403).json({erro: result.erro});
 
         if (result.vampiro.geracao === 1 && isFirstVampire) {
             result.vampiro.sangue = 10000;
@@ -256,10 +250,9 @@ io.on('connection', (socket) => {
         // ====== INTEGRAÇÃO DA IA COM O CHAT ======
         const txt = dados.texto.toLowerCase();
         if (txt.includes('oráculo') || txt.includes('abismo') || txt.includes('mestre') || txt.includes('trevas') || txt.includes('ia')) {
-            // Invoca a IA para gerar uma resposta direcionada
             core.oraculo.conversarNoChat(dados.remetenteNome, dados.texto).then(respostaIA => {
                 const payloadIA = { autor: `👁️ MENTE ABISSAL`, texto: respostaIA, hora: new Date().toLocaleTimeString() };
-                setTimeout(() => { // Adiciona um pequeno delay dramático para a IA responder
+                setTimeout(() => { 
                     if (dados.canal === 'global') io.to('global').emit('nova_mensagem', { canal: 'global', ...payloadIA });
                     else if (dados.canal === 'clan') io.to(`clan_${dados.clanNome}`).emit('nova_mensagem', { canal: 'clan', ...payloadIA });
                 }, 1500);
