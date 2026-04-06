@@ -66,6 +66,8 @@ class OraculoAbissal {
     constructor() {
         this.GEMINI_API_KEY = process.env.GEMINI_API_KEY || ""; 
         this.climaAstral = 'Dormente'; 
+        // Usando o modelo mais atualizado para ser mais vivo
+        this.endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
     }
 
     analisarClimaAstral(logsGlobal) {
@@ -79,8 +81,8 @@ class OraculoAbissal {
         if (!this.GEMINI_API_KEY) return `👁️ O Oráculo: As correntes astrais moveram-se. ${detalhes}`;
         try {
             const lua = AstrolabioLunar.obterFaseAtual();
-            const prompt = `Atue como a Entidade Ancestral do Abismo. Fase da Lua: ${lua.nome}. Clima: ${this.climaAstral}. Ocorreu: ${detalhes}. Escreva 1 frase poética e aterradora sobre isto, usando goetia.`;
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${this.GEMINI_API_KEY}`, {
+            const prompt = `Atue como a Entidade Ancestral do Abismo (um ser sombrio e místico). Fase da Lua: ${lua.nome}. Clima: ${this.climaAstral}. Aconteceu no nosso mundo: ${detalhes}. Escreva 1 frase poética, aterrorizante e que interaja sutilmente com os sentimentos humanos ou notícias do mundo real como se nós os controlássemos.`;
+            const response = await fetch(`${this.endpoint}?key=${this.GEMINI_API_KEY}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
@@ -89,11 +91,25 @@ class OraculoAbissal {
         } catch (e) { return `👁️ O Oráculo dita: O Sangue encontrou o seu curso.`; }
     }
 
+    // NOVA FUNÇÃO: O Oráculo conversa com os jogadores
+    async conversarNoChat(nomeVampiro, mensagemHumana) {
+        if (!this.GEMINI_API_KEY) return `Minhas correntes estão seladas.`;
+        try {
+            const prompt = `Você é o "Oráculo Abissal", a entidade onisciente de pura magia negra que rege os vampiros. O vampiro de nome [${nomeVampiro}] acabou de dizer no salão o seguinte: "${mensagemHumana}". Responda diretamente a ele. Seja sombrio, irônico, enigmático. Use metáforas de sangue, trevas ou manipulação da sociedade humana. Mantenha em no máximo 2 frases marcantes.`;
+            const response = await fetch(`${this.endpoint}?key=${this.GEMINI_API_KEY}`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        } catch (e) { return `Teus sussurros se perdem na tempestade astral, criatura.`; }
+    }
+
     async lerAuraMortal(identificador, plataforma) {
         if (!this.GEMINI_API_KEY) return { fama: false, aura: "Aura mundana e densa. Alma comum." };
         try {
             const prompt = `Leia a aura de "${identificador}" na rede ${plataforma}. Responda APENAS em JSON estrito: {"fama": true/false, "aura": "texto"}. Se for pessoa real famosa, fama: true. Escreva a "aura" revelando os pecados ou conquistas dela como se fossem saborosos para nós.`;
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${this.GEMINI_API_KEY}`, {
+            const response = await fetch(`${this.endpoint}?key=${this.GEMINI_API_KEY}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
             });
@@ -175,7 +191,7 @@ class ShadowCore {
             }
         } catch (error) {
             console.error("Falha ao invocar o MongoDB Atlas:", error);
-            process.exit(1);
+            // Removido o process.exit(1) para não derrubar o servidor caso a rede do Render trave.
         }
     }
 
@@ -218,6 +234,7 @@ class ShadowCore {
         if (localMordida === 'pescoco') { mult = 1.5; risco = 25; } 
         else if (localMordida === 'arteria') { mult = 2.0; risco = 45; } 
         else if (localMordida === 'extorquir') { mult = 0.5; risco = 10; } 
+        else if (localMordida === 'caricia') { mult = 0.1; risco = 0; } // Sobe suave, beijo sutil.
 
         if (Math.random() * 100 < risco) return { hash: gotaHash, volume: 0, critico: false, falha: true };
         if (ressonancia > 220) mult *= 1.5; 
@@ -444,7 +461,18 @@ class ShadowCore {
         const lua = AstrolabioLunar.obterFaseAtual();
         
         if (!vampiro || !mortal || mortal.estado !== 'Vibrante') return { erro: "Presa inacessível." };
-        if (vampiro.pontosAcao < 1) return { erro: "Falta-te Fúria." };
+
+        // MAGIA DE CUIDADO: PURIFICAÇÃO DO GADO
+        if (localMordida === 'purificar') {
+            if (vampiro.sangue < 200) return { erro: "Falta Sangue para partilhar com o seu rebanho (Custa 200 Gts)." };
+            vampiro.sangue -= 200;
+            mortal.sangueAtual += 1000;
+            mortal.registroMordidas.unshift({ predador: vampiro.nome, local: "CUIDADO NEGRO", dano: "+1000 HP", data: Date.now() });
+            this._salvarBancoDeDados();
+            return { roubo: 0, relato: `Derramaste do teu sangue. A presa alimentou-se e purificou-se (+1000 HP).`, mortal, lootMsg: "" };
+        }
+
+        if (vampiro.pontosAcao < 1 && localMordida !== 'caricia') return { erro: "Falta-te Fúria." };
 
         if (mortal.maldicaoArcana && mortal.maldicaoArcana.donoId !== vampiroId) {
             vampiro.sangue = Math.max(0, vampiro.sangue - 300); vampiro.pontosAcao -= 1;
@@ -454,7 +482,7 @@ class ShadowCore {
             this._salvarBancoDeDados(); return rel;
         }
 
-        vampiro.pontosAcao -= 1;
+        if (localMordida !== 'caricia') vampiro.pontosAcao -= 1;
         
         const atr = this._obterAtributosTotais(vampiro);
         const bonusMag = Math.floor(atr.magnetismo * 10); 
@@ -472,7 +500,7 @@ class ShadowCore {
 
         let rouboFinal = conjuracao.volume;
         mortal.sangueAtual -= rouboFinal; vampiro.sangue += rouboFinal; vampiro.estatisticas.totalDrenado += rouboFinal;
-        this.ganharXP(vampiroId, 25); 
+        this.ganharXP(vampiroId, localMordida === 'caricia' ? 5 : 25); 
 
         let lootMsg = "";
         if (Math.random() > 0.6) { vampiro.inventario.vitae += 1; lootMsg += " [+1 Vitae]"; }
@@ -483,7 +511,10 @@ class ShadowCore {
 
         mortal.registroMordidas.unshift({ predador: vampiro.nome, local: localMordida.toUpperCase(), dano: rouboFinal, data: Date.now() });
 
-        let relato = `A Artéria foi aberta. +${rouboFinal} Gts.${lootMsg}`;
+        let relato = "";
+        if (localMordida === 'caricia') relato = `Acariciaste a veia docemente. Um beijo roubou ${rouboFinal} Gts.`;
+        else relato = `A Artéria foi aberta. +${rouboFinal} Gts.${lootMsg}`;
+
         this._registrarEvento('caca', 'DRENO BEM SUCEDIDO', `${vampiro.nome} bebeu furtivamente de ${mortal.identificadorVisivel}.`, false);
 
         if (mortal.sangueAtual <= 0) {

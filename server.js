@@ -72,7 +72,9 @@ async function inicializarServidor() {
             };
 
         } catch (error) {
-            console.error("CRÍTICO: Falha na conexão MongoDB Atlas:", error);
+            console.error("\n❌ CRÍTICO: Falha na conexão MongoDB Atlas! Erro de IP/Firewall.");
+            console.error("👉 VÁ NO SEU MONGODB ATLAS -> NETWORK ACCESS -> ADICIONE O IP: 0.0.0.0/0");
+            console.error("Caso contrário o jogo não salvará. Erro técnico: ", error.message, "\n");
         }
     } else {
         console.warn("⚠️ MONGO_URI não definida. A usar memória volátil local.");
@@ -243,11 +245,25 @@ io.on('connection', (socket) => {
 
     socket.on('mensagem_chat', (dados) => {
         const payload = { autor: `[${dados.remetenteTitulo}] ${dados.remetenteNome}`, texto: dados.texto, hora: new Date().toLocaleTimeString() };
+        
         if (dados.canal === 'global') io.to('global').emit('nova_mensagem', { canal: 'global', ...payload });
         else if (dados.canal === 'clan') io.to(`clan_${dados.clanNome}`).emit('nova_mensagem', { canal: 'clan', ...payload });
         else if (dados.canal === 'privado') {
             io.to(`priv_${dados.destinoId}`).emit('nova_mensagem', { canal: 'privado', autor: `[Telepatia de ${dados.remetenteNome}]`, texto: dados.texto, hora: payload.hora });
             socket.emit('nova_mensagem', { canal: 'privado', autor: `[Sussurro na Mente de ${dados.destinoNome}]`, texto: dados.texto, hora: payload.hora });
+        }
+
+        // ====== INTEGRAÇÃO DA IA COM O CHAT ======
+        const txt = dados.texto.toLowerCase();
+        if (txt.includes('oráculo') || txt.includes('abismo') || txt.includes('mestre') || txt.includes('trevas') || txt.includes('ia')) {
+            // Invoca a IA para gerar uma resposta direcionada
+            core.oraculo.conversarNoChat(dados.remetenteNome, dados.texto).then(respostaIA => {
+                const payloadIA = { autor: `👁️ MENTE ABISSAL`, texto: respostaIA, hora: new Date().toLocaleTimeString() };
+                setTimeout(() => { // Adiciona um pequeno delay dramático para a IA responder
+                    if (dados.canal === 'global') io.to('global').emit('nova_mensagem', { canal: 'global', ...payloadIA });
+                    else if (dados.canal === 'clan') io.to(`clan_${dados.clanNome}`).emit('nova_mensagem', { canal: 'clan', ...payloadIA });
+                }, 1500);
+            });
         }
     });
 });

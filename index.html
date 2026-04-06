@@ -220,12 +220,17 @@
                 <div id="doc-aura" style="font-size: 0.85em; color: #aaa; font-style: italic; border-left: 2px solid var(--sangue-claro); padding-left: 10px; margin-bottom: 15px; background: #110000; padding: 10px;"></div>
                 <div id="doc-status-extra" style="font-size: 0.85em; color: purple; margin-bottom: 10px; font-weight: bold;"></div>
                 <select id="local-mordida">
-                    <option value="pescoco">Garganta (Alto Dano | 25% Risco Falha)</option>
-                    <option value="arteria">Artéria (Massivo | 45% Risco Falha)</option>
-                    <option value="pulso" selected>Pulso de Prata (Lento e Seguro)</option>
-                    <option value="rito_frio" style="color:var(--ouro)">Rito Frio (Directo p/ Cálice, Danifica pouco a Presa)</option>
-                    <option value="extorquir" style="color:purple">Hipnose Oculta (Rouba Influência em vez de Sangue)</option>
-                </select>
+    <option value="pescoco">Garganta (Alto Dano | 25% Risco Falha)</option>
+    <option value="arteria">Artéria (Massivo | 45% Risco Falha)</option>
+    <option value="pulso" selected>Pulso de Prata (Lento e Seguro)</option>
+    <option value="rito_frio" style="color:var(--ouro)">Rito Frio (Directo p/ Cálice, Danifica pouco a Presa)</option>
+    
+    <!-- NOVAS INTERAÇÕES -->
+    <option value="caricia" style="color:#ffb6c1; font-weight:bold;">Carícia Maléfica (Apenas Saborear a Veia | 0% Risco de Choque)</option>
+    <option value="purificar" style="color:#00ffff; font-weight:bold;">Purificação Sombria (Gaste 200 Gts de TI para Curar +1000 HP da Presa)</option>
+    
+    <option value="extorquir" style="color:purple">Hipnose Oculta (Rouba Influência em vez de Sangue)</option>
+</select>
                 <div class="grid-2">
                     <button id="btn-drenar" onclick="drenarAtual()">Executar Acto</button>
                     <button id="btn-maldicao" onclick="amaldicoarPresa()" style="border-color: purple; color: #f0f; background: transparent;" title="800 Gts">Cravar Domínio</button>
