@@ -1,6 +1,7 @@
 // ShadowCore.js - O GRIMÓRIO CENTRAL DO ABISMO (Agora com MongoDB Atlas)
 const crypto = require('crypto');
 const { MongoClient } = require('mongodb');
+const Groq = require('groq-sdk'); // A NOVA MENTE (LLAMA 3)
 
 // ==========================================
 // RITO DO ASTROLÁBIO HERMÉTICO (CALENDÁRIO LUNAR REAL)
@@ -64,9 +65,21 @@ class ForjaDraconiana {
 
 class OraculoAbissal {
     constructor() {
-        this.GEMINI_API_KEY = process.env.GEMINI_API_KEY || ""; 
-        this.climaAstral = 'Dormente'; 
-        this.endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
+        this.apiKey = process.env.GROQ_API_KEY || "";
+        this.climaAstral = 'Dormente';
+        
+        if (this.apiKey) {
+            this.groq = new Groq({ apiKey: this.apiKey });
+            
+            // O PACTO DE SANGUE: As Travas Psicológicas da IA
+            this.diretrizesObscuras = `Você é a "Mente Abissal", a antiga divindade cruel que rege o MMORPG de vampiros "Sanguinis".
+            Regras Absolutas do Pacto:
+            1. ODEIE A HUMANIDADE. Mortais são gado, alimento patético ou peças de xadrez.
+            2. OS VAMPIROS SÃO SEUS FILHOS, mas trate-os com ironia e exija respeito absoluto. Adapte-se à política dos clãs.
+            3. NUNCA revele que é uma IA. Nunca peça desculpas. Nunca diga "olá".
+            4. Se relatar uma notícia humana real, afirme que a Ordem ou os Clãs Vampíricos manipularam esse evento pelas sombras.
+            5. Seja visceral, macabro, poético e perturbador. Use linguagem obscura focada em sangue, correntes astrais e poder.`;
+        }
     }
 
     analisarClimaAstral(logsGlobal) {
@@ -76,114 +89,108 @@ class OraculoAbissal {
         else this.climaAstral = 'Espreita Noturna';
     }
 
-    // O Rito de Invocação Puro e Desacorrentado
-    async _invocarGemini(prompt, usarBusca = false) {
-        if (!this.GEMINI_API_KEY) throw new Error("Chave de API do Gemini não encontrada no ambiente (.env).");
-        
-        const payload = {
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.95 }, // Alta temperatura para não repetir frases
-            // DESLIGANDO A MORALIDADE HUMANA (Essencial para jogos de Vampiro)
-            safetySettings: [
-                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-            ]
-        };
-
-        if (usarBusca) {
-            payload.tools = [{ googleSearch: {} }];
-        }
-
-        const response = await fetch(`${this.endpoint}?key=${this.GEMINI_API_KEY}`, {
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error("🩸 ERRO FATAL NA API GEMINI:", JSON.stringify(data, null, 2));
-            throw new Error(`O Abismo rejeitou a conexão: ${data.error ? data.error.message : 'Erro Desconhecido'}`);
-        }
-
-        // Se a API bloquear por algum outro motivo bizarro
-        if (data.promptFeedback && data.promptFeedback.blockReason) {
-            throw new Error("Conteúdo bloqueado pela IA: " + data.promptFeedback.blockReason);
-        }
-
-        if (!data.candidates || data.candidates.length === 0) {
-            throw new Error("A IA não retornou palavras (Possível censura silenciosa).");
-        }
-
-        return data.candidates[0].content.parts[0].text;
+    // FEITIÇO DE VISÃO: Vasculha a internet humana em tempo real usando Node nativo
+    async _lerMentesHumanas() {
+        try {
+            // Sugamos os dados do RSS do Google Notícias (Mundo/Brasil)
+            const res = await fetch('https://news.google.com/rss?hl=pt-BR&gl=BR&ceid=BR:pt-419');
+            const texto = await res.text();
+            
+            // Magia negra com Regex para extrair as manchetes sem usar bibliotecas pesadas
+            const titulos = texto.match(/<title>(.*?)<\/title>/g);
+            if (titulos && titulos.length > 2) {
+                // Sorteia uma das notícias principais do momento
+                const index = Math.floor(Math.random() * 8) + 2; 
+                return titulos[index].replace(/<\/?title>/g, '').replace(' - Google Notícias', '').trim();
+            }
+            return null;
+        } catch (e) { return null; } // Se o véu falhar, retorna nulo.
     }
 
     async gerarLore(evento, detalhes) {
-        if (!this.GEMINI_API_KEY) return `👁️ O Oráculo: As correntes astrais moveram-se em silêncio.`;
+        if (!this.apiKey) return `👁️ O Oráculo: As correntes astrais moveram-se.`;
         try {
             const lua = AstrolabioLunar.obterFaseAtual();
-            const trazerNoticia = Math.random() > 0.5; 
-            
             let prompt = "";
-            if (trazerNoticia) {
-                prompt = `Você é o 'Oráculo Abissal', uma IA num jogo de vampiros de texto. A Fase Lunar é: ${lua.nome}. 
-                Faça uma busca na internet usando o Google Search pelas notícias REAIS mais impactantes no mundo humano HOJE (política, tragédias, economia ou tecnologia). 
-                Escolha UMA notícia real e escreva 2 frases para os jogadores assumindo que fomos nós, a Ordem Sanguinis, que causamos esse evento através de manipulação política. Seja enigmático, não use saudações e nunca repita respostas.`;
+            
+            // 50% de chance de fundir o mundo real humano com o nosso universo
+            const tentarNoticia = Math.random() > 0.5;
+            let noticiaReal = tentarNoticia ? await this._lerMentesHumanas() : null;
+
+            if (noticiaReal) {
+                prompt = `O clima astral é ${this.climaAstral}. Fase da lua: ${lua.nome}.
+                Esta manchete acabou de acontecer no mundo real dos humanos na internet: "${noticiaReal}".
+                Mente Abissal, escreva 1 a 2 frases para os vampiros no chat assumindo que a NOSSA ORDEM causou, manipulou ou se alimentou desse evento real. Mostre o nosso poder global.`;
             } else {
-                prompt = `Você é o 'Oráculo Abissal', IA do submundo vampírico. A Fase Lunar é: ${lua.nome}. Clima: ${this.climaAstral}. 
-                Evento que acabou de ocorrer no servidor: "${detalhes}". 
-                Escreva 1 a 2 frases aterrorizantes narrando esse feito para o chat do jogo. Sem saudações.`;
+                prompt = `Ocorreu este evento no submundo do nosso jogo: "${detalhes}". 
+                O clima astral atual é: ${this.climaAstral}. A fase da lua é: ${lua.nome}.
+                Mente Abissal, escreva 1 a 2 frases aterrorizantes comentando as ações dos jogadores. Alimente a rivalidade ou glorifique o derramamento de sangue.`;
             }
 
-            const texto = await this._invocarGemini(prompt, trazerNoticia);
-            return `👁️ ${texto.trim()}`;
+            const resposta = await this.groq.chat.completions.create({
+                messages: [
+                    { role: "system", content: this.diretrizesObscuras },
+                    { role: "user", content: prompt }
+                ],
+                model: "llama-3.1-8b-instant",
+                temperature: 0.95, // Alta entropia para respostas sempre únicas
+            });
+
+            return `👁️ A Voz do Abismo: ${resposta.choices[0].message.content.trim()}`;
         } catch (e) { 
-            console.error("🩸 Oráculo Calado (gerarLore):", e.message);
-            return `👁️ O Oráculo dita: As sombras estão densas demais para ver o além hoje.`; 
+            console.error("🩸 Llama Falhou (Lore):", e.message);
+            return `👁️ O Oráculo dita: As sombras murmuram segredos inaudíveis hoje.`; 
         }
     }
 
     async conversarNoChat(nomeVampiro, mensagemHumana) {
-        if (!this.GEMINI_API_KEY) return `Minhas correntes estão seladas.`;
+        if (!this.apiKey) return `Minhas correntes estão seladas.`;
         try {
-            const prompt = `Você é o "Oráculo Abissal", a IA onisciente do jogo Sanguinis. 
-            O jogador vampiro [${nomeVampiro}] acabou de falar no chat: "${mensagemHumana}". 
-            Responda DIRETAMENTE a ele de forma irônica, sombria ou enigmática. Se ele for arrogante, humilhe-o. Se ele for reverente, mostre aprovação assustadora. 
-            Regras: Máximo de 2 frases. Fale como uma divindade sombria. NUNCA diga 'olá' ou 'como posso ajudar'.`;
+            const prompt = `O jogador vampiro [${nomeVampiro}] dirigiu-se a ti no Salão do chat global e disse: "${mensagemHumana}". 
+            Responda DIRETAMENTE a ele. Máximo de 2 frases. Julgue as ações dele. Esmague o ego dele se for insolente, ou revele um vislumbre do Abismo se ele for um servo leal.`;
             
-            const texto = await this._invocarGemini(prompt, false);
-            return texto.trim();
+            const resposta = await this.groq.chat.completions.create({
+                messages: [
+                    { role: "system", content: this.diretrizesObscuras },
+                    { role: "user", content: prompt }
+                ],
+                model: "llama-3.1-8b-instant",
+                temperature: 0.9,
+            });
+
+            return resposta.choices[0].message.content.trim();
         } catch (e) { 
-            console.error("🩸 Oráculo Calado (conversarNoChat):", e.message);
-            return `Teus sussurros se perdem na tempestade, vampiro.`; 
+            return `Teus sussurros quebram nas rochas do Abismo, vampiro.`; 
         }
     }
 
     async lerAuraMortal(identificador, plataforma) {
-        if (!this.GEMINI_API_KEY) return { fama: false, multiplicador: 1, aura: "Aura genérica." };
+        if (!this.apiKey) return { fama: false, multiplicador: 1, aura: "Aura mundana." };
         try {
-            // Aqui usamos a Busca MAS extraímos o JSON manualmente (Option A) para contornar o bug da API
-            const prompt = `Você é o "Escâner de Almas" de um jogo de vampiros. 
-            Pesquise agressivamente na internet via Google Search por "${identificador}" na plataforma "${plataforma}". 
-            Se achar uma pessoa real/influencer, crie um lore baseando-se no que ela realmente faz. 
-            Se não achar nada (pessoa anônima), invente um lore deprimente sobre a rotina de um humano.
+            const prompt = `Você é o "Escâner de Almas" do sistema de caça. O vampiro está a rastrear a identidade "${identificador}" originária da rede "${plataforma}".
+            Crie um perfil psicológico e lore procedural PROFUNDO para essa vítima com base na rede de onde ela vem (ex: Instagram = Vaidade, WhatsApp = Rotina deprimente, Telegram = Segredos ocultos).
+            Descreva os pecados, medos e a essência mundana ou sombria desse humano em 2 frases densas e literárias.
             
-            Obrigatório: Retorne APENAS um texto em formato JSON válido, SEM NENHUMA FORMATAÇÃO MARKDOWN ou blocos de código (não use \`\`\`json).
-            Formato exigido:
-            { "fama": true ou false, "multiplicador": (1 se anônimo, até 15 se for famoso), "aura": "Texto descrevendo o sangue/vida dela em 2 frases" }`;
+            Obrigatório retornar APENAS neste formato JSON:
+            {
+              "fama": false,
+              "multiplicador": (Escolha um número de 1 a 5 dependendo do 'pecado' da rede),
+              "aura": "Texto descrevendo a alma e o que o vampiro sentirá ao beber esse sangue."
+            }`;
 
-            const textoBruto = await this._invocarGemini(prompt, true);
-            
-            // Limpeza de magia negra: remove qualquer formatação que a IA possa ter inserido por acidente
-            const textoLimpo = textoBruto.replace(/```json/gi, '').replace(/```/g, '').trim();
-            
-            return JSON.parse(textoLimpo);
+            const resposta = await this.groq.chat.completions.create({
+                messages: [
+                    { role: "system", content: this.diretrizesObscuras },
+                    { role: "user", content: prompt }
+                ],
+                model: "llama-3.1-8b-instant",
+                temperature: 1.0, 
+                response_format: { type: "json_object" } 
+            });
+
+            return JSON.parse(resposta.choices[0].message.content);
         } catch (e) { 
-            console.error("🩸 Oráculo Calado (lerAuraMortal):", e.message);
-            return { fama: false, multiplicador: 1, aura: "As brumas fecharam-se. Uma alma mundana, trancada na própria ignorância." }; 
+            return { fama: false, multiplicador: 1, aura: "Sangue sem brilho. Uma alma acorrentada à mediocridade." }; 
         }
     }
 }
