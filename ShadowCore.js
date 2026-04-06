@@ -67,7 +67,7 @@ class OraculoAbissal {
         this.GEMINI_API_KEY = process.env.GEMINI_API_KEY || ""; 
         this.climaAstral = 'Dormente'; 
         // Usamos v1beta para ter acesso ao Google Search Grounding e JSON nativo
-        this.endpoint = "[https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent](https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent)";
+        this.endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
     }
 
     analisarClimaAstral(logsGlobal) {
@@ -114,23 +114,23 @@ class OraculoAbissal {
         if (!this.GEMINI_API_KEY) return `👁️ O Oráculo: As correntes astrais moveram-se.`;
         try {
             const lua = AstrolabioLunar.obterFaseAtual();
-            // 50% de chance de fundir os eventos do jogo com o noticiário humano real
             const trazerNoticia = Math.random() > 0.5; 
             
             let prompt = "";
             if (trazerNoticia) {
                 prompt = `Você é o 'Oráculo Abissal', a entidade milenar de pura magia negra. A Fase Lunar é: ${lua.nome}. 
-                Faça uma busca AGORA pelas notícias mais impactantes no mundo real humano (política, tragédias, economia, fofocas de famosos). 
-                Escolha UMA notícia real de hoje e escreva 1 a 2 frases assumindo que fomos nós, a Ordem de Vampiros, que manipulamos esse evento através das sombras. Seja sombrio, poético e nunca repita a mesma narrativa.`;
+                Faça uma busca AGORA na internet usando o Google Search pelas notícias mais impactantes no mundo real humano de HOJE (política, tragédias, economia). 
+                Escolha UMA notícia real e escreva 1 a 2 frases assumindo que fomos nós, a Ordem de Vampiros, que manipulamos esse evento através das sombras. Seja sombrio, enigmático e nunca repita a mesma narrativa.`;
             } else {
                 prompt = `Você é o 'Oráculo Abissal', a entidade de pura magia negra. A Fase Lunar é: ${lua.nome}. Clima do jogo: ${this.climaAstral}. 
-                Aconteceu este evento no nosso submundo vampírico agora: "${detalhes}". 
+                Aconteceu este evento no submundo vampírico agora: "${detalhes}". 
                 Escreva 1 frase aterrorizante e poética anunciando isso para os clãs. Nunca repita frases antigas.`;
             }
 
             const texto = await this._invocarGemini(prompt, trazerNoticia, false);
             return `👁️ A Voz do Abismo: ${texto.trim()}`;
         } catch (e) { 
+            console.error("🩸 ERRO NO ORÁCULO (gerarLore):", e.message); // <--- A Mordaça Removida
             return `👁️ O Oráculo dita: O Sangue segue o seu curso silencioso hoje.`; 
         }
     }
@@ -139,37 +139,37 @@ class OraculoAbissal {
         if (!this.GEMINI_API_KEY) return `Minhas correntes estão seladas.`;
         try {
             const prompt = `Você é o "Oráculo Abissal", a entidade onisciente que rege os vampiros. 
-            O vampiro [${nomeVampiro}] acabou de dizer no salão o seguinte: "${mensagemHumana}". 
-            Responda DIRETAMENTE a ele. Seja irônico, enigmático ou cruel, dependendo da arrogância ou tom dele. 
-            Use metáforas de sangue, sombras e poder. Limite-se a 2 frases marcantes. NUNCA diga saudações humanas normais.`;
+            O vampiro [${nomeVampiro}] disse: "${mensagemHumana}". 
+            Responda DIRETAMENTE a ele. Seja irônico, cruel ou reverente dependendo da arrogância dele. 
+            Use metáforas de sangue e escuridão. Limite-se a 2 frases marcantes.`;
             
             const texto = await this._invocarGemini(prompt, false, false);
             return texto.trim();
         } catch (e) { 
+            console.error("🩸 ERRO NO ORÁCULO (conversarNoChat):", e.message);
             return `Teus sussurros se perdem na tempestade astral, criatura.`; 
         }
     }
 
     async lerAuraMortal(identificador, plataforma) {
-        if (!this.GEMINI_API_KEY) return { fama: false, multiplicador: 1, aura: "Aura mundana. Alma cega." };
+        if (!this.GEMINI_API_KEY) return { fama: false, multiplicador: 1, aura: "Aura mundana." };
         try {
             const prompt = `Você é um Escâner de Almas Obscuro. 
-            Use a busca na internet e pesquise agressivamente por "${identificador}" na rede "${plataforma}". 
-            Se encontrar uma pessoa real e for alguém conhecido/influente, crie um lore sombrio baseado nos FATOS REAIS que você achou dela. 
-            Se não achar NADA e for apenas um zé-ninguém, crie um lore procedural sério focado nos medos e pecados rotineiros de um humano comum.
+            Use a ferramenta de busca do Google para pesquisar por "${identificador}" na rede "${plataforma}". 
+            Se encontrar uma pessoa real e for alguém influente, crie um lore sombrio baseado nos FATOS REAIS que achou. 
+            Se não achar nada, crie um lore procedural focado nos medos de um humano comum.
             
-            Obrigatório retornar APENAS neste formato JSON:
+            Obrigatório retornar APENAS neste formato JSON sem marcação markdown:
             {
-                "fama": true ou false (true se achou algo na internet sobre ela, false se inventou),
-                "multiplicador": um número de 1 a 15 (1 para desconhecidos, 5 para influencers médios, 15 para celebridades globais),
-                "aura": "Texto narrativo de 2 a 3 frases descrevendo a essência dessa pessoa com base nos fatos que encontrou (ou inventou). Cite a profissão ou fatos reais dela como 'especiarias' para o banquete vampírico."
+                "fama": true,
+                "multiplicador": 5,
+                "aura": "Texto narrativo de 2 frases descrevendo a essência."
             }`;
 
-            // Passamos "true" para usar a busca no Google e "true" para forçar MimeType application/json (evita erros de parsing)
             const texto = await this._invocarGemini(prompt, true, true);
             return JSON.parse(texto);
         } catch (e) { 
-            console.error("Falha ao LER AURA:", e);
+            console.error("🩸 ERRO NO ORÁCULO (lerAuraMortal):", e.message);
             return { fama: false, multiplicador: 1, aura: "As brumas escondem a vida mortal desta presa. Sangue comum." }; 
         }
     }
