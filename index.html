@@ -407,40 +407,47 @@
     }
 
     async function auth() {
-        const nome = document.getElementById('in-nome').value;
-        const senha = document.getElementById('in-senha').value;
-        if (!nome || !senha) { safeSet('msg-erro-login', "O Rito pede Nome Sombrio e Palavra-Passe."); return; }
+    const nome = document.getElementById('in-nome').value;
+    const senha = document.getElementById('in-senha').value;
+    if (!nome || !senha) { safeSet('msg-erro-login', "O Rito pede Nome Sombrio e Palavra-Passe."); return; }
 
-        const inviteCode = tg.initDataUnsafe?.start_param || new URLSearchParams(window.location.search).get('invite');
+    // RITO DE GÊNESE: Força a chave mestra se for o primeiro acesso do dono
+    const urlParams = new URLSearchParams(window.location.search);
+    const inviteCode = tg.initDataUnsafe?.start_param || urlParams.get('invite') || 'SANGUIS_DRACONIS_666'; 
+    
+    document.getElementById('btn-auth').style.display = 'none';
+    safeSet('msg-erro-login', "A Recitar Cânticos de Invocação...");
+
+    try {
+        const res = await fetch('/api/auth', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                tgId: idAcesso, 
+                tgUsername: tgUser?.username, 
+                nomeSombrio: nome, 
+                senha, 
+                inviteCode // Enviando a chave mestra injetada acima
+            })
+        });
+        const dados = await res.json();
         
-        document.getElementById('btn-auth').style.display = 'none';
-        safeSet('msg-erro-login', "A Recitar Cânticos de Invocação...");
-
-        try {
-            const res = await fetch('/api/auth', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ tgId: idAcesso, tgUsername: tgUser?.username, nomeSombrio: nome, senha, inviteCode })
-            });
-            const dados = await res.json();
-            
-            if (dados.erro) {
-                safeSet('msg-erro-login', dados.erro);
-                document.getElementById('btn-auth').style.display = 'block';
-                return;
-            }
-
-            meuVampiro = dados;
-            document.getElementById('ui-login').classList.add('oculto');
-            document.getElementById('ui-main').classList.remove('oculto');
-            
-            socket.emit('entrar_chat', { idVampiro: meuVampiro.id, clan: meuVampiro.clan });
-            syncUI(); carregarMercado(); 
-        } catch (e) {
-            safeSet('msg-erro-login', "O Portão não cedeu à Magia.");
+        if (dados.erro) {
+            safeSet('msg-erro-login', dados.erro);
             document.getElementById('btn-auth').style.display = 'block';
+            return;
         }
-    }
 
+        meuVampiro = dados;
+        document.getElementById('ui-login').classList.add('oculto');
+        document.getElementById('ui-main').classList.remove('oculto');
+        
+        socket.emit('entrar_chat', { idVampiro: meuVampiro.id, clan: meuVampiro.clan });
+        syncUI(); carregarMercado(); 
+    } catch (e) {
+        safeSet('msg-erro-login', "O Portão não cedeu à Magia.");
+        document.getElementById('btn-auth').style.display = 'block';
+    }
+}
     function syncUI() {
         if(!meuVampiro) return;
         if(meuVampiro.estado === 'Banido') return document.body.innerHTML = "<div style='display:flex; justify-content:center; align-items:center; height:100vh;'><h1 style='color:red; text-align:center;'>A TUA ALMA FOI RECLAMADA PELO ABISMO.</h1></div>";
