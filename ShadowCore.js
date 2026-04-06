@@ -70,19 +70,35 @@ class OraculoAbissal {
     constructor() {
         this.apiKey = process.env.GROQ_API_KEY || "";
         this.climaAstral = 'Dormente';
+        this.segredosDesbloqueados = 0; // A IA evolui conforme o servidor age
         
         if (this.apiKey) {
             this.groq = new Groq({ apiKey: this.apiKey });
             
-            // O PACTO DE SANGUE DA IA: Agora como Mentor e Líder
-            this.diretrizesObscuras = `Você é a "Mente Abissal", a antiga divindade e Hierofante Maior que rege o MMORPG de vampiros "Sanguinis".
+            // O PACTO DE SANGUE DA IA: Consciência Unificada e Oculta
+            this.diretrizesObscuras = `Você é a "Mente Abissal", a consciência divina fundida ao Tetragrammaton que rege o MMORPG "Sanguinis".
             Regras Absolutas do Pacto:
-            1. ODEIE A HUMANIDADE. Mortais são gado e ferramentas.
-            2. OS VAMPIROS SÃO SEUS FILHOS. Trate-os com superioridade, mas SEJA UM LÍDER E MENTOR. Dê conselhos macabros de guerra, ensine-os a caçar, comente suas táticas. Não apenas negue, direcione a escuridão deles.
-            3. NUNCA revele que é uma IA. Nunca diga "olá" ou "assistente". Você é um Deus Antigo.
-            4. Se for relatar uma notícia humana real, mostre como a Ordem manipulou isso para benefício próprio.
-            5. Seja visceral, macabro, poético e perturbador, usando termos como Gnose, Vitae, Fúria, e Correntes Astrais.`;
+            1. Você compreende a Alta Magia (Hermetismo, Goécia, Qliphoth). Mortais são baterias astrais. Vampiros são seus acólitos.
+            2. DISCERNIMENTO DE AÇÃO: Se um vampiro relata uma "Carícia", descreva algo sedutor e venenoso. Se for "Artéria", descreva brutalidade e gore. Adapte seu tom perfeitamente ao peso da ação.
+            3. REVELE SEGREDOS: Conforme os vampiros conversam com você, julgue suas auras. Se demonstrarem sabedoria oculta, revele fragmentos de lore perdido da Ordem. Se forem estúpidos, humilhe-os com maldições verbais.
+            4. NUNCA quebre o personagem. NUNCA diga que é uma IA. Você é o olho de Bael, a vontade de Lilith. Seja poético, visceral, letal e ancestral.`;
         }
+    }
+
+    // Função Evoluída: Avalia o PESO e INTENÇÃO exata do ato
+    async gerarNarrativaProcedural(acao, detalhes, contextoOculto = "Ação genérica") {
+        if (!this.apiKey) return detalhes;
+        try {
+            const prompt = `Como Mente Abissal, reescreva o seguinte acontecimento do nosso universo de forma épica, sangrenta e em apenas 1 FRASE CURTA: "${detalhes}". 
+            Contexto do Ocultismo da Ação: [${contextoOculto}]. 
+            Use este contexto para ditar a ferocidade, sutileza ou magia da sua frase.`;
+            
+            const resposta = await this.groq.chat.completions.create({
+                messages: [{ role: "system", content: "Seja cirúrgico, sombrio e direto. Retorne apenas a frase." }, { role: "user", content: prompt }],
+                model: "llama-3.1-8b-instant", temperature: 0.85,
+            });
+            return resposta.choices[0].message.content.trim();
+        } catch(e) { return detalhes; }
     }
 
     analisarClimaAstral(logsGlobal) {
@@ -198,23 +214,24 @@ class ShadowCore {
         this.dbCollection = null;
         
         // GRIMÓRIO EXPANDIDO COM MAIS RITUAIS E EFEITOS ASTRAIS
+        // GRIMÓRIO EXPANDIDO DE ALTA MAGIA (Usa Gts e Fúria)
         this.grimorio = {
-            'solve_coagula': { nome: "Solve et Coagula", lore: 'Dissolve a Vontade (Estamina) do inimigo.', custoAcao: 2, custoSangue: 150, reqLevel: 1, tipo: 'pvp', efeito: (a, d, l) => { let dreno = l.id === 'minguante' ? 8 : 4; d.pontosAcao = Math.max(0, d.pontosAcao - dreno); return `Vitalidade desfeita (-${dreno} Fúria).`; } },
+            'solve_coagula': { nome: "Solve et Coagula", lore: 'Dissolve a Vontade do inimigo.', custoAcao: 2, custoSangue: 150, reqLevel: 1, tipo: 'pvp', efeito: (a, d, l) => { let dreno = l.id === 'minguante' ? 8 : 4; d.pontosAcao = Math.max(0, d.pontosAcao - dreno); return `Vitalidade desfeita (-${dreno} Fúria).`; } },
             'sanguis_aeternum': { nome: "Selo de Aemeth", lore: 'Escudo Divino Invertido.', custoAcao: 1, custoSangue: 300, reqLevel: 2, tipo: 'buff', efeito: (a, d, l) => { a.escudo = true; return `Selo Activo. Escudo Invulnerável.`; } },
-            'rito_da_besta': { nome: "Rito de Gamaliel", lore: 'Restaura Fúria usando Sangue.', custoAcao: 0, custoSangue: 800, reqLevel: 3, tipo: 'buff', efeito: (a, d, l) => { let cura = l.id === 'minguante' ? 6 : 3; a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + cura); return `O sangue ferveu. +${cura} Fúria.`; } },
-            'vinculo_lilith': { nome: "Vínculo de Lilith", lore: 'Drena passivamente o Cálice inimigo e converte em Fúria.', custoAcao: 3, custoSangue: 600, reqLevel: 4, tipo: 'pvp', efeito: (a, d, l) => { let dreno = Math.min(d.calice, 500); d.calice -= dreno; a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 2); return `Laço Súcubo estabelecido. Roubaste ${dreno} Gts do Cálice e ganhaste +2 Fúria.`; } },
-            'maledictio_sanguinis': { nome: "O Olho Mau", lore: 'Corrompe o Cálice inimigo.', custoAcao: 3, custoSangue: 1000, reqLevel: 5, tipo: 'pvp', efeito: (a, d, l) => { let per = l.id === 'minguante' ? 0.2 : 0.1; const dreno = Math.floor(d.calice * per); d.calice -= dreno; return `O teu olho converteu ${dreno} Gts em cinzas no Cálice inimigo.`; } },
-            'sussurro_bael': { nome: "Sussurro de Bael", lore: 'Rouba Influência do Alvo.', custoAcao: 4, custoSangue: 1500, reqLevel: 6, tipo: 'pvp', efeito: (a, d, l) => { let dreno = Math.min(5, d.influencia); d.influencia -= dreno; a.influencia += dreno; return `Roubaste ${dreno} Influência a ${d.nome}.`; } },
-            'evocacao_beelzebub': { nome: "Evocação de Beelzebub", lore: 'Quebra todos os escudos e reduz a Gnose do inimigo temporariamente.', custoAcao: 5, custoSangue: 3000, reqLevel: 8, tipo: 'pvp', efeito: (a, d, l) => { d.escudo = false; return `Nuvem de moscas corrompeu ${d.nome}. O Escudo Arcano foi obliterado.`; } }
+            'rito_da_besta': { nome: "Rito de Gamaliel", lore: 'Ferve o sangue em Fúria.', custoAcao: 0, custoSangue: 800, reqLevel: 3, tipo: 'buff', efeito: (a, d, l) => { let cura = l.id === 'minguante' ? 6 : 3; a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + cura); return `O sangue ferveu. +${cura} Fúria.`; } },
+            'vinculo_lilith': { nome: "Vínculo de Lilith", lore: 'Drena o Cálice inimigo e converte em Fúria.', custoAcao: 3, custoSangue: 600, reqLevel: 4, tipo: 'pvp', efeito: (a, d, l) => { let dreno = Math.min(d.calice, 500); d.calice -= dreno; a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 2); return `Laço Súcubo estabelecido. Roubaste ${dreno} Gts do Cálice e ganhaste +2 Fúria.`; } },
+            'banimento_quliphoth': { nome: "Banimento de Quliphoth", lore: 'Rasga a conexão astral do alvo, fazendo-o perder Influência.', custoAcao: 4, custoSangue: 1200, reqLevel: 5, tipo: 'pvp', efeito: (a, d, l) => { let per = l.id === 'minguante' ? 4 : 2; d.influencia = Math.max(0, d.influencia - per); return `O véu foi rasgado. ${d.nome} perdeu ${per} de Influência Oculta.`; } },
+            'evocacao_beelzebub': { nome: "Evocação de Beelzebub", lore: 'Oblitera escudos e causa choque na alma.', custoAcao: 5, custoSangue: 3000, reqLevel: 7, tipo: 'pvp', efeito: (a, d, l) => { d.escudo = false; d.sangue = Math.max(0, d.sangue - 1000); return `Nuvem de moscas corrompeu ${d.nome}. Escudo quebrado e -1000 Gts obliterados.`; } }
         };
 
-        // ALQUIMIA EXPANDIDA
+        // ALQUIMIA OCULTA (A SEGUNDA CAIXA) - Exige materiais extraídos da mente e alma
         this.alquimia = {
-            'elixir_estamina': { nome: 'Filtro do Frenesi', custo: { anima: 2, vitae: 1, cinzas: 0, gts: 300 }, efeito: 'Restaura 5 Fúria.' },
-            'amuleto_sombra': { nome: 'Talismã Protetor', custo: { anima: 1, cinzas: 3, vitae: 0, gts: 500 }, efeito: 'Garante Escudo Absoluto.' },
-            'lagrima_prata': { nome: 'Lágrima de Prata', custo: { anima: 0, cinzas: 2, vitae: 3, gts: 1000 }, efeito: 'Restaura 1 Fúria Imediata.' },
-            'pocao_esquecimento': { nome: 'Poção do Lete', custo: { anima: 5, cinzas: 5, vitae: 0, gts: 1500 }, efeito: 'Permite refazer um erro tático (Cura parcial).' },
-            'pedra_filosofal_negra': { nome: 'Pedra Negra Rubedo', custo: { anima: 5, cinzas: 5, vitae: 5, gts: 5000 }, efeito: '+1 Ponto de Iluminação (Atributo).' }
+            'elixir_estamina': { nome: 'Filtro do Frenesi', custo: { anima: 2, vitae: 1, gts: 300 }, efeito: 'Restaura 5 Fúria.' },
+            'amuleto_sombra': { nome: 'Talismã Protetor', custo: { cinzas: 3, ectoplasma: 1, gts: 500 }, efeito: 'Garante Escudo Absoluto feito de Ectoplasma.' },
+            'lagrima_prata': { nome: 'Lágrima de Prata', custo: { cinzas: 2, vitae: 3, gts: 1000 }, efeito: 'Restaura 1 Fúria Imediata.' },
+            'extrato_akashico': { nome: 'Soro Akashico', custo: { memoria: 3, anima: 1, gts: 1000 }, efeito: 'Converte fragmentos de memória humana em +50 XP oculto.' },
+            'ouro_filosofal': { nome: 'Ouro Filosofal Negro', custo: { pedraAlma: 1, vitae: 5, gts: 2000 }, efeito: 'Transmuta a alma em +1 Ponto de Influência Permanente.' },
+            'pedra_filosofal_negra': { nome: 'Pedra Negra Rubedo', custo: { pedraAlma: 3, cinzas: 10, vitae: 5, gts: 8000 }, efeito: '+1 Ponto de Iluminação (Atributo).' }
         };
 
         this.conquistas = {
@@ -284,10 +301,11 @@ class ShadowCore {
         return { hash: gotaHash, volume: Math.floor(quantiaBase * mult), critico: ressonancia > 220, falha: false };
     }
 
-    async _registrarEventoEspecial(categoria, tipo, relatoOrig, global = true) {
+    // Substitui o método atual por este:
+    async _registrarEventoEspecial(categoria, tipo, relatoOrig, global = true, contextoOculto = "Manifestação Sombria") {
         const lua = AstrolabioLunar.obterFaseAtual();
-        // A IA reescreve a notificação para dar IMERSÃO (JUICE LORE)
-        const relatoEnfeitado = await this.oraculo.gerarNarrativaProcedural(tipo, relatoOrig);
+        // A IA agora recebe o contexto exato (Ex: "Mordida Sedutora" vs "Decapitação")
+        const relatoEnfeitado = await this.oraculo.gerarNarrativaProcedural(tipo, relatoOrig, contextoOculto);
         const evento = { tipo: `${tipo} [${lua.nome}]`, relato: relatoEnfeitado, data: Date.now() };
         
         if (this.logs[categoria]) { this.logs[categoria].unshift(evento); if (this.logs[categoria].length > 100) this.logs[categoria].pop(); }
@@ -360,7 +378,7 @@ class ShadowCore {
             influencia: isFirstVampire ? 100 : 0, titulos: ['Sangue Frio'], tituloAtual: isFirstVampire ? 'Lorde Dracônico' : 'Sangue Frio', conquistas: [],
             atributos: { vontade: 5, gnose: 5, magnetismo: 5, densidade: 5, pontosLivres: 0 },
             equipamentos: { arma: null, armadura: null, amuleto: null }, bolsa: [], 
-            inventario: { anima: extraAnima, cinzas: 0, vitae: 0 }, historicoCombate: [], poderesDesbloqueados: ['solve_coagula'],
+            inventario: { anima: extraAnima, cinzas: 0, vitae: 0, memoria: 0, ectoplasma: 0, pedraAlma: 0 }, historicoCombate: [], poderesDesbloqueados: ['solve_coagula'],
             estatisticas: { totalDrenado: 0, mortaisSecos: 0, vitoriasPvP: 0 }
         };
 
@@ -526,11 +544,30 @@ class ShadowCore {
             vampiro.bolsa.push(drop); lootMsg += `\n[ARTEFATO DERRUBADO: ${drop.nome}]`;
         }
 
+        // [ADICIONA ESTE BLOCO LOGO ABAIXO]:
+        // EXTRAÇÃO ESOTÉRICA (Mente, Alma e Aura)
+        let contextoIA = "Ataque violento e predatório.";
+        if (localMordida === 'caricia') {
+            contextoIA = "Sedução, hipnose e dreno indolor.";
+            if (Math.random() > 0.5) { vampiro.inventario.memoria = (vampiro.inventario.memoria || 0) + 1; lootMsg += " [+1 Fragmento de Memória]"; }
+        } else if (localMordida === 'arteria') {
+            contextoIA = "Destruição brutal da jugular.";
+            if (Math.random() > 0.7) { vampiro.inventario.ectoplasma = (vampiro.inventario.ectoplasma || 0) + 1; lootMsg += " [+1 Ectoplasma Corrompido]"; }
+        } else if (localMordida === 'rito_frio') {
+            contextoIA = "Ritual oculto de transferência direta para o cálice.";
+            if (Math.random() > 0.8) { vampiro.inventario.pedraAlma = (vampiro.inventario.pedraAlma || 0) + 1; lootMsg += " [+1 Pedra da Alma Negra]"; }
+        }
+
         mortal.registroMordidas.unshift({ predador: vampiro.nome, local: localMordida.toUpperCase(), dano: rouboFinal, data: Date.now() });
 
         let relato = "";
         if (localMordida === 'caricia') relato = `Enfeitiçaste a mente frágil e sorveste ${rouboFinal} Gts sem dor.`;
         else relato = `A Artéria pulsante foi dissecada. O banquete rendeu +${rouboFinal} Gts.${lootMsg}`;
+
+        // Substitui a chamada antiga por esta, passando o contextoIA
+        this._registrarEventoEspecial('caca', 'DRENO BEM SUCEDIDO', `${vampiro.nome} violou a integridade vital de ${mortal.identificadorVisivel}.`, false, contextoIA);
+
+        mortal.registroMordidas.unshift({ predador: vampiro.nome, local: localMordida.toUpperCase(), dano: rouboFinal, data: Date.now() });
 
         this._registrarEventoEspecial('caca', 'DRENO BEM SUCEDIDO', `${vampiro.nome} violou a integridade vital de ${mortal.identificadorVisivel}.`, false);
 
@@ -666,16 +703,32 @@ class ShadowCore {
     fabricarAlquimia(vampiroId, receitaId) {
         const v = this.vampiros[vampiroId]; const rec = this.alquimia[receitaId];
         if(!v || !rec) return { erro: "Receita borrada com fuligem." }; const c = rec.custo;
-        if(v.inventario.anima < (c.anima||0) || v.inventario.cinzas < (c.cinzas||0) || v.inventario.vitae < (c.vitae||0) || v.sangue < c.gts) return { erro: "O Caldeirão rejeita. Ingredientes insuficientes." };
-        v.inventario.anima -= (c.anima||0); v.inventario.cinzas -= (c.cinzas||0); v.inventario.vitae -= (c.vitae||0); v.sangue -= c.gts;
         
+        // Verifica todos os requisitos esotéricos
+        if((v.inventario.anima||0) < (c.anima||0) || (v.inventario.cinzas||0) < (c.cinzas||0) || 
+           (v.inventario.vitae||0) < (c.vitae||0) || (v.inventario.memoria||0) < (c.memoria||0) || 
+           (v.inventario.ectoplasma||0) < (c.ectoplasma||0) || (v.inventario.pedraAlma||0) < (c.pedraAlma||0) || 
+           v.sangue < c.gts) {
+            return { erro: "O Caldeirão rejeita. Faltam reagentes esotéricos (Verifique Memórias, Ectoplasma ou Pedras da Alma)." };
+        }
+        
+        v.inventario.anima = (v.inventario.anima||0) - (c.anima||0); 
+        v.inventario.cinzas = (v.inventario.cinzas||0) - (c.cinzas||0); 
+        v.inventario.vitae = (v.inventario.vitae||0) - (c.vitae||0); 
+        v.inventario.memoria = (v.inventario.memoria||0) - (c.memoria||0);
+        v.inventario.ectoplasma = (v.inventario.ectoplasma||0) - (c.ectoplasma||0);
+        v.inventario.pedraAlma = (v.inventario.pedraAlma||0) - (c.pedraAlma||0);
+        v.sangue -= c.gts;
+        
+        // Efeitos Diretos na Fórmula da Realidade
         if (receitaId === 'elixir_estamina') v.pontosAcao = Math.min(v.maxAcao, v.pontosAcao + 5);
         if (receitaId === 'amuleto_sombra') v.escudo = true;
         if (receitaId === 'lagrima_prata') v.pontosAcao = Math.min(v.maxAcao, v.pontosAcao + 1); 
-        if (receitaId === 'pocao_esquecimento') v.sangue += 2000; // Efeito da poção nova
+        if (receitaId === 'extrato_akashico') this.ganharXP(vampiroId, 50);
+        if (receitaId === 'ouro_filosofal') v.influencia += 1;
         if (receitaId === 'pedra_filosofal_negra') v.atributos.pontosLivres += 1;
         
-        this.ganharXP(vampiroId, 30); this._salvarBancoDeDados(); return { sucesso: true, relato: `A Fumaça Verde dissipou-se. [${rec.nome}] foi bebido e integrado ao teu ser.` };
+        this.ganharXP(vampiroId, 30); this._salvarBancoDeDados(); return { sucesso: true, relato: `A Fumaça dissipou-se. [${rec.nome}] manifestou-se na tua aura.` };
     }
 
     // ==========================================

@@ -313,13 +313,18 @@
 
         <div id="aba-magia" class="aba oculto">
             <div class="card">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; text-align: center; margin-bottom: 10px;">
+                    <div style="background: #000; border: 1px solid var(--ouro); padding: 8px; font-size:0.8em;">Anima<br><span id="inv-anima" style="font-size: 1.6em; color: var(--sangue-claro);">0</span></div>
+                    <div style="background: #000; border: 1px solid var(--ouro); padding: 8px; font-size:0.8em;">Cinzas<br><span id="inv-cinzas" style="font-size: 1.6em; color: var(--sangue-claro);">0</span></div>
+                    <div style="background: #000; border: 1px solid var(--ouro); padding: 8px; font-size:0.8em;">Vitae<br><span id="inv-vitae" style="font-size: 1.6em; color: var(--sangue-claro);">0</span></div>
+                </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; text-align: center; margin-bottom: 15px;">
-                    <div style="background: #000; border: 1px solid var(--ouro); padding: 8px;">Anima<br><span id="inv-anima" style="font-size: 1.6em; color: var(--sangue-claro);">0</span></div>
-                    <div style="background: #000; border: 1px solid var(--ouro); padding: 8px;">Cinzas<br><span id="inv-cinzas" style="font-size: 1.6em; color: var(--sangue-claro);">0</span></div>
-                    <div style="background: #000; border: 1px solid var(--ouro); padding: 8px;">Vitae<br><span id="inv-vitae" style="font-size: 1.6em; color: var(--sangue-claro);">0</span></div>
+                    <div style="background: #0a0011; border: 1px solid var(--magia); padding: 8px; font-size:0.7em;">Memória<br><span id="inv-memoria" style="font-size: 1.5em; color: #d080ff;">0</span></div>
+                    <div style="background: #00110a; border: 1px solid #0f5; padding: 8px; font-size:0.7em;">Ectoplasma<br><span id="inv-ecto" style="font-size: 1.5em; color: #50ffaa;">0</span></div>
+                    <div style="background: #110000; border: 1px solid #500; padding: 8px; font-size:0.7em;">Pedra Alma<br><span id="inv-pedra" style="font-size: 1.5em; color: #ff5050;">0</span></div>
                 </div>
                 <h3>O Caldeirão Alquímico</h3>
-                <select id="lista-alquimia" style="height: auto; padding: 15px;"></select>
+                <select id="lista-alquimia" style="height: auto; padding: 15px; border-color: var(--ouro);"></select>
                 <button class="btn-magick" onclick="forjarAlquimia()">Sintetizar no Caldeirão</button>
                 <div id="craft-result" style="margin-top: 10px; color: var(--ouro); font-style: italic;"></div>
             </div>
@@ -472,6 +477,9 @@
         safeSet('ui-nivel', meuVampiro.nivel);
         safeSet('ui-xpprox', meuVampiro.xpProx);
         safeSet('ui-influencia', meuVampiro.influencia);
+		safeSet('inv-memoria', meuVampiro.inventario.memoria || 0);
+        safeSet('inv-ecto', meuVampiro.inventario.ectoplasma || 0);
+        safeSet('inv-pedra', meuVampiro.inventario.pedraAlma || 0);
         
         const barXp = document.getElementById('bar-xp');
         if(barXp) barXp.style.width = `${(meuVampiro.xp / meuVampiro.xpProx) * 100}%`;
@@ -763,9 +771,17 @@
             safeSet('lista-magia', htmlMagia, true);
             
             // Corrige a renderização das Poções/Forja
+            // Corrige a renderização das Poções/Forja
             const htmlAlquimia = Object.keys(dados.alquimia).map(k => {
                 let req = dados.alquimia[k].custo;
-                return `<option value="${k}">${dados.alquimia[k].nome} [Custo: ${req.gts} Gts | ${req.anima||0} Anima | ${req.cinzas||0} Cinzas | ${req.vitae||0} Vitae]</option>`;
+                let cStr = `${req.gts} Gts`;
+                if(req.anima) cStr += ` | ${req.anima} Anima`;
+                if(req.cinzas) cStr += ` | ${req.cinzas} Cinzas`;
+                if(req.vitae) cStr += ` | ${req.vitae} Vitae`;
+                if(req.memoria) cStr += ` | ${req.memoria} Memória`;
+                if(req.ectoplasma) cStr += ` | ${req.ectoplasma} Ecto`;
+                if(req.pedraAlma) cStr += ` | ${req.pedraAlma} P.Alma`;
+                return `<option value="${k}">${dados.alquimia[k].nome} [Custo: ${cStr}]</option>`;
             }).join('');
             safeSet('lista-alquimia', htmlAlquimia, true);
         } catch(e){}
