@@ -298,18 +298,34 @@ class ShadowCore {
     // ==========================================
     // O PACTO DE SANGUE REAL E INICIAÇÃO
     // ==========================================
+    // ==========================================
+    // O PACTO DE SANGUE REAL E INICIAÇÃO
+    // ==========================================
     despertarViaTelegram(tgId, tgUsername, nomeSombrio, senha, inviteCode) {
-        // Criptografia Goética: O Sangue do Iniciado funde-se à Chave-Mestra do Universo
+        // 1. BUSCA RETROATIVA (O RECONHECIMENTO DO ANCESTRAL)
+        // Procura pelo nome para não quebrar as contas que já existem no MongoDB
+        let vampiroEncontrado = null;
+        for (let key in this.vampiros) {
+            if (this.vampiros[key].nome.toLowerCase() === nomeSombrio.toLowerCase()) {
+                vampiroEncontrado = this.vampiros[key];
+                break;
+            }
+        }
+
+        if (vampiroEncontrado) {
+            // Verifica a senha usando o ID antigo da conta
+            const hashTentativa = crypto.pbkdf2Sync(senha, vampiroEncontrado.id, 10000, 64, 'sha512').toString('hex');
+            if (vampiroEncontrado.senhaHash !== hashTentativa) {
+                return { existente: true, recusado: true, erro: "O Abismo rejeita-te. Palavra de Poder (Senha) Incorreta." };
+            }
+            return { existente: true, recusado: false, vampiro: vampiroEncontrado };
+        }
+
+        // 2. CRIPTOGRAFIA GOÉTICA PARA NOVOS INICIADOS
+        // O Sangue do Iniciado funde-se à Chave-Mestra do Universo
         const tetragrammaton = "YHVH_AGLA_ELOHIM_TZABAOTH";
         const assinaturaSanguinea = crypto.createHmac('sha512', tetragrammaton).update(`${tgId}::${nomeSombrio}`).digest('hex');
         const idSombrio = 'SNG_' + assinaturaSanguinea.substring(0, 12).toUpperCase();
-        
-        if(this.vampiros[idSombrio]) {
-            const v = this.vampiros[idSombrio];
-            const hashTentativa = crypto.pbkdf2Sync(senha, v.id, 10000, 64, 'sha512').toString('hex');
-            if (v.senhaHash !== hashTentativa) return { existente: true, recusado: true, erro: "O Abismo rejeita-te. Palavra de Poder (Senha) Incorreta." };
-            return { existente: true, recusado: false, vampiro: v };
-        }
 
         const isFirstVampire = Object.keys(this.vampiros).length === 0;
         let senhor = this.vampiros[inviteCode];
