@@ -13,10 +13,10 @@ const core = new ShadowCore();
 
 global.io = io; 
 
-const BOT_TOKEN = "SEU_TOKEN_AQUI"; 
+const BOT_TOKEN = "8425088333:AAE647B7sMb7LZ8K1UOZEA0K3DJ8oZbDPHE"; 
 let bot = null;
 try { 
-    if(BOT_TOKEN && BOT_TOKEN !== "SEU_TOKEN_AQUI") {
+    if(BOT_TOKEN && BOT_TOKEN !== "8425088333:AAE647B7sMb7LZ8K1UOZEA0K3DJ8oZbDPHE") {
         bot = new TelegramBot(BOT_TOKEN, { polling: false }); 
     }
 } 
