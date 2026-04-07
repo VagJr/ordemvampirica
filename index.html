@@ -746,13 +746,15 @@
             safeSet('ui-clan-cofre', meuVampiro.clanData.cofre);
             const btnSacar = document.getElementById('btn-sacar-clan');
             if (btnSacar) btnSacar.style.display = (meuVampiro.clanData.lider === meuVampiro.id) ? 'inline-block' : 'none';
-			// Revelar o Painel do Lorde Dracônico apenas se for Geração 1
+        } // <-- A CHAVE DO CLÃ QUE FALTAVA FOI SELADA AQUI
+
+        // Revelar o Painel do Lorde Dracônico apenas se for Geração 1
         const painelAdmin = document.getElementById('painel-primordial');
         if (painelAdmin) {
             if (meuVampiro.geracao === 1) painelAdmin.classList.remove('oculto');
             else painelAdmin.classList.add('oculto');
         }
-    }
+    } // <-- A FUNÇÃO syncUI() AGORA FECHA CORRETAMENTE AQUI
 
     async function uparAtr(nome) {
         try {

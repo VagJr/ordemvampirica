@@ -176,6 +176,16 @@ app.get('/api/mercado', (req, res) => {
     } catch(err) { res.status(500).json({erro: "O Vidro Negro estilhaçou-se."}); }
 });
 
+// ROTA DO TRONO PRIMORDIAL (ADMIN - OBLITERAÇÃO)
+app.post('/api/admin/obliterar', (req, res) => { 
+    try { 
+        res.json(core.obliterarHerege(req.body.adminId, req.body.alvoId)); 
+        io.emit('sync_geral'); 
+    } catch(e){ 
+        res.status(500).json({erro:"A lâmina do carrasco falhou."}); 
+    } 
+});
+
 app.post('/api/atributos/distribuir', (req, res) => { try { res.json(core.distribuirAtributos(req.body.id, req.body.atributo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha no Rito."}); } });
 app.post('/api/inventario/equipar', (req, res) => { try { res.json(core.equiparReliquia(req.body.id, req.body.reliquiaId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha no Rito."}); } });
 app.post('/api/perfil/titulo', (req, res) => { try { res.json(core.mudarTitulo(req.body.id, req.body.titulo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha no Rito."}); } });
