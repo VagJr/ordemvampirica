@@ -665,7 +665,27 @@ class ShadowCore {
         this._salvarBancoDeDados();
         return { sucesso: true, relato: `Selo Enociano gravado na testa do gado. Ele é tua posse exclusiva.` };
     }
-
+// ==========================================
+    // ABSOLVIÇÃO: O PODER DO PRIMEIRO SER
+    // ==========================================
+    absolverMortal(vampiroId, hashMortal) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Fantasma." };
+        
+        // Verifica se é o Primordial (Geração 1)
+        if (v.geracao !== 1) {
+            return { erro: "Heresia! Apenas o Primordial detém a autoridade para reescrever o destino e absolver uma alma do Abismo." };
+        }
+        
+        const mortal = this.rebanho[hashMortal];
+        if (!mortal) return { erro: "A presa já não existe neste plano." };
+        
+        delete this.rebanho[hashMortal];
+        this._registrarEventoEspecial('global', 'ABSOLVIÇÃO PRIMORDIAL', `O Ancestral Maior ${v.nome} decretou que a vida de ${mortal.identificadorVisivel} seja poupada. A alma foi libertada do pasto.`, true, "Clemência do Primeiro Ser");
+        this._salvarBancoDeDados();
+        
+        return { sucesso: true, relato: "A alma foi absolvida e apagada da nossa teia de caça." };
+    }
     fundarClan(vampiroId, nomeClan) {
         const v = this.vampiros[vampiroId];
         if (!v || v.sangue < 2000) return { erro: "O Abismo exige 2000 Gts nas fundações de um Santuário." };

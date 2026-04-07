@@ -278,6 +278,7 @@
                     <button id="btn-drenar" onclick="drenarAtual()">Executar Acto</button>
                     <button id="btn-maldicao" onclick="amaldicoarPresa()" style="border-color: purple; color: #f0f; background: transparent;" title="800 Gts">Cravar Domínio</button>
                 </div>
+                <button id="btn-absolver" onclick="absolverPresa()" class="oculto" style="border-color: #0f5; color: #0f5; background: #051105; margin-top: 10px; width: 100%;">Absolver Alma (Direito Exclusivo do Primordial)</button>
                 <div id="doc-hist" style="max-height: 80px; overflow-y:auto; font-size:0.8em; color:#888; margin-top: 10px; border-top: 1px solid #300; padding-top: 5px; font-style: italic;"></div>
             </div>
 
@@ -812,6 +813,15 @@
                 if(m.estado === 'Limbo' || m.estado === 'No Leilao') { btn.innerText = "SANGUE INACESSÍVEL"; btn.disabled = true; } 
                 else { btn.innerText = "EXECUTAR ACÇÃO"; btn.disabled = false; }
             }
+
+            // --- REVELA O BOTÃO APENAS PARA O PRIMORDIAL ---
+            const btnAbsolver = document.getElementById('btn-absolver');
+            if (btnAbsolver) {
+                if (meuVampiro && meuVampiro.geracao === 1) btnAbsolver.classList.remove('oculto');
+                else btnAbsolver.classList.add('oculto');
+            }
+            // ------------------------------------------------
+
             if(elDoc) elDoc.scrollIntoView({behavior: "smooth"});
         }).catch(e=>{});
     }
@@ -841,6 +851,27 @@
             if(dados.roubo > 0) jorrarSangue();
             syncStatus(); abrirPresaMercado(hashAlvoAtual); 
         } catch(e) { }
+    }
+	
+	async function absolverPresa() {
+        if(!hashAlvoAtual) return;
+        if(!confirm("Apenas o Alfa Primordial possui este poder. Desejas libertar e apagar esta presa permanentemente do servidor?")) return;
+        
+        try {
+            const res = await fetch('/api/caca/absolver', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ id: meuVampiro.id, hash: hashAlvoAtual }) 
+            });
+            const dados = await res.json(); 
+            
+            alert(dados.erro || dados.relato); 
+            
+            if(!dados.erro) {
+                document.getElementById('mortal-doc').classList.add('oculto');
+            }
+            syncStatus(); 
+        } catch(e) {}
     }
 
     async function amaldicoarPresa() {

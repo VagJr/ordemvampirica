@@ -155,6 +155,15 @@ app.post('/api/convidar', async (req, res) => {
     }
 });
 
+app.post('/api/caca/absolver', (req, res) => { 
+    try { 
+        res.json(core.absolverMortal(req.body.id, req.body.hash)); 
+        io.emit('sync_geral'); 
+    } catch(e){ 
+        res.status(500).json({erro:"O tribunal cármico falhou."}); 
+    } 
+});
+
 app.get('/api/mercado', (req, res) => {
     try {
         const mortais = Object.values(core.rebanho).map(m => ({
