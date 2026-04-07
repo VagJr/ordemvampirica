@@ -315,7 +315,37 @@ class OraculoAbissal {
             return JSON.parse(resposta.choices[0].message.content);
         } catch (e) { return { fama: false, multiplicador: 1, aura: "Carne e Sangue estéreis. Sem valor cósmico." }; }
     }
-}
+// ==========================================
+    // O GUARDIÃO AKÁSHICO (IA PARA A BIBLIOTECA)
+    // ==========================================
+    async consultarBibliotecaAkashica(iniciado, titulo, conteudoAtual, novaPesquisa) {
+        if (!this.apiKey) return `O conhecimento está selado nas trevas. Sem a Chave Mestra (API), não posso ler as estrelas.`;
+        try {
+            // Lemos os últimos 2000 caracteres para dar contexto à IA sem quebrar a mente dela
+            const ctxText = conteudoAtual.length > 2000 ? conteudoAtual.substring(conteudoAtual.length - 2000) : conteudoAtual;
+            
+            const prompt = `Você é o Guardião Akáshico, a entidade suprema da Biblioteca do Abismo. Você possui todo o conhecimento do universo oculto: Demonologia (Goécia), Cabala Invertida (Qliphoth), Hermetismo Clássico, Alquimia Sanguínea, e Magia do Caos.
+            
+            DADOS DO ACÓLITO: [Nome: ${iniciado.nome} | Raça: ${iniciado.raca} (Tiamat=Vampiro, Seth=Lycano) | Grau: ${iniciado.nivel}].
+            TÍTULO DO TOMO QUE ELE ESCREVE: "${titulo}".
+            TEXTO ATUAL DO TOMO: "${ctxText}"
+            
+            PEDIDO DE PESQUISA / DESENVOLVIMENTO DO JOGADOR: "${novaPesquisa}"
+            
+            AJA COMO UM MESTRE ANCESTRAL E CO-AUTOR. Escreva a continuação perfeita para este grimório.
+            Se ele pedir um ritual, crie ingredientes macabros (ex: poeira de ossos, vitae, sangue humano) e cânticos. Se pedir lore, revele segredos obscuros da ordem.
+            Seja denso, literário, aterrorizante e extremamente focado no ocultismo real misturado à nossa mitologia.
+            
+            NÃO faça saudações. NÃO diga "Aqui está". Retorne APENAS o texto da continuação (máximo 3 parágrafos densos) para ser colado diretamente no livro mágico do jogador.`;
+            
+            const resposta = await this.groq.chat.completions.create({
+                messages: [{ role: "system", content: this.diretrizesObscuras }, { role: "user", content: prompt }],
+                model: "llama-3.1-8b-instant", temperature: 0.85,
+            });
+            return resposta.choices[0].message.content.trim();
+        } catch (e) { return `As traças astrais devoraram esta página. O Oráculo engasgou-se com o pó. Tenta de novo.`; }
+    }
+} // <-- Fim da classe OraculoAbissal	
 
 // ==========================================
 // RITUAL MAIOR: O NÚCLEO DA ORDEM
@@ -968,6 +998,109 @@ class ShadowCore {
             if (v.calice < quantia) return { erro: "O Fundo do Cálice reflete apenas o teu fracasso (Seco)." };
             v.calice -= quantia; v.sangue += quantia; this._salvarBancoDeDados(); return { sucesso: true, relato: `A tampa removeu-se. O fluxo morno regressou (${quantia} Gts).` };
         }
+    }
+
+// ==========================================
+    // O ACERVO AKÁSHICO (BANCADA DE ESTUDO E MANUSCRITOS)
+    // ==========================================
+    iniciarProjetoEstudo(vampiroId, titulo, tema) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "A tua alma não está neste plano." };
+        if (!v.projetosEstudo) v.projetosEstudo = [];
+        if (v.projetosEstudo.length >= 3) return { erro: "A tua mente não suporta mais do que 3 rascunhos abertos. Encaderna ou queima um." };
+        if (!titulo || !tema) return { erro: "Falta a Intenção (Título e Tema) para convocar o papiro." };
+        
+        const novoProj = {
+            id: crypto.randomBytes(4).toString('hex'),
+            titulo: titulo,
+            tema: tema,
+            conteudo: `[TOMO INICIADO SOB O SANGUE DE ${v.nome}]\nFoco de Estudo: ${tema}\n\n`,
+            dataAtualizacao: Date.now()
+        };
+        v.projetosEstudo.push(novoProj);
+        this._salvarBancoDeDados();
+        return { sucesso: true, projeto: novoProj, relato: `A bancada foi limpa. O papiro de [${titulo}] está pronto.` };
+    }
+
+    async aprofundarProjeto(vampiroId, projetoId, novaPesquisa) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Fantasma." };
+        if (v.pontosAcao < 1) return { erro: "A clarividência exige 1 Fúria. A tua mente está cansada." };
+        
+        if (!v.projetosEstudo) v.projetosEstudo = [];
+        const proj = v.projetosEstudo.find(p => p.id === projetoId);
+        if (!proj) return { erro: "Pergaminho perdido nas brumas." };
+        if (!novaPesquisa) return { erro: "O que desejas perguntar ao Abismo?" };
+
+        v.pontosAcao -= 1;
+        // Evoca a IA com todo o poder oculto
+        const novoTexto = await this.oraculo.consultarBibliotecaAkashica(v, proj.titulo, proj.conteudo, novaPesquisa);
+        
+        const divisor = `\n\n--- [REVELAÇÃO AKÁSHICA: ${novaPesquisa}] ---\n`;
+        proj.conteudo += divisor + novoTexto;
+        proj.dataAtualizacao = Date.now();
+        
+        this.ganharXP(v.id, 20); // Pesquisar dá experiência
+        this._salvarBancoDeDados();
+        return { sucesso: true, novoConteudo: proj.conteudo, relato: "A Entidade sussurrou novos segredos. O teu rascunho foi expandido com Magia Ancestral." };
+    }
+
+    salvarProjetoManual(vampiroId, projetoId, conteudoManual) {
+        const v = this.vampiros[vampiroId];
+        if (!v || !v.projetosEstudo) return { erro: "Fantasma." };
+        const proj = v.projetosEstudo.find(p => p.id === projetoId);
+        if (!proj) return { erro: "Pergaminho perdido." };
+        
+        proj.conteudo = conteudoManual;
+        proj.dataAtualizacao = Date.now();
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: "A tua própria caligrafia de sangue foi salva no rascunho." };
+    }
+
+    apagarProjeto(vampiroId, projetoId) {
+        const v = this.vampiros[vampiroId];
+        if (!v || !v.projetosEstudo) return { erro: "Fantasma." };
+        v.projetosEstudo = v.projetosEstudo.filter(p => p.id !== projetoId);
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: "O rascunho foi atirado às chamas negras." };
+    }
+
+    arquivarProjetoComoManuscrito(vampiroId, projetoId, publico) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Fantasma." };
+        if (v.sangue < 200) return { erro: "Exige 200 Gts de sangue para encadernar e selar a capa do livro." };
+        if (publico && v.nivel < 5) return { erro: "Apenas iniciados de Grau 5+ podem expor doutrinas ao mundo." };
+
+        if (!v.projetosEstudo) v.projetosEstudo = [];
+        const projIdx = v.projetosEstudo.findIndex(p => p.id === projetoId);
+        if (projIdx === -1) return { erro: "Rascunho não encontrado." };
+
+        const proj = v.projetosEstudo[projIdx];
+        if (proj.conteudo.length < 50) return { erro: "O livro está demasiado vazio para ter valor oculto." };
+
+        v.sangue -= 200;
+        v.projetosEstudo.splice(projIdx, 1); // Retira da bancada
+
+        const manuscrito = {
+            id: crypto.randomBytes(4).toString('hex'),
+            autorId: v.id, autorNome: v.nome, autorTitulo: v.tituloAtual,
+            titulo: proj.titulo, conteudo: proj.conteudo, data: Date.now(),
+            publico: publico
+        };
+
+        if (!v.manuscritos) v.manuscritos = [];
+        v.manuscritos.push(manuscrito); // Salva na estante pessoal
+
+        if (publico) {
+            if (!this.manuscritos) this.manuscritos = [];
+            this.manuscritos.unshift(manuscrito); // Salva na estante global
+            if (this.manuscritos.length > 100) this.manuscritos.pop();
+            this._registrarEventoEspecial('global', 'TOMO REVELADO', `${v.nome} selou e publicou o grimório [${proj.titulo}] na Biblioteca Maior.`, true, "Publicação de conhecimento herege");
+        }
+
+        this.ganharXP(v.id, 50);
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: `O manuscrito [${proj.titulo}] foi selado com o teu sangue e eternizado.` };
     }
 
     tickTemporal() {

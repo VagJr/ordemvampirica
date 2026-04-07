@@ -187,22 +187,22 @@ app.post('/api/caca/mapear', async (req, res) => {
 // ROTAS DO ACERVO AKÁSHICO E BANCADA DE ESTUDOS
 app.post('/api/biblioteca/iniciar', (req, res) => { 
     try { res.json(core.iniciarProjetoEstudo(req.body.id, req.body.titulo, req.body.tema)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"O pergaminho rasgou-se."}); } 
+    catch(e){ console.error(e); res.status(500).json({erro:"O pergaminho rasgou-se."}); } 
 });
 
 app.post('/api/biblioteca/aprofundar', async (req, res) => { 
     try { res.json(await core.aprofundarProjeto(req.body.id, req.body.projetoId, req.body.novaPesquisa)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"A entidade calou-se."}); } 
+    catch(e){ console.error(e); res.status(500).json({erro:"A entidade calou-se. O Abismo recusou a conexão."}); } 
 });
 
 app.post('/api/biblioteca/salvar_manual', (req, res) => { 
     try { res.json(core.salvarProjetoManual(req.body.id, req.body.projetoId, req.body.conteudo)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"A tinta secou."}); } 
+    catch(e){ console.error(e); res.status(500).json({erro:"A tinta secou antes de tocar no papel."}); } 
 });
 
 app.post('/api/biblioteca/apagar', (req, res) => { 
     try { res.json(core.apagarProjeto(req.body.id, req.body.projetoId)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"O fogo falhou."}); } 
+    catch(e){ res.status(500).json({erro:"O fogo mágico falhou."}); } 
 });
 
 app.post('/api/biblioteca/arquivar', (req, res) => { 
