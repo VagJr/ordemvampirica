@@ -1219,5 +1219,32 @@ class ShadowCore {
         this.ganharXP(v.id, 80); this._salvarBancoDeDados();
         return { sucesso: true, relato: relatoDano, hpRestante: demonio ? Math.max(0, demonio.hpAtual) : 0 };
     }
-} 
+
+
+// ==========================================
+    // OBLITERAÇÃO: PODER DO LORDE DRACÔNICO
+    // ==========================================
+    obliterarHerege(adminId, alvoId) {
+        const admin = this.vampiros[adminId];
+        if (!admin || admin.geracao !== 1) return { erro: "Heresia! Apenas o Lorde Dracônico / Alfa Primordial possui a lâmina da obliteração." };
+        
+        const alvo = this.vampiros[alvoId];
+        if (!alvo) return { erro: "Esta alma não existe na Matrix Astral." };
+        if (alvo.id === admin.id) return { erro: "Não podes obliterar a ti próprio, Mestre." };
+
+        // Remove a existência do herege do Clã, se ele tiver um
+        if (alvo.clan !== 'Sangue Ralo' && this.clans[alvo.clan]) {
+            this.clans[alvo.clan].membros = this.clans[alvo.clan].membros.filter(id => id !== alvoId);
+        }
+
+        const nomeMorto = alvo.nome;
+        // Apaga a conta da base de dados permanentemente
+        delete this.vampiros[alvoId];
+
+        this._registrarEventoEspecial('global', 'OBLITERAÇÃO DIVINA', `O Primordial ${admin.nome} baniu [${nomeMorto}] da existência. A sua conta e alma foram atiradas ao Vazio Eterno.`, true, "Expulsão e deleção do sistema");
+        this._salvarBancoDeDados();
+        
+        return { sucesso: true, relato: `A alma de ${nomeMorto} foi obliterada e a conta deletada do servidor.` };
+    }
+}	
 module.exports = { ShadowCore, AstrolabioLunar };

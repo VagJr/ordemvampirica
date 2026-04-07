@@ -238,6 +238,12 @@
                 <h3>Convite Direto (Telegram)</h3>
                 <input type="text" id="target-telegram" placeholder="@username do Telegram a Convidar">
                 <button class="btn-magick" onclick="gerarConviteBot()">Sussurrar O Abraço via Bot</button>
+				<div class="card oculto" id="painel-primordial" style="border-color: #f00; background: #110000; margin-top: 20px;">
+                <h3 style="color: #f00; text-align: center; text-transform: uppercase;">O Trono Primordial (Admin)</h3>
+                <p style="text-align: center; font-size: 0.85em; color: #ff8888;">Tens o poder absoluto sobre a vida, a morte e o código. Seleciona a alma para deletar.</p>
+                <div class="grid-2">
+                    <select id="alvo-obliteracao"></select>
+                    <button onclick="obliterarMembro()" style="background: #300; border-color: red; color: #fff;">Deletar Conta do Herege</button>
             </div>
         </div>
 
@@ -740,6 +746,11 @@
             safeSet('ui-clan-cofre', meuVampiro.clanData.cofre);
             const btnSacar = document.getElementById('btn-sacar-clan');
             if (btnSacar) btnSacar.style.display = (meuVampiro.clanData.lider === meuVampiro.id) ? 'inline-block' : 'none';
+			// Revelar o Painel do Lorde Dracônico apenas se for Geração 1
+        const painelAdmin = document.getElementById('painel-primordial');
+        if (painelAdmin) {
+            if (meuVampiro.geracao === 1) painelAdmin.classList.remove('oculto');
+            else painelAdmin.classList.add('oculto');
         }
     }
 
@@ -761,6 +772,24 @@
         const val = document.getElementById('lista-titulos').value;
         try {
             await fetch('/api/perfil/titulo', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, titulo: val }) });
+            syncStatus();
+        } catch(e) { }
+    }
+	
+	async function obliterarMembro() {
+        const alvoId = document.getElementById('alvo-obliteracao').value;
+        if (!alvoId) return;
+        
+        if (!confirm("⚠️ ATENÇÃO, ALFA PRIMORDIAL!\nDesejas realmente deletar a conta deste usuário? Ele será apagado para sempre e perderá tudo.")) return;
+        
+        try {
+            const res = await fetch('/api/admin/obliterar', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ adminId: meuVampiro.id, alvoId }) 
+            });
+            const dados = await res.json();
+            alert(dados.erro || dados.relato);
             syncStatus();
         } catch(e) { }
     }
@@ -996,6 +1025,7 @@
             const res = await fetch('/api/social/' + meuVampiro.id); const dados = await res.json();
             const opts = dados.alvos.map(a => `<option value="${a.id}">[${a.titulo || 'Mortal'}] ${a.nome} (Grau ${a.nivel})</option>`).join('');
             safeSet('lista-alvos-pvp', opts, true); 
+			safeSet('alvo-obliteracao', opts, true);
             safeSet('chat-alvo-privado', opts, true); 
             safeSet('lista-alvos-magia', opts, true);
             safeSet('doacao-alvo', opts, true);
