@@ -9,7 +9,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap');
         
-        /* Adiciona no topo das tuas variáveis: */
         :root { --sangue: #8a0303; --sangue-claro: #ff1e2f; --bg: #030303; --panel: #0a0505; --text: #b0b0b0; --ouro: #c5a059; --seth-ouro: #d4af37; --xp: #5985c5; --magia: #800080;}
         
         /* Efeito de Rasgo Lycan */
@@ -107,7 +106,6 @@
         .btn-plus { width: 30px; height: 30px; padding: 0; margin: 0; font-size: 1.2em; line-height: 1; border-radius: 50%; background: #222; border: 1px solid var(--ouro); color: var(--ouro);}
         
         .equip-slot { background: #000; border: 1px dashed #444; padding: 10px; text-align: center; margin-bottom: 5px; font-size: 0.85em; color: #666; font-style: italic;}
-		
     </style>
 </head>
 <body>
@@ -139,6 +137,7 @@
     </div>
 
     <div id="ui-main" class="oculto">
+        
         <div class="card" style="padding: 10px 15px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                 <div>
@@ -153,51 +152,6 @@
                 </div>
             </div>
             <div class="progress-bg"><div class="progress-bar" id="bar-xp"></div></div>
-			<div id="aba-biblioteca" class="aba oculto">
-            <div class="card">
-                <h3 style="text-align: center;">Bancada de Estudos (Rascunhos)</h3>
-                <p style="text-align: center; font-size: 0.85em; color: #888;">Cria ensaios, investiga magia com o Oráculo e funde-os aos teus rituais.</p>
-                <div class="grid-2" style="margin-bottom: 10px;">
-                    <input type="text" id="in-proj-titulo" placeholder="Título do Novo Tomo" style="margin:0;">
-                    <input type="text" id="in-proj-tema" placeholder="Tema Oculto a Estudar" style="margin:0;">
-                </div>
-                <button class="btn-magick" onclick="iniciarProjeto()">Abrir Novo Pergaminho</button>
-                <div id="lista-projetos" style="margin-top:15px; border-top: 1px dashed #333; padding-top: 10px;"></div>
-            </div>
-
-            <div id="bancada-ativa" class="card oculto" style="border-color: var(--ouro); background: #0a0500;">
-                <h3>Estudando: <span id="proj-ativo-titulo" class="destaque"></span></h3>
-                
-                <textarea id="in-proj-conteudo" rows="10" style="font-size:0.9em;"></textarea>
-                <button onclick="salvarProjetoManual()" style="background:#111; color:var(--ouro); border-color:#333; margin-bottom: 15px;">Salvar Alterações Manuais (Tua Pena)</button>
-                
-                <div style="border-top: 1px dashed #333; margin: 15px 0; padding-top: 15px;">
-                    <h4 style="color:var(--ouro); margin-bottom:5px;">A Mente Abissal (Pesquisa Contínua)</h4>
-                    <p style="font-size:0.8em; color:#888;">Gasta 1 Fúria. Pede à IA para aprofundar um feitiço e anexar as fórmulas ao livro.</p>
-                    <input type="text" id="in-proj-pesquisa" placeholder="O que ditarás ao Abismo agora? (Ex: Como invocar Bune)">
-                    <button class="btn-magick" id="btn-aprofundar" onclick="aprofundarProjeto()">Sussurrar ao Abismo e Anexar</button>
-                </div>
-
-                <div style="border-top: 1px solid var(--sangue); margin: 15px 0; padding-top: 15px;">
-                    <h4 style="color:var(--sangue-claro); margin-bottom:5px;">Encadernar e Selar o Manuscrito</h4>
-                    <p style="font-size:0.8em; color:#888;">Gasta 200 Gts. Fecha o rascunho e eterniza-o como um Tomo Completo.</p>
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom:10px;">
-                        <input type="checkbox" id="in-proj-publico" style="width:auto; margin:0;">
-                        <label for="in-proj-publico" style="color:var(--ouro); font-size: 0.9em; font-family: 'Cinzel', serif;">Publicar na Estante Global (Requer Grau 5+)</label>
-                    </div>
-                    <button onclick="arquivarProjeto()" style="background:#200; border-color:red;">Selar com Sangue (200 Gts)</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>A Tua Estante (Tomos Selados)</h3>
-                <div id="lista-manuscritos-meus" style="max-height: 250px; overflow-y: auto; padding-right:5px;"></div>
-            </div>
-
-            <div class="card">
-                <h3>Acervo Akáshico Global</h3>
-                <div id="lista-manuscritos-global" style="max-height: 350px; overflow-y: auto; padding-right:5px;"></div>
-            </div>
         </div>
 
         <div class="tabs" id="nav-tabs">
@@ -208,7 +162,8 @@
             <button onclick="nav('chat', this)">Salão / Corte</button>
             <button onclick="nav('pvp', this)">Duelos (PvP)</button>
             <button onclick="nav('magia', this)">O Altar / Forja</button>
-			<button onclick="nav('biblioteca', this)">A Biblioteca</button>
+            <button onclick="nav('biblioteca', this)">A Biblioteca</button>
+            <button onclick="nav('umbral', this)" style="color: #ff5050;">O Umbral (PvE)</button>
             <button onclick="nav('clan', this)">Santuário</button>
             <button onclick="nav('banco', this)">Cálice</button>
         </div>
@@ -216,7 +171,7 @@
         <div id="aba-astrolabio" class="aba oculto">
             <div class="card">
                 <h3 style="text-align: center;">O Firmamento Hermético</h3>
-                <p style="text-align: center; font-size: 0.85em; color: #888;">A abóbada celeste governa as correntes de sangue em tempo real.</p>
+                <p style="text-align: center; font-size: 0.85em; color: #888;">A abóbada celeste governa as correntes astrais.</p>
                 <div class="lua-box">
                     <div id="lua-icone" class="lua-icone">🌑</div>
                     <div id="lua-nome" class="lua-nome">Carregando Céu...</div>
@@ -225,7 +180,7 @@
                         <strong style="color:var(--ouro);">Cronograma Sombrio:</strong><br>
                         🌑 Lua Negra (Hécate): Ocultação total. Sem risco de falha na Caça.<br>
                         🌒 Crescente (Diana): A Roda do Tempo acelera. Fúria restaura mais rápido.<br>
-                        🌕 Cheia (Selene): Sangue e Dano Ampliados (+30%), mas com Perigos.<br>
+                        🌕 Cheia (Selene): Lycans dominam o caos. Vampiros exaltam feitiçaria.<br>
                         🌘 Minguante (Mórigan): Magias Negras possuem impacto destrutivo massivo.
                     </div>
                 </div>
@@ -237,7 +192,7 @@
                 <h3>A Identidade</h3>
                 <select id="lista-titulos" onchange="mudarTitulo()"></select>
                 <div class="grid-2" style="margin-bottom: 10px; margin-top:10px;">
-                    <div class="perfil-stat">Sangue<span id="p-drenado">0</span></div>
+                    <div class="perfil-stat">Alimento<span id="p-drenado">0</span></div>
                     <div class="perfil-stat">Cadáveres<span id="p-secos">0</span></div>
                 </div>
             </div>
@@ -409,7 +364,80 @@
                 <div id="magia-result" style="margin-top: 10px; color: var(--ouro); font-style: italic;"></div>
             </div>
         </div>
-        
+
+        <div id="aba-biblioteca" class="aba oculto">
+            <div class="card">
+                <h3 style="text-align: center;">Bancada de Estudos (Rascunhos)</h3>
+                <p style="text-align: center; font-size: 0.85em; color: #888;">Cria ensaios, investiga magia com o Oráculo e funde-os aos teus rituais.</p>
+                <div class="grid-2" style="margin-bottom: 10px;">
+                    <input type="text" id="in-proj-titulo" placeholder="Título do Novo Tomo" style="margin:0;">
+                    <input type="text" id="in-proj-tema" placeholder="Tema Oculto a Estudar" style="margin:0;">
+                </div>
+                <button class="btn-magick" onclick="iniciarProjeto()">Abrir Novo Pergaminho</button>
+                <div id="lista-projetos" style="margin-top:15px; border-top: 1px dashed #333; padding-top: 10px;"></div>
+            </div>
+
+            <div id="bancada-ativa" class="card oculto" style="border-color: var(--ouro); background: #0a0500;">
+                <h3>Estudando: <span id="proj-ativo-titulo" class="destaque"></span></h3>
+                <textarea id="in-proj-conteudo" rows="12" style="font-size:0.95em; line-height:1.5; background:#050200; border: 1px solid var(--ouro);"></textarea>
+                <button onclick="salvarProjetoManual()" style="background:#111; color:var(--ouro); border-color:#333; margin-bottom: 15px;">Gravar com Sangue (Salvar)</button>
+                
+                <div style="border-top: 1px dashed #333; margin: 15px 0; padding-top: 15px;">
+                    <h4 style="color:var(--ouro); margin-bottom:5px;">A Mente Abissal (Pesquisa Contínua)</h4>
+                    <p style="font-size:0.8em; color:#888;">Gasta 1 Fúria. Pede à IA para aprofundar um feitiço e anexar as fórmulas ao livro.</p>
+                    <input type="text" id="in-proj-pesquisa" placeholder="O que ditarás ao Abismo agora?">
+                    <button class="btn-magick" id="btn-aprofundar" onclick="aprofundarProjeto()">Sussurrar ao Abismo e Anexar Conhecimento</button>
+                </div>
+
+                <div style="border-top: 1px solid var(--sangue); margin: 15px 0; padding-top: 15px;">
+                    <h4 style="color:var(--sangue-claro); margin-bottom:5px;">Conclusão do Estudo</h4>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom:10px;">
+                        <input type="checkbox" id="in-proj-publico" style="width:auto; margin:0;">
+                        <label for="in-proj-publico" style="color:var(--ouro); font-size: 0.9em; font-family: 'Cinzel', serif;">Publicar na Estante Global (Exige Grau 5+)</label>
+                    </div>
+                    <div class="grid-2">
+                        <button onclick="arquivarProjeto()" style="background:#200; border-color:red; font-size:0.7em;">Selar como Livro (200 Gts)</button>
+                        <button onclick="cristalizarRitual()" style="background:purple; color:#fff; border-color:#f0f; font-size:0.7em;" title="A IA lerá o texto e criará uma magia jogável!">Cristalizar Magia Real (Grau 10+ | 5000 Gts)</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>A Tua Estante Privada</h3>
+                <div id="lista-manuscritos-meus" style="max-height: 250px; overflow-y: auto; padding-right:5px;"></div>
+            </div>
+
+            <div class="card">
+                <h3>Acervo Akáshico Global (Leitura)</h3>
+                <div id="lista-manuscritos-global" style="max-height: 350px; overflow-y: auto; padding-right:5px;"></div>
+            </div>
+        </div>
+
+        <div id="aba-umbral" class="aba oculto">
+            <div class="card">
+                <h3 style="text-align: center; color:#ff5050;">Expedições Qliphóticas</h3>
+                <p style="text-align: center; font-size: 0.85em; color: #888;">Lança o teu corpo astral contra dimensões habitadas por demónios para colher ingredientes exóticos exigidos na Alquimia Oculta.</p>
+                
+                <div style="border: 1px solid #422; background: #110000; padding: 15px; margin-bottom: 10px;">
+                    <h4 style="color:#d080ff;">1. Lua Obscura de Gamaliel</h4>
+                    <p style="font-size: 0.8em; color: #aaa;">Incursão fraca. Despojos: <b>Ectoplasma</b>. Exige: 5 Feitiçaria (Gnose).</p>
+                    <button onclick="explorarReino('gamaliel')" style="border-color:#d080ff; background:transparent; color:#d080ff;">Invadir (Custo: 2 Fúrias)</button>
+                </div>
+
+                <div style="border: 1px solid #522; background: #1a0505; padding: 15px; margin-bottom: 10px;">
+                    <h4 style="color:#ff5050;">2. Forja Demoníaca de Samael</h4>
+                    <p style="font-size: 0.8em; color: #aaa;">Incursão Média. Despojos: <b>Pedra da Alma</b>. Exige: 15 Feitiçaria (Gnose).</p>
+                    <button onclick="explorarReino('samael')" style="border-color:#ff5050; background:transparent; color:#ff5050;">Invadir (Custo: 3 Fúrias)</button>
+                </div>
+
+                <div style="border: 1px solid #611; background: #220000; padding: 15px; margin-bottom: 10px;">
+                    <h4 style="color:#ffd700;">3. Coroa de Thaumiel</h4>
+                    <p style="font-size: 0.8em; color: #aaa;">Incursão Apex. Despojos: <b>Memórias Ancestrais</b>. Exige: 25 Feitiçaria (Gnose).</p>
+                    <button onclick="explorarReino('thaumiel')" style="border-color:#ffd700; background:transparent; color:#ffd700;">Invadir (Custo: 5 Fúrias)</button>
+                </div>
+            </div>
+        </div>
+
         <div id="aba-clan" class="aba oculto">
             <div class="card" id="ui-no-clan">
                 <h3 style="text-align: center;">Fundar um Santuário (Clã)</h3>
@@ -477,8 +505,6 @@
                 <button class="btn-magick" onclick="transferirSangueIrmao()" style="margin-top:10px;">Executar Transferência Cármica</button>
             </div>
         </div>
-            </div>
-        </div>
 
     </div>
 
@@ -502,8 +528,6 @@
         if(el) { if(isHTML) el.innerHTML = val; else el.innerText = val; }
     }
     
-    // A MAGIA DO SUCO (JUICE)
-    // A MAGIA DO SUCO (JUICE)
     function jorrarSangue() {
         if (meuVampiro && meuVampiro.raca === 'lycan') {
             rasgarGarras();
@@ -513,7 +537,7 @@
             document.body.appendChild(splash);
             setTimeout(() => splash.remove(), 1500);
         }
-    } // <-- A CHAVE QUE FALTAVA ESTÁ AQUI
+    } 
 
     function rasgarGarras() {
         const splash = document.createElement('div');
@@ -530,7 +554,7 @@
         btn.classList.add('active');
         if (['pvp', 'magia', 'chat'].includes(abaId)) carregarSocial();
         if (abaId === 'leilao') carregarLeilao();
-        if (abaId === 'biblioteca') carregarBiblioteca(); // NOVO!
+        if (abaId === 'biblioteca') carregarBiblioteca(); 
     }
 
     async function auth() {
@@ -563,7 +587,6 @@
             document.getElementById('ui-login').classList.add('oculto');
             document.getElementById('ui-main').classList.remove('oculto');
             
-            // Aplica a estética dourada se for Lycan
             if (meuVampiro.raca === 'lycan') {
                 document.querySelectorAll('.card').forEach(el => el.classList.add('tema-lycan'));
             }
@@ -590,7 +613,7 @@
         safeSet('ui-nivel', meuVampiro.nivel);
         safeSet('ui-xpprox', meuVampiro.xpProx);
         safeSet('ui-influencia', meuVampiro.influencia);
-		safeSet('inv-memoria', meuVampiro.inventario.memoria || 0);
+        safeSet('inv-memoria', meuVampiro.inventario.memoria || 0);
         safeSet('inv-ecto', meuVampiro.inventario.ectoplasma || 0);
         safeSet('inv-pedra', meuVampiro.inventario.pedraAlma || 0);
         
@@ -838,8 +861,9 @@
         const m = document.getElementById('lista-magia').value, a = document.getElementById('lista-alvos-magia').value;
         try {
             const res = await fetch('/api/magia/conjurar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ atacanteId: meuVampiro.id, ritualId: m, alvoId: a }) });
-            const dados = await res.json(); safeSet('magia-result', dados.erro || dados.relato); 
-            if(!dados.erro) jorrarSangue();
+            const dados = await res.json(); 
+            document.getElementById('magia-result').innerHTML = dados.erro || dados.relato;
+            if (!dados.erro) jorrarSangue();
             syncStatus();
         } catch(e){}
     }
@@ -876,7 +900,6 @@
         } catch(e){}
     }
 
-    // CORREÇÃO MESTRA: Forja e Altar
     async function carregarSocial() {
         try {
             const res = await fetch('/api/social/' + meuVampiro.id); const dados = await res.json();
@@ -884,16 +907,13 @@
             safeSet('lista-alvos-pvp', opts, true); 
             safeSet('chat-alvo-privado', opts, true); 
             safeSet('lista-alvos-magia', opts, true);
-            safeSet('doacao-alvo', opts, true); // NOVO
+            safeSet('doacao-alvo', opts, true);
             
-            // Corrige a renderização dos Rituais
             const htmlMagia = Object.keys(dados.grimorio).map(k => meuVampiro.poderesDesbloqueados.includes(k) 
                 ? `<option value="${k}">${dados.grimorio[k].nome} [Custo: ${dados.grimorio[k].custoSangue} Gts / ${dados.grimorio[k].custoAcao} Fúria]</option>` 
                 : '').join('');
             safeSet('lista-magia', htmlMagia, true);
             
-            // Corrige a renderização das Poções/Forja
-            // Corrige a renderização das Poções/Forja
             const htmlAlquimia = Object.keys(dados.alquimia).map(k => {
                 let req = dados.alquimia[k].custo;
                 let cStr = `${req.gts} Gts`;
@@ -930,7 +950,6 @@
         box.scrollTop = box.scrollHeight;
     });
 
-    // O CONVITE UNIVERSAL FORA DO TELEGRAM
     function gerarConviteUniversal() {
         const webLink = `${window.location.origin}/?invite=${meuVampiro.id}`;
         navigator.clipboard.writeText(webLink).then(() => {
@@ -958,7 +977,6 @@
         } catch(e) {}
     }
 	
-	// --- MAGIA DA BANCADA DE ESTUDOS (FRONTEND CORRIGIDO) ---
     let projetoAbertoId = null;
 
     async function iniciarProjeto() {
@@ -971,11 +989,10 @@
             const dados = await res.json(); 
             if (dados.erro) { alert(dados.erro); return; }
             
-            alert(dados.relato); 
             document.getElementById('in-proj-titulo').value = ''; 
             document.getElementById('in-proj-tema').value = '';
             syncStatus(); carregarBiblioteca();
-            abrirProjeto(dados.projeto.id); // Abre automaticamente ao criar
+            abrirProjeto(dados.projeto.id); 
         } catch(e) {}
     }
 
@@ -1006,32 +1023,22 @@
         if (!pesquisa) return alert("Dita a tua dúvida à Mente Abissal.");
         
         const btn = document.getElementById('btn-aprofundar');
-        btn.innerText = "A canalizar Ocultismo Cósmico...";
-        btn.disabled = true;
-        jorrarSangue(); // Efeito imersivo enquanto a IA gera
+        btn.innerText = "A canalizar Ocultismo Cósmico..."; btn.disabled = true;
+        jorrarSangue(); 
 
         try {
             const res = await fetch('/api/biblioteca/aprofundar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId, novaPesquisa: pesquisa }) });
             const dados = await res.json(); 
             
-            btn.innerText = "Sussurrar ao Abismo e Anexar";
-            btn.disabled = false;
+            btn.innerText = "Sussurrar ao Abismo e Anexar Conhecimento"; btn.disabled = false;
             
             if (dados.erro) { alert(dados.erro); return; }
             
-            // Sucesso! Atualiza a textarea
             document.getElementById('in-proj-conteudo').value = dados.novoConteudo;
             document.getElementById('in-proj-pesquisa').value = '';
-            
-            // Faz Scroll para o fundo do texto para ver o que a IA escreveu
-            const txtArea = document.getElementById('in-proj-conteudo');
-            txtArea.scrollTop = txtArea.scrollHeight;
-            
+            const txtArea = document.getElementById('in-proj-conteudo'); txtArea.scrollTop = txtArea.scrollHeight;
             syncStatus(); carregarBiblioteca();
-        } catch(e) { 
-            btn.innerText = "Sussurrar ao Abismo e Anexar"; 
-            btn.disabled = false; 
-        }
+        } catch(e) { btn.innerText = "Sussurrar ao Abismo e Anexar Conhecimento"; btn.disabled = false; }
     }
 
     async function arquivarProjeto() {
@@ -1043,20 +1050,85 @@
             const res = await fetch('/api/biblioteca/arquivar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId, publico }) });
             const dados = await res.json(); 
             alert(dados.erro || dados.relato); 
-            if (!dados.erro) { 
-                document.getElementById('bancada-ativa').classList.add('oculto'); 
-                projetoAbertoId = null; 
-            }
+            if (!dados.erro) { document.getElementById('bancada-ativa').classList.add('oculto'); projetoAbertoId = null; }
             syncStatus(); carregarBiblioteca();
         } catch(e) {}
     }
 
-    async function apagarProjetoBtn(id) {
-        if(!confirm("Queimar este rascunho? O conhecimento perder-se-á nas cinzas para sempre.")) return;
+    async function cristalizarRitual() {
+        if (!projetoAbertoId) return;
+        if(!confirm("CRIAR MAGIA REAL? \nA Mente Abissal lerá as tuas palavras, consumirá 5000 Gts e o Teu Rascunho, e injetará este ritual no código do jogo para todos. Continuar?")) return;
+
+        jorrarSangue();
         try {
-            const res = await fetch('/api/biblioteca/apagar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: id }) });
+            const res = await fetch('/api/biblioteca/cristalizar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId }) });
             const dados = await res.json(); 
             alert(dados.erro || dados.relato); 
+            if (!dados.erro) { 
+                document.getElementById('bancada-ativa').classList.add('oculto'); 
+                projetoAbertoId = null; 
+                carregarSocial(); // Atualiza a lista de rituais no Altar!
+            }
+            syncStatus(); carregarBiblioteca();
+        } catch(e) { alert("A entropia cósmica quebrou a fusão."); }
+    }
+
+    async function explorarReino(reinoId) {
+        try {
+            const res = await fetch('/api/incursoes/explorar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, reinoId }) });
+            const dados = await res.json(); 
+            
+            if (!dados.sucesso) { alert(dados.erro); } 
+            else { jorrarSangue(); alert(dados.relato); }
+            
+            syncStatus();
+        } catch(e) { alert("Perdido no vórtice astral."); }
+    }
+
+    async function carregarBiblioteca() {
+        try {
+            const res = await fetch('/api/biblioteca'); const dados = await res.json();
+            
+            const htmlGlobal = dados.manuscritos.map(m => `
+                <div class="manuscrito-box">
+                    <div class="manuscrito-titulo">${m.titulo}</div>
+                    <div class="manuscrito-texto">${m.conteudo}</div>
+                    <div class="manuscrito-autor">Publicado por: [${m.autorTitulo}] ${m.autorNome}</div>
+                </div>
+            `).join('') || "<p style='color:#555;font-style:italic;'>A estante global está vazia.</p>";
+            safeSet('lista-manuscritos-global', htmlGlobal, true);
+
+            if (meuVampiro) {
+                const htmlMeus = (meuVampiro.manuscritos || []).slice().reverse().map(m => `
+                    <div class="manuscrito-box" style="border-left-color: var(--sangue);">
+                        <div class="manuscrito-titulo">${m.titulo} ${m.publico ? '<span style="font-size:0.6em;color:#0f5;">[PÚBLICO]</span>' : '<span style="font-size:0.6em;color:red;">[SECRETO]</span>'}</div>
+                        <div class="manuscrito-texto">${m.conteudo}</div>
+                    </div>
+                `).join('') || "<p style='color:#555;font-style:italic;'>Nenhum livro selado.</p>";
+                safeSet('lista-manuscritos-meus', htmlMeus, true);
+
+                const htmlRascunhos = (meuVampiro.projetosEstudo || []).map(p => `
+                    <div style="border: 1px dashed #444; padding: 10px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="color:var(--ouro);">${p.titulo}</strong><br>
+                            <span style="font-size:0.75em; color:#888;">Foco: ${p.tema}</span>
+                        </div>
+                        <div>
+                            <button class="btn-magick" onclick="abrirProjeto('${p.id}')" style="padding:5px; font-size:0.7em; width:auto; margin:0;">Estudar</button>
+                            <button onclick="apagarProjetoBtn('${p.id}')" style="padding:5px; font-size:0.7em; width:auto; background:transparent; color:red; border-color:red; margin:0;">Queimar</button>
+                        </div>
+                    </div>
+                `).join('') || "<p style='color:#555;font-style:italic; font-size:0.85em;'>Nenhum rascunho na bancada.</p>";
+                safeSet('lista-projetos', htmlRascunhos, true);
+            }
+        } catch(e) {}
+    }
+
+    async function apagarProjetoBtn(id) {
+        if(!confirm("Queimar este rascunho? O conhecimento perder-se-á.")) return;
+        try {
+            const res = await fetch('/api/biblioteca/apagar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: id }) });
+            const dados = await res.json(); alert(dados.erro || dados.relato); 
             if (projetoAbertoId === id) document.getElementById('bancada-ativa').classList.add('oculto');
             syncStatus(); carregarBiblioteca();
         } catch(e) {}

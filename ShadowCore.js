@@ -198,6 +198,39 @@ class OraculoAbissal {
     }
 	
 	// ==========================================
+    // MAGIA SUPREMA: IA CRIANDO RITUAIS REAIS NO JOGO
+    // ==========================================
+    async forjarRitualDoManuscrito(iniciado, titulo, conteudo) {
+        if (!this.apiKey) return null;
+        try {
+            const ctxText = conteudo.length > 2000 ? conteudo.substring(conteudo.length - 2000) : conteudo;
+            const prompt = `Você é a "Mente Abissal", a arquiteta do MMORPG Oculto Sanguinis. 
+            O jogador [Grau ${iniciado.nivel}] "${iniciado.nome}" escreveu um grimório intitulado "${titulo}".
+            Texto do Grimório: "${ctxText}"
+            
+            Sua missão: Transformar a intenção deste texto em um NOVO FEITIÇO JOGÁVEL para o sistema.
+            Analise se o texto foca em Dano (pvp) ou Cura/Escudo (buff). 
+            
+            Responda OBRIGATORIAMENTE APENAS neste formato JSON, sem mais nada:
+            {
+              "nome": "Nome Épico Baseado no Texto",
+              "lore": "1 frase poética descrevendo o feitiço.",
+              "custoAcao": (Número de 3 a 8 dependendo do poder),
+              "custoSangue": (Número de 1000 a 5000 dependendo do poder),
+              "reqLevel": (Número de 5 a 15),
+              "tipo": ("pvp" ou "buff"),
+              "poderBase": (Número de 500 a 3000. Se for pvp = Dano de Sangue. Se for buff = Cura de Sangue)
+            }`;
+
+            const resposta = await this.groq.chat.completions.create({
+                messages: [{ role: "system", content: "Retorne apenas o JSON estruturado." }, { role: "user", content: prompt }],
+                model: "llama-3.1-8b-instant", temperature: 0.5, response_format: { type: "json_object" }
+            });
+            return JSON.parse(resposta.choices[0].message.content);
+        } catch (e) { return null; }
+    }
+	
+	// ==========================================
     // O ACERVO AKÁSHICO (BIBLIOTECA E MANUSCRITOS)
     // ==========================================
     // ==========================================
@@ -352,55 +385,35 @@ class OraculoAbissal {
 // ==========================================
 class ShadowCore {
     constructor() {
-        this.vampiros = {}; 
-        this.rebanho = {}; 
-        this.clans = {}; 
-        this.leilaoP2P = [];
-        this.leilaoIdCounter = 1;
-        this.logs = { global: [], caca: [], guerra: [] };
+        this.vampiros = {}; this.rebanho = {}; this.clans = {}; 
+        this.leilaoP2P = []; this.leilaoIdCounter = 1; this.logs = { global: [], caca: [], guerra: [] };
         
-        this.oraculo = new OraculoAbissal();
-        this.mongoClient = null;
-        this.dbCollection = null;
+        this.oraculo = new OraculoAbissal(); this.mongoClient = null; this.dbCollection = null;
         
-        // GRIMÓRIO EXPANDIDO COM MAIS RITUAIS E EFEITOS ASTRAIS
-        // GRIMÓRIO EXPANDIDO DE ALTA MAGIA (Usa Gts e Fúria)
-        // GRIMÓRIO EXPANDIDO DE ALTA MAGIA E OCULTISMO (Rituais Reais Adaptados)
+        // Magias Base (Mantenha as que você já tem aqui)
         this.grimorio = {
-            'solve_coagula': { nome: "Solve et Coagula (Alquimia Básica)", lore: 'Dissolve a Vontade do inimigo.', custoAcao: 2, custoSangue: 150, reqLevel: 1, tipo: 'pvp', efeito: (a, d, l) => { let dreno = l.id === 'minguante' ? 8 : 4; d.pontosAcao = Math.max(0, d.pontosAcao - dreno); return `Vitalidade desfeita (-${dreno} Fúria).`; } },
-            'rmp_banimento': { nome: "Ritual Menor do Pentagrama (RMP)", lore: 'Limpa a aura, restaura levemente a Fúria e protege a mente.', custoAcao: 0, custoSangue: 300, reqLevel: 2, tipo: 'buff', efeito: (a, d, l) => { a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 3); return `YHVH ADNI AHIH AGLA. Os arcanjos guardam os teus quadrantes. +3 Fúria.`; } },
-            'rito_gamaliel': { nome: "Invocação de Gamaliel (Qliphoth)", lore: 'Ferve o sangue corrompido em pura Fúria bestial.', custoAcao: 0, custoSangue: 800, reqLevel: 3, tipo: 'buff', efeito: (a, d, l) => { let cura = l.id === 'minguante' ? 8 : 4; a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + cura); return `A sombra da lua corrompeu-te. +${cura} Fúria.`; } },
-            'sanguis_aeternum': { nome: "Selo de Aemeth (John Dee)", lore: 'Escudo Divino Invertido para Proteção Absoluta.', custoAcao: 1, custoSangue: 500, reqLevel: 4, tipo: 'buff', efeito: (a, d, l) => { a.escudo = true; return `A Tábua da Verdade Invertida cobre a tua alma. Escudo Activo.`; } },
-            'selo_bune': { nome: "O Pacto de Bune (Goécia)", lore: 'Atrai Riqueza Astral e Influência roubando do éter.', custoAcao: 5, custoSangue: 1500, reqLevel: 5, tipo: 'buff', efeito: (a, d, l) => { a.influencia += 3; a.sangue += 1500; return `O Duque Bune aceitou a oferenda. Influência e Ouro Espiritual (+1500 Gts) fluem para ti.`; } },
-            'vinculo_lilith': { nome: "Vínculo Súcubo de Lilith", lore: 'Drena o Cálice inimigo e converte em Fúria.', custoAcao: 3, custoSangue: 800, reqLevel: 6, tipo: 'pvp', efeito: (a, d, l) => { let dreno = Math.min(d.calice, 800); d.calice -= dreno; a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 3); return `O Laço Oculto sorveu ${dreno} Gts do cofre inimigo. +3 Fúria.`; } },
-            'espelho_negro': { nome: "Espelho Negro de Saturno", lore: 'Rouba Influência Cósmica do Alvo.', custoAcao: 4, custoSangue: 1500, reqLevel: 8, tipo: 'pvp', efeito: (a, d, l) => { let dreno = Math.min(5, d.influencia); d.influencia -= dreno; a.influencia += dreno; return `O espelho refletiu o desespero de ${d.nome}. Roubaste ${dreno} de Influência.`; } },
-            'evocacao_marchosias': { nome: "Fúria de Marchosias (Goécia Feral)", lore: 'Especial para Lycans. Reduz a estamina do alvo a zero e quebra escudos.', custoAcao: 6, custoSangue: 2500, reqLevel: 10, tipo: 'pvp', efeito: (a, d, l) => { d.escudo = false; d.pontosAcao = 0; return `As chamas de Marchosias queimaram a aura de ${d.nome}. Escudo obliterado e Fúria reduzida a 0.`; } }
+            'solve_coagula': { nome: "Solve et Coagula", lore: 'Dissolve a Vontade.', custoAcao: 2, custoSangue: 150, reqLevel: 1, tipo: 'pvp', efeito: (a, d, l) => { let dreno = l.id === 'minguante' ? 8 : 4; d.pontosAcao = Math.max(0, d.pontosAcao - dreno); return `Vitalidade desfeita (-${dreno} Fúria).`; } },
+            // ... [MANTENHA OS SEUS OUTROS RITUAIS AQUI] ...
         };
 
-        // ALQUIMIA OCULTA (A SEGUNDA CAIXA) - Exige materiais extraídos da mente e alma
+        this.grimorioCustomizado = {}; // Rituais criados por jogadores através da IA
+        
+        // Alquimia Base
         this.alquimia = {
             'elixir_estamina': { nome: 'Filtro do Frenesi', custo: { anima: 2, vitae: 1, gts: 300 }, efeito: 'Restaura 5 Fúria.' },
-            'amuleto_sombra': { nome: 'Talismã Protetor', custo: { cinzas: 3, ectoplasma: 1, gts: 500 }, efeito: 'Garante Escudo Absoluto feito de Ectoplasma.' },
-            'lagrima_prata': { nome: 'Lágrima de Prata', custo: { cinzas: 2, vitae: 3, gts: 1000 }, efeito: 'Restaura 1 Fúria Imediata.' },
-            'extrato_akashico': { nome: 'Soro Akashico', custo: { memoria: 3, anima: 1, gts: 1000 }, efeito: 'Converte fragmentos de memória humana em +50 XP oculto.' },
-            'ouro_filosofal': { nome: 'Ouro Filosofal Negro', custo: { pedraAlma: 1, vitae: 5, gts: 2000 }, efeito: 'Transmuta a alma em +1 Ponto de Influência Permanente.' },
-            'pedra_filosofal_negra': { nome: 'Pedra Negra Rubedo', custo: { pedraAlma: 3, cinzas: 10, vitae: 5, gts: 8000 }, efeito: '+1 Ponto de Iluminação (Atributo).' }
+            // ... [MANTENHA AS SUAS OUTRAS RECEITAS AQUI] ...
         };
 
         this.conquistas = {
             'neofito': { id: 'neofito', titulo: 'Neófito Sedento', requisito: v => v.estatisticas.totalDrenado >= 100 },
-            'assassino': { id: 'assassino', titulo: 'Ceifador de Almas', requisito: v => v.estatisticas.mortaisSecos >= 5 },
             'mestre_guerras': { id: 'mestre_guerras', titulo: 'Lâmina do Abismo', requisito: v => v.estatisticas.vitoriasPvP >= 10 },
-            'senhor_sombras': { id: 'senhor_sombras', titulo: 'Senhor das Sombras', requisito: v => v.estatisticas.vitoriasPvP >= 50 },
-            'anciao': { id: 'anciao', titulo: 'Ancião Sombrio', requisito: v => v.nivel >= 10 },
-            'arquimago': { id: 'arquimago', titulo: 'Hierofante Oculto', requisito: v => v.atributos.gnose >= 15 }
+            'arquiteto_realidade': { id: 'arquiteto_realidade', titulo: 'Criador de Mundos', requisito: v => v.nivel >= 15 }
         };
     }
 
-    // Substitui o teu conectarDatabase atual por este:
     async conectarDatabase() {
         const uri = process.env.MONGO_URI;
-        if (!uri) { console.error("CRÍTICO: MONGO_URI não encontrada."); return; }
+        if (!uri) return;
         try {
             this.mongoClient = new MongoClient(uri); await this.mongoClient.connect();
             this.dbCollection = this.mongoClient.db('sanguinis_db').collection('registos_akashicos');
@@ -409,26 +422,25 @@ class ShadowCore {
                 this.vampiros = doc.vampiros || {}; this.rebanho = doc.rebanho || {}; this.clans = doc.clans || {};
                 this.leilaoP2P = doc.leilaoP2P || []; this.leilaoIdCounter = doc.leilaoIdCounter || 1; 
                 this.logs = doc.logs || { global: [], caca: [], guerra: [] };
-                this.manuscritos = doc.manuscritos || []; // A BIBLIOTECA GLOBAL
-                console.log("🦇 O Monólito Eterno abriu-se. Almas e Tomos carregados.");
-            } else console.log("🌑 O Abismo está vazio. Aguardando o Gênesis.");
-        } catch (error) { console.error("Falha ao invocar o MongoDB Atlas:", error); }
+                this.manuscritos = doc.manuscritos || []; 
+                this.grimorioCustomizado = doc.grimorioCustomizado || {}; 
+                
+                // Mescla os rituais dos jogadores no motor principal do jogo!
+                Object.assign(this.grimorio, this._construirFuncoesCustomizadas(this.grimorioCustomizado));
+                
+                console.log("🦇 O Monólito Eterno abriu-se. Almas, Tomos e Magias Criadas carregados.");
+            }
+        } catch (error) { console.error("Falha ao invocar o MongoDB:", error); }
     }
 
-    // Substitui o teu _salvarBancoDeDados atual por este:
     _salvarBancoDeDados() {
         if (!this.dbCollection) return;
         const data = { 
             vampiros: this.vampiros, rebanho: this.rebanho, clans: this.clans, 
             leilaoP2P: this.leilaoP2P, leilaoIdCounter: this.leilaoIdCounter, 
-            logs: this.logs, manuscritos: this.manuscritos // SALVA OS MANUSCRITOS
+            logs: this.logs, manuscritos: this.manuscritos,
+            grimorioCustomizado: this.grimorioCustomizado // SALVA OS RITUAIS IA
         };
-        this.dbCollection.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: data }, { upsert: true }).catch(e => console.error(e));
-    }
-
-    _salvarBancoDeDados() {
-        if (!this.dbCollection) return;
-        const data = { vampiros: this.vampiros, rebanho: this.rebanho, clans: this.clans, leilaoP2P: this.leilaoP2P, leilaoIdCounter: this.leilaoIdCounter, logs: this.logs };
         this.dbCollection.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: data }, { upsert: true }).catch(e => console.error(e));
     }
 
@@ -1122,5 +1134,103 @@ class ShadowCore {
         for (let c in this.clans) { if (this.clans[c].cofre > 0) this.clans[c].cofre += Math.floor(this.clans[c].cofre * 0.01); }
         if (Math.random() > 0.8) this._salvarBancoDeDados(); 
     }
-}
+
+    // ==========================================
+    // INJEÇÃO ASTRAL: RITUAIS CRIADOS POR JOGADORES
+    // ==========================================
+    _construirFuncoesCustomizadas(feitiçosSalvos) {
+        let feitiçosAtivos = {};
+        for (let key in feitiçosSalvos) {
+            let f = feitiçosSalvos[key];
+            // Reconstrói a função javascript que foi gerada pela IA
+            f.efeito = (a, d, l) => {
+                if (f.tipo === 'pvp') {
+                    d.sangue = Math.max(0, d.sangue - f.poderBase);
+                    a.sangue += f.poderBase;
+                    return `A Magia Ancestral de [${f.autor}] obliterou o inimigo. Sorveste ${f.poderBase} Gts.`;
+                } else {
+                    a.sangue += f.poderBase;
+                    return `A Magia Ancestral de [${f.autor}] envolveu-te. Regeneraste ${f.poderBase} Gts.`;
+                }
+            };
+            feitiçosAtivos[key] = f;
+        }
+        return feitiçosAtivos;
+    }
+
+    async cristalizarRitualMagico(vampiroId, projetoId) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Fantasma." };
+        if (v.nivel < 10) return { erro: "Apenas Grão-Mestres (Nível 10+) podem distorcer a realidade e criar novas magias no servidor." };
+        if (v.sangue < 5000) return { erro: "O sacrifício para criar uma nova lei da física astral é 5000 Gts de Sangue." };
+
+        const proj = v.projetosEstudo.find(p => p.id === projetoId);
+        if (!proj || proj.conteudo.length < 200) return { erro: "O manuscrito é demasiado pobre para virar um Ritual verdadeiro." };
+
+        v.sangue -= 5000;
+        
+        // Mente Abissal avalia e cria a matriz do feitiço
+        const magiaDados = await this.oraculo.forjarRitualDoManuscrito(v, proj.titulo, proj.conteudo);
+        if (!magiaDados) return { erro: "Os Deuses não compreenderam as tuas escrituras. A magia falhou." };
+
+        const feitiçoId = `magia_custom_${crypto.randomBytes(4).toString('hex')}`;
+        
+        magiaDados.autor = v.nome;
+        magiaDados.reqLevel = Math.max(5, magiaDados.reqLevel); // Impede que crie magias broken para novatos
+
+        this.grimorioCustomizado[feitiçoId] = magiaDados;
+        Object.assign(this.grimorio, this._construirFuncoesCustomizadas(this.grimorioCustomizado));
+
+        this._registrarEventoEspecial('global', 'ALTA MAGIA DESCOBERTA', `O Universo expandiu-se! ${v.nome} cristalizou o ritual [${magiaDados.nome}] a partir dos seus estudos. Agora todos os mestres podem invocá-lo!`, true, "Criação de nova lei da física mágica");
+
+        this.apagarProjeto(v.id, projetoId); // O rascunho é consumido no processo
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: `RITUAL ACEITE! A magia [${magiaDados.nome}] foi adicionada ao Grimório Global da Ordem.` };
+    }
+
+    // ==========================================
+    // MMORPG: O UMBRAL (INCURSÕES PVE SOLO)
+    // ==========================================
+    explorarUmbral(vampiroId, reinoId) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Alma inexistente." };
+        
+        const reinos = {
+            'gamaliel': { nome: "Lua Obscura de Gamaliel", custo: 2, recM: 'ectoplasma', recN: "Matéria Fantasmagórica", risco: 30, gnoseReq: 5 },
+            'samael': { nome: "Forja de Samael", custo: 3, recM: 'pedraAlma', recN: "Pedra da Alma", risco: 50, gnoseReq: 15 },
+            'thaumiel': { nome: "Gêmeos de Thaumiel", custo: 5, recM: 'memoria', recN: "Memória Ancestral", risco: 75, gnoseReq: 25 }
+        };
+
+        const reino = reinos[reinoId];
+        if (!reino) return { erro: "Este plano astral não existe." };
+        if (v.pontosAcao < reino.custo) return { erro: `A viagem exige ${reino.custo} Fúrias.` };
+        
+        const gnoseTotal = this._obterAtributosTotais(v).gnose;
+        if (gnoseTotal < reino.gnoseReq) return { erro: `A pressão espiritual vai esmagar-te. Exige ${reino.gnoseReq} de Feitiçaria (Gnose).` };
+
+        v.pontosAcao -= reino.custo;
+        
+        // Cálculo de Combate PvE
+        let chanceVitoria = 100 - reino.risco + (gnoseTotal * 2);
+        chanceVitoria = Math.min(95, chanceVitoria); // 5% de chance de falhar sempre, para o caos reinar
+
+        if (Math.random() * 100 > chanceVitoria) {
+            const dano = reino.risco * 20;
+            v.sangue = Math.max(0, v.sangue - dano);
+            this._salvarBancoDeDados();
+            return { erro: `UM DEMÓNIO REPELIU-TE! Foste ferido na projeção astral e perdeste ${dano} Gts.`, sucesso: false };
+        }
+
+        // Sucesso no PvE
+        let qtDrop = 1 + Math.floor(Math.random() * 2);
+        v.inventario[reino.recM] = (v.inventario[reino.recM] || 0) + qtDrop;
+        
+        let xpGanha = reino.custo * 15;
+        this.ganharXP(vampiroId, xpGanha);
+        
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: `Sobreviveste a ${reino.nome}. Despojaste e colheste ${qtDrop}x [${reino.recN}].` };
+    }
+} // <-- Fim da classe ShadowCore
+
 module.exports = { ShadowCore, AstrolabioLunar };

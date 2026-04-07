@@ -215,6 +215,16 @@ app.get('/api/biblioteca', (req, res) => {
     catch(e) { res.status(500).json({erro:"Erro ao abrir a estante."}); }
 });
 
+app.post('/api/biblioteca/cristalizar', async (req, res) => { 
+    try { res.json(await core.cristalizarRitualMagico(req.body.id, req.body.projetoId)); io.emit('sync_geral'); } 
+    catch(e){ console.error(e); res.status(500).json({erro:"A Forja da Realidade colapsou."}); } 
+});
+
+app.post('/api/incursoes/explorar', (req, res) => { 
+    try { res.json(core.explorarUmbral(req.body.id, req.body.reinoId)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"Foste perdido no vácuo do Umbral."}); } 
+});
+
 app.post('/api/caca/drenar', (req, res) => { 
     try { 
         const result = core.drenarMortal(req.body.id, req.body.hash, req.body.local);
