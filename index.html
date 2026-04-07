@@ -74,7 +74,18 @@
         @keyframes flow { 0% { transform: scaleY(0.8) translateY(5px); } 100% { transform: scaleY(1.2) translateY(-5px); } }
         @keyframes move-left { from { transform: translateX(-10%); } to { transform: translateX(-50%); } }
         @keyframes move-right { from { transform: translateX(-50%); } to { transform: translateX(10%); } }
-
+/* THE JUICE: Demonic & War UI */
+        .void-flash { position: fixed; top: 0; left: 0; pointer-events: none; width: 100vw; height: 100vh; background: rgba(128, 0, 128, 0.4); z-index: 9999; animation: flashFade 1s forwards; filter: invert(1); }
+        .shake-screen { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-8px, 0, 0); } 40%, 60% { transform: translate3d(8px, 0, 0); } }
+        
+        .balanca-bar { width: 100%; height: 25px; background: #222; border: 2px solid var(--ouro); position: relative; overflow: hidden; display: flex; margin-bottom:10px; }
+        .balanca-tiamat { height: 100%; background: linear-gradient(90deg, var(--sangue) 0%, var(--sangue-claro) 100%); transition: width 1s ease-in-out; }
+        .balanca-seth { height: 100%; background: linear-gradient(90deg, #d4af37 0%, #b8860b 100%); transition: width 1s ease-in-out; }
+        
+        .boss-box { border: 2px dashed var(--magia); background: #110011; padding: 20px; text-align: center; box-shadow: inset 0 0 20px rgba(128,0,128,0.3); }
+        .boss-hp-bg { background: #333; height: 15px; width: 100%; margin: 10px 0; border-radius: 5px; overflow: hidden; border: 1px solid var(--magia); }
+        .boss-hp-fill { background: var(--magia); height: 100%; width: 100%; transition: width 0.5s; }
         .progress-bg { background: #111; height: 6px; width: 100%; border-radius: 2px; margin-top: 5px; overflow: hidden; border: 1px solid #333;}
         .progress-bar { background: var(--xp); height: 100%; width: 0%; transition: width 0.5s; box-shadow: 0 0 10px var(--xp);}
 
@@ -163,7 +174,8 @@
             <button onclick="nav('pvp', this)">Duelos (PvP)</button>
             <button onclick="nav('magia', this)">O Altar / Forja</button>
             <button onclick="nav('biblioteca', this)">A Biblioteca</button>
-            <button onclick="nav('umbral', this)" style="color: #ff5050;">O Umbral (PvE)</button>
+            <button onclick="nav('umbral', this)" style="color: #ff5050;">O Umbral</button>
+            <button onclick="nav('conclave', this)" style="color: #d080ff; font-weight:bold; text-transform:uppercase;">O Círculo Maior</button>
             <button onclick="nav('clan', this)">Santuário</button>
             <button onclick="nav('banco', this)">Cálice</button>
         </div>
@@ -436,6 +448,54 @@
                     <button onclick="explorarReino('thaumiel')" style="border-color:#ffd700; background:transparent; color:#ffd700;">Invadir (Custo: 5 Fúrias)</button>
                 </div>
             </div>
+        </div>
+		
+		<!-- ===================================== -->
+        <!-- O CÍRCULO MAIOR (GvG E GOÉCIA)        -->
+        <!-- ===================================== -->
+        <div id="aba-conclave" class="aba oculto">
+            
+            <div class="card">
+                <h3 style="text-align: center; font-size:1.8em; color:var(--ouro);">A Balança Cósmica</h3>
+                <p style="text-align: center; font-size:0.85em; color:#888;">As ações da tua raça ditam o destino do mundo.</p>
+                <div style="display:flex; justify-content:space-between; font-family:'Cinzel',serif; font-weight:bold; margin-bottom:5px;">
+                    <span style="color:var(--sangue-claro);">Tiamat</span>
+                    <span style="color:#d4af37;">Seth</span>
+                </div>
+                <div class="balanca-bar">
+                    <div id="bar-tiamat" class="balanca-tiamat" style="width: 50%;"></div>
+                    <div id="bar-seth" class="balanca-seth" style="width: 50%;"></div>
+                </div>
+                <p style="text-align: center; font-size:0.8em; color:var(--ouro);">Regente Atual: <b id="lbl-regente" style="color:#fff;">Equilíbrio</b></p>
+            </div>
+
+            <div class="card">
+                <h3 style="color:#d080ff; text-align:center;">O Triângulo da Arte (Evocação Goética)</h3>
+                <p style="text-align: center; font-size:0.8em; color:#888;">Invoca um Demónio Maior. Todo o servidor deverá unir forças para quebrar a sua Vontade, garantindo Pedras da Alma e Atributos Permanentes aos participantes.</p>
+                
+                <div id="box-no-boss" style="text-align:center; padding:15px;">
+                    <p style="font-style:italic; color:#555;">Nenhuma Entidade está na Terra no momento.</p>
+                    <button class="btn-magick" onclick="evocarGoetia()" style="border-color:#d080ff; color:#d080ff;">Evocar Entidade (Exige 3000 Gts e 10 Fúrias)</button>
+                </div>
+
+                <div id="box-has-boss" class="boss-box oculto">
+                    <h2 id="boss-name" style="color:var(--magia); margin:0; text-transform:uppercase;">REI BAEL</h2>
+                    <p id="boss-desc" style="font-size:0.85em; font-style:italic; color:#aaa;"></p>
+                    <div class="boss-hp-bg"><div id="boss-hp-bar" class="boss-hp-fill"></div></div>
+                    <h3 style="margin-top:0;"><span id="boss-hp-text" style="color:#fff;">10000</span> / <span id="boss-hp-max">10000</span> de Vontade</h3>
+                    <button onclick="enfrentarGoetia()" style="background:var(--magia); border-color:#f0f; font-size:1.2em; text-transform:uppercase; animation: pulseRed 1.5s infinite;">Projetar Vontade Mágica (Custa 3 Fúrias)</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="text-align:center;">Guerra Entre Santuários (GvG)</h3>
+                <p style="text-align: center; font-size:0.8em; color:#888;">A Egrégora do teu clã permite invadir cofres rivais. Requer 5 Fúrias.</p>
+                <div class="grid-2">
+                    <select id="alvo-gvg" style="margin:0;"></select>
+                    <button class="btn-magick" onclick="invadirSantuarioAlvo()" style="margin:0; border-color:red; color:red;">Marchar para a Guerra</button>
+                </div>
+            </div>
+
         </div>
 
         <div id="aba-clan" class="aba oculto">
@@ -1133,8 +1193,91 @@
             syncStatus(); carregarBiblioteca();
         } catch(e) {}
     }
+	
+	// --- FUNÇÕES DA GOÉCIA E CONCLAVE (FRONTEND) ---
 
-    socket.on('sync_geral', () => { carregarMercado(); carregarLeilao(); carregarBiblioteca(); if(meuVampiro) syncStatus(); });
+    // Efeito para Batalhas Demoníacas
+    function abismoVoid() {
+        const splash = document.createElement('div');
+        splash.className = 'void-flash';
+        document.body.appendChild(splash);
+        document.body.classList.add('shake-screen');
+        setTimeout(() => { splash.remove(); document.body.classList.remove('shake-screen'); }, 1000);
+    }
+
+    async function atualizarConclave() {
+        try {
+            const res = await fetch('/api/conclave/status'); const dados = await res.json();
+            
+            // A Balança
+            let total = dados.balanca.tiamat + dados.balanca.seth;
+            if (total === 0) total = 1; // Prevenir NaN
+            let percTiamat = (dados.balanca.tiamat / total) * 100;
+            let percSeth = (dados.balanca.seth / total) * 100;
+            
+            document.getElementById('bar-tiamat').style.width = `${percTiamat}%`;
+            document.getElementById('bar-seth').style.width = `${percSeth}%`;
+            safeSet('lbl-regente', dados.balanca.regente);
+
+            // GvG Clãs
+            if (dados.clansData && meuVampiro) {
+                let htmlClans = dados.clansData.filter(c => c.nome !== meuVampiro.clan && c.nome !== 'Sangue Ralo').map(c => 
+                    `<option value="${c.nome}">[Egrégora Nv.${c.egregoraNv}] ${c.nome} - Riqueza: ${c.cofre}</option>`
+                ).join('');
+                safeSet('alvo-gvg', htmlClans || '<option disabled>Nenhum Inimigo Digno Encontrado</option>', true);
+            }
+
+            // O Raid Boss Goético
+            if (dados.evocacao) {
+                document.getElementById('box-no-boss').classList.add('oculto');
+                document.getElementById('box-has-boss').classList.remove('oculto');
+                safeSet('boss-name', dados.evocacao.nome);
+                safeSet('boss-desc', dados.evocacao.desc);
+                safeSet('boss-hp-text', dados.evocacao.hpAtual);
+                safeSet('boss-hp-max', dados.evocacao.hpMax);
+                document.getElementById('boss-hp-bar').style.width = `${(dados.evocacao.hpAtual / dados.evocacao.hpMax) * 100}%`;
+            } else {
+                document.getElementById('box-no-boss').classList.remove('oculto');
+                document.getElementById('box-has-boss').classList.add('oculto');
+            }
+        } catch(e) {}
+    }
+
+    async function evocarGoetia() {
+        if(!confirm("Tem a certeza? Isso consumirá 3000 Gts e trará uma Entidade ao Mundo!")) return;
+        abismoVoid();
+        try {
+            const res = await fetch('/api/goecia/evocar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) });
+            const dados = await res.json(); 
+            if(dados.erro) alert(dados.erro);
+            atualizarConclave(); syncStatus();
+        } catch(e){}
+    }
+
+    async function enfrentarGoetia() {
+        abismoVoid(); // Faz a tela tremer sempre que atacas um demónio
+        try {
+            const res = await fetch('/api/goecia/enfrentar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) });
+            const dados = await res.json(); 
+            if(dados.erro && !dados.sucesso) alert(dados.erro); // Foi atacado pelo demónio e errou
+            else alert(dados.relato); // Causou Dano
+            atualizarConclave(); syncStatus();
+        } catch(e){}
+    }
+
+    async function invadirSantuarioAlvo() {
+        const clanInimigo = document.getElementById('alvo-gvg').value;
+        if (!clanInimigo) return;
+        jorrarSangue();
+        try {
+            const res = await fetch('/api/conclave/invadir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, clanAlvo: clanInimigo }) });
+            const dados = await res.json(); 
+            alert(dados.erro || dados.relato);
+            atualizarConclave(); syncStatus();
+        } catch(e){}
+    }
+
+    socket.on('sync_geral', () => { carregarMercado(); carregarLeilao(); carregarBiblioteca(); atualizarConclave(); if(meuVampiro) syncStatus(); });
     socket.on('tick', () => { if(meuVampiro) syncStatus(); });
 </script>
 </body>

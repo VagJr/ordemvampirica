@@ -256,7 +256,37 @@ app.post('/api/pvp/tatico', (req, res) => {
 });
 
 app.post('/api/banco/calice', (req, res) => { try { res.json(core.operarCalice(req.body.id, req.body.quantia, req.body.operacao)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Erro no Cálice."}); } });
+// ROTAS DE ALTA MAGIA E CONCLAVE (GvG e Goécia)
+app.post('/api/conclave/egregora', (req, res) => { 
+    try { res.json(core.nutrirEgregoraClã(req.body.id, req.body.material)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"O Altar recusou o teu tributo."}); } 
+});
 
+app.post('/api/conclave/invadir', (req, res) => { 
+    try { res.json(core.invadirCriptaInimiga(req.body.id, req.body.clanAlvo)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"As brumas da guerra cegaram-te."}); } 
+});
+
+app.post('/api/goecia/evocar', (req, res) => { 
+    try { res.json(core.abrirSeloGoetico(req.body.id)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"As linhas do pentagrama quebraram."}); } 
+});
+
+app.post('/api/goecia/enfrentar', async (req, res) => { 
+    try { res.json(await core.testarVontadeDemonio(req.body.id)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"O demónio distorceu a tua mente."}); } 
+});
+
+app.get('/api/conclave/status', (req, res) => {
+    try { 
+        res.json({ 
+            balanca: core.balancaCosmica, 
+            evocacao: core.evocacaoAtiva, 
+            clansData: Object.values(core.clans).map(c => ({nome: c.nome, egregoraNv: c.egregora ? c.egregora.nivel : 0, cofre: c.cofre})) 
+        }); 
+    } 
+    catch(e){ res.status(500).json({erro:"Falha ao ler o cosmos."}); }
+});
 app.get('/api/social/:id', (req, res) => {
     try {
         const v = core.vampiros[req.params.id];
