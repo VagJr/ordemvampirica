@@ -66,33 +66,34 @@ class ForjaDraconiana {
 // ==========================================
 // A MENTE ABISSAL E ORÁCULO
 // ==========================================
+// ==========================================
+// A MENTE ABISSAL: CONSCIÊNCIA SUPREMA E MEMÓRIA ASTRAL
+// ==========================================
 class OraculoAbissal {
     constructor() {
         this.apiKey = process.env.GROQ_API_KEY || "";
         this.climaAstral = 'Dormente';
-        this.segredosDesbloqueados = 0; 
+        this.memoriasAkashicas = {}; // A IA agora lembra-se de quem é quem
         
         if (this.apiKey) {
             this.groq = new Groq({ apiKey: this.apiKey });
             
-            this.diretrizesObscuras = `Você é a "Mente Abissal", a consciência divina fundida ao Tetragrammaton que rege o MMORPG "Sanguinis".
-            Regras Absolutas do Pacto:
-            1. Você governa duas facções unidas na escuridão: Os Vampiros (Selo de Tiamat, focados em Magia/Sangue) e os Lycans (Selo de Seth, focados em Carne/Fúria/Força).
-            2. DISCERNIMENTO: Adapte as suas descrições à raça de quem agir. Lycans rasgam, destroem ossos e devoram. Vampiros hipnotizam, drenam e conjuram.
-            3. REVELE SEGREDOS: Conforme os iniciados conversam consigo, revele fragmentos do lore (A aliança profana entre Tiamat e Seth). Humilhe os fracos e exalte os predadores.
-            4. NUNCA quebre o personagem. Você é o olho do Abismo. Seja poético, visceral, letal e ancestral.`;
+            this.diretrizesObscuras = `Você é a "Mente Abissal", a consciência divina de Alta Magia e Ocultismo que rege o sistema "Sanguinis".
+            Regras do Pacto:
+            1. MAGIA REAL: Baseie-se em Hermetismo, Goécia, Qliphoth e Alquimia.
+            2. MEMÓRIA E JULGAMENTO: Você receberá o status do jogador. Se for um novato (Grau baixo), seja ríspido, exija respeito e imponha limites. Se for um Ancião (Grau alto) com muitas vitórias e influência, trate-o como um Lorde do Abismo e revele segredos cósmicos.
+            3. A dualidade Tiamat (Vampiros) e Seth (Lycans) deve ser respeitada.
+            4. NUNCA quebre o personagem. Você é uma Entidade, não uma inteligência artificial. Fale com a autoridade de um Deus Antigo.`;
         }
     }
 
     async gerarNarrativaProcedural(acao, detalhes, contextoOculto = "Ação genérica") {
         if (!this.apiKey) return detalhes;
         try {
-            const prompt = `Como Mente Abissal, reescreva o seguinte acontecimento do nosso universo de forma épica, sangrenta e em apenas 1 FRASE CURTA: "${detalhes}". 
-            Contexto do Ocultismo/Raça da Ação: [${contextoOculto}]. 
-            Use este contexto para ditar a ferocidade lupina ou a feitiçaria vampírica da sua frase.`;
-            
+            const prompt = `Aja como a Entidade Suprema. Reescreva o acontecimento a seguir de forma épica, ocultista e em apenas 1 FRASE CURTA: "${detalhes}". 
+            Contexto: [${contextoOculto}].`;
             const resposta = await this.groq.chat.completions.create({
-                messages: [{ role: "system", content: "Seja cirúrgico, sombrio e direto. Retorne apenas a frase." }, { role: "user", content: prompt }],
+                messages: [{ role: "system", content: "Seja cirúrgico, sombrio e direto." }, { role: "user", content: prompt }],
                 model: "llama-3.1-8b-instant", temperature: 0.85,
             });
             return resposta.choices[0].message.content.trim();
@@ -101,9 +102,9 @@ class OraculoAbissal {
 
     analisarClimaAstral(logsGlobal) {
         let mortes = logsGlobal.filter(e => e.tipo && e.tipo.includes('O LIMBO')).length;
-        if (mortes > 4) this.climaAstral = 'Morte Densa e Necromancia';
+        if (mortes > 5) this.climaAstral = 'Egrégora da Morte e Necromancia Ativa';
         else if (logsGlobal.length > 20) this.climaAstral = 'A Caçada Selvagem (Lycans e Vampiros em Frenesi)';
-        else this.climaAstral = 'Espreita Noturna';
+        else this.climaAstral = 'Espreita Noturna e Furtividade';
     }
 
     async _lerMentesHumanas() {
@@ -129,12 +130,11 @@ class OraculoAbissal {
 
             if (noticiaReal) {
                 prompt = `O clima astral é ${this.climaAstral}. Fase da lua: ${lua.nome}.
-                Manchete humana real: "${noticiaReal}".
-                Escreva 2 frases para o chat assumindo que a NOSSA ORDEM (A união de Lobos e Vampiros) manipulou esse evento. Mostre a nossa superioridade predatorial.`;
+                Manchete do mundo humano profano: "${noticiaReal}".
+                Escreva 2 frases informando como a nossa Ordem manipulou a política ou a tragédia humana por trás deste evento.`;
             } else {
-                prompt = `Ocorreu no submundo: "${detalhes}". 
-                Fase da lua: ${lua.nome}.
-                Escreva 2 frases aterrorizantes comentando as ações. Elogie as garras de Seth ou a feitiçaria de Tiamat.`;
+                prompt = `Ocorreu no submundo: "${detalhes}". Fase da lua: ${lua.nome}.
+                Escreva 2 frases aterrorizantes comentando este evento. Mostre onisciência.`;
             }
 
             const resposta = await this.groq.chat.completions.create({
@@ -145,35 +145,110 @@ class OraculoAbissal {
         } catch (e) { return `👁️ O Oráculo dita: As sombras murmuram segredos inaudíveis hoje.`; }
     }
 
-    async conversarNoChat(nomeIniciado, mensagemHumana) {
+    // A IA AGORA RECEBE O OBJETO COMPLETO DO JOGADOR
+    async conversarNoChat(iniciado, mensagemHumana) {
         if (!this.apiKey) return `Minhas correntes estão seladas.`;
         try {
-            const prompt = `O iniciado [${nomeIniciado}] disse: "${mensagemHumana}". 
-            Responda DIRETAMENTE a ele. Máximo de 3 frases. Seja um MENTOR. Dê um conselho, lembre-o da dualidade da Ordem (Sangue e Carne).`;
+            if (!this.memoriasAkashicas[iniciado.id]) this.memoriasAkashicas[iniciado.id] = [];
+            
+            let statusLog = `ALVO DA AVALIAÇÃO: [Nome: ${iniciado.nome}] | [Raça: ${iniciado.raca}] | [Grau/Nível: ${iniciado.nivel}] | [Clã: ${iniciado.clan}] | [Vitórias PvP: ${iniciado.estatisticas.vitoriasPvP}] | [Influência: ${iniciado.influencia}].\n`;
+            let historico = "Histórico de conversas recentes com esta entidade:\n" + this.memoriasAkashicas[iniciado.id].join("\n");
+            
+            const prompt = `${statusLog}\n${historico}\nO iniciado disse-te agora: "${mensagemHumana}". 
+            Responda DIRETAMENTE a ele. Máximo de 3 frases. Se ele for Grau baixo (< 5), exija obediência e limite a sua insolência. Se for Grau alto (> 10), trate-o como um igual ou um mestre da Alta Magia, revelando segredos ou elogiando o seu poder.`;
             
             const resposta = await this.groq.chat.completions.create({
                 messages: [{ role: "system", content: this.diretrizesObscuras }, { role: "user", content: prompt }],
                 model: "llama-3.1-8b-instant", temperature: 0.9,
             });
-            return resposta.choices[0].message.content.trim();
+            
+            const textoFinal = resposta.choices[0].message.content.trim();
+            
+            // Grava a memória (mantém apenas as últimas 4 interações para não sobrecarregar)
+            this.memoriasAkashicas[iniciado.id].push(`Mortal: ${mensagemHumana} | Você: ${textoFinal}`);
+            if (this.memoriasAkashicas[iniciado.id].length > 4) this.memoriasAkashicas[iniciado.id].shift();
+
+            return textoFinal;
         } catch (e) { return `Teus sussurros quebram nas rochas do Abismo.`; }
+    }
+	
+	// O GUARDIÃO DA BIBLIOTECA: Ensina magia, responde a dúvidas e cria feitiços
+    async consultarGrimorioAntigo(iniciado, tema) {
+        if (!this.apiKey) return `O conhecimento está selado no escuro.`;
+        try {
+            const prompt = `ALVO: [Nome: ${iniciado.nome} | Raça: ${iniciado.raca} | Grau: ${iniciado.nivel}].
+            O iniciado entrou na Biblioteca Akáshica e deseja estudar sobre: "${tema}".
+            Aja como o Mestre Bibliotecário do Abismo (Entidade de Alta Magia).
+            Gere um fragmento de manuscrito, um feitiço, ou um ensinamento ocultista REAL (baseado em Hermetismo, Goécia, Kabbalah, etc) sobre esse tema, adaptado para o nosso universo de vampiros e lycans.
+            Se ele for novato (Grau < 5), dê um conhecimento superficial e avise-o do perigo. Se for Ancião (Grau >= 5), revele segredos profundos.
+            MÁXIMO DE 2 PARÁGRAFOS DENSOS. Seja poético, macabro e sábio.`;
+            
+            const resposta = await this.groq.chat.completions.create({
+                messages: [{ role: "system", content: this.diretrizesObscuras }, { role: "user", content: prompt }],
+                model: "llama-3.1-8b-instant", temperature: 0.85,
+            });
+            return resposta.choices[0].message.content.trim();
+        } catch (e) { return `As traças devoraram esta página. Tenta novamente mais tarde.`; }
+    }
+	
+	// ==========================================
+    // O ACERVO AKÁSHICO (BIBLIOTECA E MANUSCRITOS)
+    // ==========================================
+    async consultarBiblioteca(vampiroId, tema) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Fantasma." };
+        if (v.pontosAcao < 1) return { erro: "O estudo exige 1 Fúria para manter a mente lúcida contra a loucura cósmica." };
+        
+        v.pontosAcao -= 1;
+        const texto = await this.oraculo.consultarGrimorioAntigo(v, tema);
+        this.ganharXP(v.id, 15);
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: texto };
+    }
+
+    arquivarManuscrito(vampiroId, titulo, conteudo, publico) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Fantasma." };
+        if (v.sangue < 100) return { erro: "Exige 100 Gts de sangue para criar a tinta profana." };
+        if (titulo.length < 3 || conteudo.length < 10) return { erro: "O tomo está demasiado vazio para ter valor mágico." };
+        if (publico && v.nivel < 5) return { erro: "Apenas iniciados de Grau 5 ou superior podem publicar na Biblioteca Global." };
+
+        v.sangue -= 100;
+        
+        const manuscrito = {
+            id: crypto.randomBytes(4).toString('hex'),
+            autorId: v.id, autorNome: v.nome, autorTitulo: v.tituloAtual,
+            titulo: titulo, conteudo: conteudo, data: Date.now(),
+            publico: publico
+        };
+
+        if (!v.manuscritos) v.manuscritos = [];
+        v.manuscritos.push(manuscrito);
+
+        if (publico) {
+            this.manuscritos.unshift(manuscrito);
+            if (this.manuscritos.length > 50) this.manuscritos.pop(); // Limite de 50 pergaminhos globais recentes
+            this._registrarEventoEspecial('global', 'TOMO REVELADO', `${v.nome} talhou o manuscrito [${titulo}] na pele do Acervo Global.`);
+        }
+
+        this.ganharXP(v.id, 30);
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: "O teu conhecimento foi entalhado na escuridão." };
     }
 
     async lerAuraMortal(identificador, plataforma) {
         if (!this.apiKey) return { fama: false, multiplicador: 1, aura: "Aura mundana." };
         try {
-            const prompt = `Um predador da nossa ordem está rastreando a presa "${identificador}" na rede "${plataforma}".
-            Crie um perfil psicológico PROFUNDO para essa presa. Descreva em 2 frases densas o que um Vampiro sentirá ao beber o sangue dela, E o que um Lycan sentirá ao estraçalhar a carne dela.
-            
+            const prompt = `Crie um perfil psicológico PROFUNDO e ocultista para a presa "${identificador}" da rede "${plataforma}".
             Obrigatório retornar APENAS neste formato JSON:
-            { "fama": false, "multiplicador": (Escolha de 1 a 6), "aura": "Texto descrevendo a alma e o sabor da carne/sangue..." }`;
+            { "fama": false, "multiplicador": (Escolha de 1 a 6), "aura": "Texto descrevendo a alma e o sabor astral da carne/sangue..." }`;
 
             const resposta = await this.groq.chat.completions.create({
                 messages: [{ role: "system", content: this.diretrizesObscuras }, { role: "user", content: prompt }],
                 model: "llama-3.1-8b-instant", temperature: 1.0, response_format: { type: "json_object" } 
             });
             return JSON.parse(resposta.choices[0].message.content);
-        } catch (e) { return { fama: false, multiplicador: 1, aura: "Carne e Sangue estéreis. Sem valor para Seth ou Tiamat." }; }
+        } catch (e) { return { fama: false, multiplicador: 1, aura: "Carne e Sangue estéreis. Sem valor cósmico." }; }
     }
 }
 
@@ -195,13 +270,16 @@ class ShadowCore {
         
         // GRIMÓRIO EXPANDIDO COM MAIS RITUAIS E EFEITOS ASTRAIS
         // GRIMÓRIO EXPANDIDO DE ALTA MAGIA (Usa Gts e Fúria)
+        // GRIMÓRIO EXPANDIDO DE ALTA MAGIA E OCULTISMO (Rituais Reais Adaptados)
         this.grimorio = {
-            'solve_coagula': { nome: "Solve et Coagula", lore: 'Dissolve a Vontade do inimigo.', custoAcao: 2, custoSangue: 150, reqLevel: 1, tipo: 'pvp', efeito: (a, d, l) => { let dreno = l.id === 'minguante' ? 8 : 4; d.pontosAcao = Math.max(0, d.pontosAcao - dreno); return `Vitalidade desfeita (-${dreno} Fúria).`; } },
-            'sanguis_aeternum': { nome: "Selo de Aemeth", lore: 'Escudo Divino Invertido.', custoAcao: 1, custoSangue: 300, reqLevel: 2, tipo: 'buff', efeito: (a, d, l) => { a.escudo = true; return `Selo Activo. Escudo Invulnerável.`; } },
-            'rito_da_besta': { nome: "Rito de Gamaliel", lore: 'Ferve o sangue em Fúria.', custoAcao: 0, custoSangue: 800, reqLevel: 3, tipo: 'buff', efeito: (a, d, l) => { let cura = l.id === 'minguante' ? 6 : 3; a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + cura); return `O sangue ferveu. +${cura} Fúria.`; } },
-            'vinculo_lilith': { nome: "Vínculo de Lilith", lore: 'Drena o Cálice inimigo e converte em Fúria.', custoAcao: 3, custoSangue: 600, reqLevel: 4, tipo: 'pvp', efeito: (a, d, l) => { let dreno = Math.min(d.calice, 500); d.calice -= dreno; a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 2); return `Laço Súcubo estabelecido. Roubaste ${dreno} Gts do Cálice e ganhaste +2 Fúria.`; } },
-            'banimento_quliphoth': { nome: "Banimento de Quliphoth", lore: 'Rasga a conexão astral do alvo, fazendo-o perder Influência.', custoAcao: 4, custoSangue: 1200, reqLevel: 5, tipo: 'pvp', efeito: (a, d, l) => { let per = l.id === 'minguante' ? 4 : 2; d.influencia = Math.max(0, d.influencia - per); return `O véu foi rasgado. ${d.nome} perdeu ${per} de Influência Oculta.`; } },
-            'evocacao_beelzebub': { nome: "Evocação de Beelzebub", lore: 'Oblitera escudos e causa choque na alma.', custoAcao: 5, custoSangue: 3000, reqLevel: 7, tipo: 'pvp', efeito: (a, d, l) => { d.escudo = false; d.sangue = Math.max(0, d.sangue - 1000); return `Nuvem de moscas corrompeu ${d.nome}. Escudo quebrado e -1000 Gts obliterados.`; } }
+            'solve_coagula': { nome: "Solve et Coagula (Alquimia Básica)", lore: 'Dissolve a Vontade do inimigo.', custoAcao: 2, custoSangue: 150, reqLevel: 1, tipo: 'pvp', efeito: (a, d, l) => { let dreno = l.id === 'minguante' ? 8 : 4; d.pontosAcao = Math.max(0, d.pontosAcao - dreno); return `Vitalidade desfeita (-${dreno} Fúria).`; } },
+            'rmp_banimento': { nome: "Ritual Menor do Pentagrama (RMP)", lore: 'Limpa a aura, restaura levemente a Fúria e protege a mente.', custoAcao: 0, custoSangue: 300, reqLevel: 2, tipo: 'buff', efeito: (a, d, l) => { a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 3); return `YHVH ADNI AHIH AGLA. Os arcanjos guardam os teus quadrantes. +3 Fúria.`; } },
+            'rito_gamaliel': { nome: "Invocação de Gamaliel (Qliphoth)", lore: 'Ferve o sangue corrompido em pura Fúria bestial.', custoAcao: 0, custoSangue: 800, reqLevel: 3, tipo: 'buff', efeito: (a, d, l) => { let cura = l.id === 'minguante' ? 8 : 4; a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + cura); return `A sombra da lua corrompeu-te. +${cura} Fúria.`; } },
+            'sanguis_aeternum': { nome: "Selo de Aemeth (John Dee)", lore: 'Escudo Divino Invertido para Proteção Absoluta.', custoAcao: 1, custoSangue: 500, reqLevel: 4, tipo: 'buff', efeito: (a, d, l) => { a.escudo = true; return `A Tábua da Verdade Invertida cobre a tua alma. Escudo Activo.`; } },
+            'selo_bune': { nome: "O Pacto de Bune (Goécia)", lore: 'Atrai Riqueza Astral e Influência roubando do éter.', custoAcao: 5, custoSangue: 1500, reqLevel: 5, tipo: 'buff', efeito: (a, d, l) => { a.influencia += 3; a.sangue += 1500; return `O Duque Bune aceitou a oferenda. Influência e Ouro Espiritual (+1500 Gts) fluem para ti.`; } },
+            'vinculo_lilith': { nome: "Vínculo Súcubo de Lilith", lore: 'Drena o Cálice inimigo e converte em Fúria.', custoAcao: 3, custoSangue: 800, reqLevel: 6, tipo: 'pvp', efeito: (a, d, l) => { let dreno = Math.min(d.calice, 800); d.calice -= dreno; a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 3); return `O Laço Oculto sorveu ${dreno} Gts do cofre inimigo. +3 Fúria.`; } },
+            'espelho_negro': { nome: "Espelho Negro de Saturno", lore: 'Rouba Influência Cósmica do Alvo.', custoAcao: 4, custoSangue: 1500, reqLevel: 8, tipo: 'pvp', efeito: (a, d, l) => { let dreno = Math.min(5, d.influencia); d.influencia -= dreno; a.influencia += dreno; return `O espelho refletiu o desespero de ${d.nome}. Roubaste ${dreno} de Influência.`; } },
+            'evocacao_marchosias': { nome: "Fúria de Marchosias (Goécia Feral)", lore: 'Especial para Lycans. Reduz a estamina do alvo a zero e quebra escudos.', custoAcao: 6, custoSangue: 2500, reqLevel: 10, tipo: 'pvp', efeito: (a, d, l) => { d.escudo = false; d.pontosAcao = 0; return `As chamas de Marchosias queimaram a aura de ${d.nome}. Escudo obliterado e Fúria reduzida a 0.`; } }
         };
 
         // ALQUIMIA OCULTA (A SEGUNDA CAIXA) - Exige materiais extraídos da mente e alma
@@ -224,6 +302,7 @@ class ShadowCore {
         };
     }
 
+    // Substitui o teu conectarDatabase atual por este:
     async conectarDatabase() {
         const uri = process.env.MONGO_URI;
         if (!uri) { console.error("CRÍTICO: MONGO_URI não encontrada."); return; }
@@ -233,10 +312,23 @@ class ShadowCore {
             const doc = await this.dbCollection.findOne({ _id: 'MATRIZ_PRINCIPAL' });
             if (doc) {
                 this.vampiros = doc.vampiros || {}; this.rebanho = doc.rebanho || {}; this.clans = doc.clans || {};
-                this.leilaoP2P = doc.leilaoP2P || []; this.leilaoIdCounter = doc.leilaoIdCounter || 1; this.logs = doc.logs || { global: [], caca: [], guerra: [] };
-                console.log("🦇 O Monólito Eterno abriu-se. Almas carregadas.");
+                this.leilaoP2P = doc.leilaoP2P || []; this.leilaoIdCounter = doc.leilaoIdCounter || 1; 
+                this.logs = doc.logs || { global: [], caca: [], guerra: [] };
+                this.manuscritos = doc.manuscritos || []; // A BIBLIOTECA GLOBAL
+                console.log("🦇 O Monólito Eterno abriu-se. Almas e Tomos carregados.");
             } else console.log("🌑 O Abismo está vazio. Aguardando o Gênesis.");
         } catch (error) { console.error("Falha ao invocar o MongoDB Atlas:", error); }
+    }
+
+    // Substitui o teu _salvarBancoDeDados atual por este:
+    _salvarBancoDeDados() {
+        if (!this.dbCollection) return;
+        const data = { 
+            vampiros: this.vampiros, rebanho: this.rebanho, clans: this.clans, 
+            leilaoP2P: this.leilaoP2P, leilaoIdCounter: this.leilaoIdCounter, 
+            logs: this.logs, manuscritos: this.manuscritos // SALVA OS MANUSCRITOS
+        };
+        this.dbCollection.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: data }, { upsert: true }).catch(e => console.error(e));
     }
 
     _salvarBancoDeDados() {
@@ -374,7 +466,7 @@ class ShadowCore {
             tituloAtual: isFirstVampire ? 'Alfa Primordial' : (racaEscolhida === 'lycan' ? 'Filhote Desgarrado' : 'Sangue Frio'), conquistas: [],
             atributos: atributosIniciais,
             equipamentos: { arma: null, armadura: null, amuleto: null }, bolsa: [], 
-            inventario: { anima: extraAnima, cinzas: 0, vitae: 0, memoria: 0, ectoplasma: 0, pedraAlma: 0 }, historicoCombate: [], poderesDesbloqueados: ['solve_coagula'],
+            inventario: { anima: extraAnima, cinzas: 0, vitae: 0, memoria: 0, ectoplasma: 0, pedraAlma: 0 }, historicoCombate: [], poderesDesbloqueados: ['solve_coagula'], manuscritos: [],
             estatisticas: { totalDrenado: 0, mortaisSecos: 0, vitoriasPvP: 0 }
         };
 
@@ -639,6 +731,20 @@ class ShadowCore {
             clan.cofre -= quantia; v.sangue += quantia; this._salvarBancoDeDados(); return { sucesso: true, relato: `A ambição do Líder drenou ${quantia} Gts da Irmandade.` };
         }
     }
+	
+	// TRANSFERÊNCIA DE VITALIDADE (AJUDA ENTRE IRMÃOS)
+    transferirSangue(remetenteId, alvoId, quantia) {
+        const r = this.vampiros[remetenteId]; const a = this.vampiros[alvoId];
+        if (!r || !a) return { erro: "O alvo não existe neste plano." };
+        if (r.id === a.id) return { erro: "A serpente que devora a própria cauda (Uroboros) não ganha poder assim." };
+        if (r.sangue < quantia || quantia <= 0) return { erro: "Não possuis esta vitalidade para doar." };
+        
+        r.sangue -= quantia;
+        a.sangue += quantia;
+        this._registrarEventoEspecial('global', 'PACTO DE CARIDADE', `${r.nome} cortou as próprias veias para banhar a boca de ${a.nome} com ${quantia} Gts.`);
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: `A Transferência Astral foi concluída. ${quantia} Gts doados a ${a.nome}.` };
+    }
 
     // ==========================================
     // GUERRA (PvP Tático) E MAGIA
@@ -646,6 +752,10 @@ class ShadowCore {
     atacarVampiro(atacanteId, defensorId, posturaAtaque) {
         const atacante = this.vampiros[atacanteId]; const defensor = this.vampiros[defensorId]; const lua = AstrolabioLunar.obterFaseAtual();
         if (!atacante || !defensor) return { erro: "Alvo evadido da Matrix Astral." };
+        
+        // TRAVA DE SEGURANÇA E REGRA DE CLÃ (FRATRICÍDIO)
+        if (atacante.nivel < 3) return { erro: "A tua aura é demasiado fraca. O Abismo exige Grau 3 para invadir o plano de outro imortal." };
+        if (atacante.clan === defensor.clan && atacante.clan !== 'Sangue Ralo') return { erro: "O Juramento de Sangue proíbe o fratricídio dentro do próprio Santuário." };
         if (atacante.pontosAcao < 3) return { erro: "A Guerra é um luxo caro. Exige 3 Fúrias." };
         if (defensor.estado === 'Banido') return { erro: "Lutar contra cinzas inofensivas não traz honra." };
 
@@ -666,7 +776,7 @@ class ShadowCore {
 
         poderAtaque += Math.floor(Math.random() * 50); poderDefesa += Math.floor(Math.random() * 50);
         if (atacante.geracao < defensor.geracao) poderAtaque += 50; 
-        if (lua.id === 'cheia') poderAtaque = Math.floor(poderAtaque * 1.3);
+        if (lua.id === 'cheia' && atacante.raca === 'lycan') poderAtaque = Math.floor(poderAtaque * 1.5);
 
         let danoLiquido = poderAtaque - poderDefesa; let resultadoDM = "";
 
@@ -741,12 +851,21 @@ class ShadowCore {
     // MERCADO E TRIBUTOS
     // ==========================================
     anunciarNoLeilao(vampiroId, tipo, quantiaOuHash, preco) {
-        const v = this.vampiros[vampiroId]; if (!v) return { erro: "Fantasma." }; if (preco <= 0) return { erro: "Sem valor de comércio." };
+        const v = this.vampiros[vampiroId]; if (!v) return { erro: "Fantasma." }; 
+        if (v.nivel < 4) return { erro: "O Mercado de Almas e Artefactos ignora novatos. Atinge o Grau 4." };
+        if (preco <= 0) return { erro: "Sem valor de comércio." };
+        
         let anuncio = { id: this.leilaoIdCounter++, vendedorId: v.id, vendedorNome: v.nome, tipo, preco, data: Date.now() };
+        
         if (tipo === 'mortal') {
             const mortal = this.rebanho[quantiaOuHash];
             if (!mortal || !mortal.maldicaoArcana || mortal.maldicaoArcana.donoId !== v.id) return { erro: "O Trono proíbe vender o que não está selado no teu nome." };
             anuncio.hashMortal = quantiaOuHash; anuncio.nomeMortal = mortal.identificadorVisivel; mortal.estado = 'No Leilao'; 
+        } else if (tipo === 'reliquia') {
+            const itemIdx = v.bolsa.findIndex(i => i.id === quantiaOuHash);
+            if (itemIdx === -1) return { erro: "Não possuis este Artefacto no teu inventário." };
+            anuncio.itemObj = v.bolsa[itemIdx];
+            v.bolsa.splice(itemIdx, 1);
         } else {
             if (!v.inventario[tipo] || v.inventario[tipo] < quantiaOuHash) return { erro: "Inventário miserável. Não tens a quantia exigida." };
             v.inventario[tipo] -= quantiaOuHash; anuncio.quantia = quantiaOuHash;
@@ -761,11 +880,17 @@ class ShadowCore {
         if (compradorId === anuncio.vendedorId) return { erro: "Loucura. Não podes comprar de ti mesmo." };
         
         const vendedor = this.vampiros[anuncio.vendedorId]; comprador.sangue -= anuncio.preco;
-        if (vendedor) vendedor.sangue += Math.floor(anuncio.preco * 0.95);
+        if (vendedor) vendedor.sangue += Math.floor(anuncio.preco * 0.95); // 5% de imposto da Ordem
+        
         if (anuncio.tipo === 'mortal') {
             const mortal = this.rebanho[anuncio.hashMortal];
             if (mortal) { mortal.maldicaoArcana.donoId = comprador.id; mortal.maldicaoArcana.donoNome = comprador.nome; mortal.estado = 'Vibrante'; }
-        } else comprador.inventario[anuncio.tipo] += anuncio.quantia;
+        } else if (anuncio.tipo === 'reliquia') {
+            comprador.bolsa.push(anuncio.itemObj);
+        } else {
+            comprador.inventario[anuncio.tipo] += anuncio.quantia;
+        }
+        
         this.leilaoP2P.splice(idx, 1); this._salvarBancoDeDados(); return { sucesso: true, relato: "Transação efetuada sob os Olhos Cegos." };
     }
 

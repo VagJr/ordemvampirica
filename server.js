@@ -183,6 +183,26 @@ app.post('/api/caca/mapear', async (req, res) => {
     catch(e){ res.status(500).json({erro:"A Visão Astral falhou."}); }
 });
 
+// ROTAS DA BIBLIOTECA AKÁSHICA
+app.post('/api/biblioteca/estudar', async (req, res) => {
+    try { 
+        const r = await core.consultarBiblioteca(req.body.id, req.body.tema); 
+        res.json(r); io.emit('sync_geral'); 
+    } catch(e) { res.status(500).json({erro:"A Mente Abissal obscureceu."}); }
+});
+
+app.post('/api/biblioteca/arquivar', (req, res) => {
+    try { 
+        res.json(core.arquivarManuscrito(req.body.id, req.body.titulo, req.body.conteudo, req.body.publico)); 
+        io.emit('sync_geral'); 
+    } catch(e) { res.status(500).json({erro:"Falha na pena de sangue."}); }
+});
+
+app.get('/api/biblioteca', (req, res) => {
+    try { res.json({ manuscritos: core.manuscritos || [] }); } 
+    catch(e) { res.status(500).json({erro:"Erro ao abrir a estante."}); }
+});
+
 app.post('/api/caca/drenar', (req, res) => { 
     try { 
         const result = core.drenarMortal(req.body.id, req.body.hash, req.body.local);
@@ -198,6 +218,10 @@ app.post('/api/caca/amaldicoar', (req, res) => { try { res.json(core.comprometer
 app.post('/api/magia/conjurar', (req, res) => { try { res.json(core.conjurarRitual(req.body.atacanteId, req.body.ritualId, req.body.alvoId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Erro na Magia."}); } });
 app.post('/api/alquimia/forjar', (req, res) => { try { res.json(core.fabricarAlquimia(req.body.id, req.body.receitaId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Erro na Forja."}); } });
 
+app.post('/api/banco/transferir', (req, res) => { 
+    try { res.json(core.transferirSangue(req.body.remetenteId, req.body.alvoId, req.body.quantia)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"Erro na Ligação Cármica."}); } 
+});
 app.post('/api/pvp/tatico', (req, res) => { 
     try { 
         const result = core.atacarVampiro(req.body.atacanteId, req.body.defensorId, parseInt(req.body.postura)); 
@@ -252,17 +276,25 @@ io.on('connection', (socket) => {
         }
 
         // ====== INTEGRAÇÃO DA IA COM O CHAT ======
+        // ====== INTEGRAÇÃO DA IA (MENTE ABISSAL) COM O CHAT ======
         const txt = dados.texto.toLowerCase();
         if (txt.includes('oráculo') || txt.includes('abismo') || txt.includes('mestre') || txt.includes('trevas') || txt.includes('ia')) {
-            core.oraculo.conversarNoChat(dados.remetenteNome, dados.texto).then(respostaIA => {
-                const payloadIA = { autor: `👁️ MENTE ABISSAL`, texto: respostaIA, hora: new Date().toLocaleTimeString() };
-                setTimeout(() => { 
-                    if (dados.canal === 'global') io.to('global').emit('nova_mensagem', { canal: 'global', ...payloadIA });
-                    else if (dados.canal === 'clan') io.to(`clan_${dados.clanNome}`).emit('nova_mensagem', { canal: 'clan', ...payloadIA });
-                }, 1500);
-            });
+            
+            // Passamos o objecto completo do Vampiro para a IA avaliar o poder dele
+            const inicianteObj = core.vampiros[dados.remetenteId]; 
+            
+            if (inicianteObj) {
+                core.oraculo.conversarNoChat(inicianteObj, dados.texto).then(respostaIA => {
+                    const payloadIA = { autor: `👁️ MENTE ABISSAL`, texto: respostaIA, hora: new Date().toLocaleTimeString() };
+                    setTimeout(() => { 
+                        if (dados.canal === 'global') io.to('global').emit('nova_mensagem', { canal: 'global', ...payloadIA });
+                        else if (dados.canal === 'clan') io.to(`clan_${dados.clanNome}`).emit('nova_mensagem', { canal: 'clan', ...payloadIA });
+                    }, 1500);
+                });
+            }
         }
-    });
+});
+
 });
 
 setInterval(async () => {
