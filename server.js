@@ -184,18 +184,30 @@ app.post('/api/caca/mapear', async (req, res) => {
 });
 
 // ROTAS DA BIBLIOTECA AKÁSHICA
-app.post('/api/biblioteca/estudar', async (req, res) => {
-    try { 
-        const r = await core.consultarBiblioteca(req.body.id, req.body.tema); 
-        res.json(r); io.emit('sync_geral'); 
-    } catch(e) { res.status(500).json({erro:"A Mente Abissal obscureceu."}); }
+// ROTAS DO ACERVO AKÁSHICO E BANCADA DE ESTUDOS
+app.post('/api/biblioteca/iniciar', (req, res) => { 
+    try { res.json(core.iniciarProjetoEstudo(req.body.id, req.body.titulo, req.body.tema)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"O pergaminho rasgou-se."}); } 
 });
 
-app.post('/api/biblioteca/arquivar', (req, res) => {
-    try { 
-        res.json(core.arquivarManuscrito(req.body.id, req.body.titulo, req.body.conteudo, req.body.publico)); 
-        io.emit('sync_geral'); 
-    } catch(e) { res.status(500).json({erro:"Falha na pena de sangue."}); }
+app.post('/api/biblioteca/aprofundar', async (req, res) => { 
+    try { res.json(await core.aprofundarProjeto(req.body.id, req.body.projetoId, req.body.novaPesquisa)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"A entidade calou-se."}); } 
+});
+
+app.post('/api/biblioteca/salvar_manual', (req, res) => { 
+    try { res.json(core.salvarProjetoManual(req.body.id, req.body.projetoId, req.body.conteudo)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"A tinta secou."}); } 
+});
+
+app.post('/api/biblioteca/apagar', (req, res) => { 
+    try { res.json(core.apagarProjeto(req.body.id, req.body.projetoId)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"O fogo falhou."}); } 
+});
+
+app.post('/api/biblioteca/arquivar', (req, res) => { 
+    try { res.json(core.arquivarProjetoComoManuscrito(req.body.id, req.body.projetoId, req.body.publico)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"O selo de sangue não fixou."}); } 
 });
 
 app.get('/api/biblioteca', (req, res) => {

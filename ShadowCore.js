@@ -173,52 +173,116 @@ class OraculoAbissal {
     }
 	
 	// O GUARDIÃO DA BIBLIOTECA: Ensina magia, responde a dúvidas e cria feitiços
-    async consultarGrimorioAntigo(iniciado, tema) {
+    // O GUARDIÃO DA BIBLIOTECA: Lê o rascunho atual e gera o próximo capítulo
+    async aprofundarEstudo(iniciado, titulo, conteudoAtual, novaPesquisa) {
         if (!this.apiKey) return `O conhecimento está selado no escuro.`;
         try {
+            // Lemos apenas os últimos 2000 caracteres para não sobrecarregar a mente da entidade
+            const ctxText = conteudoAtual.length > 2000 ? conteudoAtual.substring(conteudoAtual.length - 2000) : conteudoAtual;
+            
             const prompt = `ALVO: [Nome: ${iniciado.nome} | Raça: ${iniciado.raca} | Grau: ${iniciado.nivel}].
-            O iniciado entrou na Biblioteca Akáshica e deseja estudar sobre: "${tema}".
-            Aja como o Mestre Bibliotecário do Abismo (Entidade de Alta Magia).
-            Gere um fragmento de manuscrito, um feitiço, ou um ensinamento ocultista REAL (baseado em Hermetismo, Goécia, Kabbalah, etc) sobre esse tema, adaptado para o nosso universo de vampiros e lycans.
-            Se ele for novato (Grau < 5), dê um conhecimento superficial e avise-o do perigo. Se for Ancião (Grau >= 5), revele segredos profundos.
-            MÁXIMO DE 2 PARÁGRAFOS DENSOS. Seja poético, macabro e sábio.`;
+            Aja como o Guardião Akáshico de Alta Magia. O iniciado está a escrever o grimório "${titulo}". 
+            Contexto dos últimos parágrafos atuais do tomo:
+            "${ctxText}"
+            
+            O iniciado exige que aprofunde o estudo com o seguinte tema/feitiço: "${novaPesquisa}".
+            Gere a continuação PERFEITA, macabra e profunda para este tomo. Ensine Ocultismo de verdade (Goécia, Hermetismo, etc) aplicado ao nosso universo.
+            MÁXIMO DE 2 PARÁGRAFOS. Retorne APENAS o texto da continuação, sem saudações ou aspas, pronto para ser colado no livro.`;
             
             const resposta = await this.groq.chat.completions.create({
                 messages: [{ role: "system", content: this.diretrizesObscuras }, { role: "user", content: prompt }],
                 model: "llama-3.1-8b-instant", temperature: 0.85,
             });
             return resposta.choices[0].message.content.trim();
-        } catch (e) { return `As traças devoraram esta página. Tenta novamente mais tarde.`; }
+        } catch (e) { return `As traças do astral devoraram esta página. Tenta novamente mais tarde.`; }
     }
 	
 	// ==========================================
     // O ACERVO AKÁSHICO (BIBLIOTECA E MANUSCRITOS)
     // ==========================================
-    async consultarBiblioteca(vampiroId, tema) {
+    // ==========================================
+    // O ACERVO AKÁSHICO (BANCADA DE ESTUDO E MANUSCRITOS)
+    // ==========================================
+    iniciarProjetoEstudo(vampiroId, titulo, tema) {
         const v = this.vampiros[vampiroId];
         if (!v) return { erro: "Fantasma." };
-        if (v.pontosAcao < 1) return { erro: "O estudo exige 1 Fúria para manter a mente lúcida contra a loucura cósmica." };
+        if (!v.projetosEstudo) v.projetosEstudo = [];
+        if (v.projetosEstudo.length >= 3) return { erro: "A tua mente não suporta mais do que 3 rascunhos em simultâneo. Conclui ou apaga um." };
+        if (!titulo || !tema) return { erro: "Falta a Intenção (Título e Tema)." };
         
-        v.pontosAcao -= 1;
-        const texto = await this.oraculo.consultarGrimorioAntigo(v, tema);
-        this.ganharXP(v.id, 15);
+        const novoProj = {
+            id: crypto.randomBytes(4).toString('hex'),
+            titulo: titulo,
+            tema: tema,
+            conteudo: `[TOMO INICIADO: ${titulo}]\nFoco de Estudo: ${tema}\n\n`,
+            dataAtualizacao: Date.now()
+        };
+        v.projetosEstudo.push(novoProj);
         this._salvarBancoDeDados();
-        return { sucesso: true, relato: texto };
+        return { sucesso: true, relato: `O papiro foi esticado. A bancada está pronta para [${titulo}].` };
     }
 
-    arquivarManuscrito(vampiroId, titulo, conteudo, publico) {
+    async aprofundarProjeto(vampiroId, projetoId, novaPesquisa) {
         const v = this.vampiros[vampiroId];
         if (!v) return { erro: "Fantasma." };
-        if (v.sangue < 100) return { erro: "Exige 100 Gts de sangue para criar a tinta profana." };
-        if (titulo.length < 3 || conteudo.length < 10) return { erro: "O tomo está demasiado vazio para ter valor mágico." };
-        if (publico && v.nivel < 5) return { erro: "Apenas iniciados de Grau 5 ou superior podem publicar na Biblioteca Global." };
-
-        v.sangue -= 100;
+        if (v.pontosAcao < 1) return { erro: "A clarividência exige 1 Fúria." };
         
+        if (!v.projetosEstudo) v.projetosEstudo = [];
+        const proj = v.projetosEstudo.find(p => p.id === projetoId);
+        if (!proj) return { erro: "Pergaminho perdido nas brumas." };
+        if (!novaPesquisa) return { erro: "Dita a tua dúvida ao oráculo." };
+
+        v.pontosAcao -= 1;
+        const novoTexto = await this.oraculo.aprofundarEstudo(v, proj.titulo, proj.conteudo, novaPesquisa);
+        
+        proj.conteudo += `\n\n[Revelação sobre: ${novaPesquisa}]\n` + novoTexto;
+        proj.dataAtualizacao = Date.now();
+        
+        this.ganharXP(v.id, 20);
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: "A Entidade sussurrou novos segredos. O teu rascunho foi expandido." };
+    }
+
+    salvarProjetoManual(vampiroId, projetoId, conteudoManual) {
+        const v = this.vampiros[vampiroId];
+        if (!v || !v.projetosEstudo) return { erro: "Fantasma." };
+        const proj = v.projetosEstudo.find(p => p.id === projetoId);
+        if (!proj) return { erro: "Pergaminho perdido." };
+        
+        proj.conteudo = conteudoManual;
+        proj.dataAtualizacao = Date.now();
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: "A tua própria caligrafia foi salva no rascunho." };
+    }
+
+    apagarProjeto(vampiroId, projetoId) {
+        const v = this.vampiros[vampiroId];
+        if (!v || !v.projetosEstudo) return { erro: "Fantasma." };
+        v.projetosEstudo = v.projetosEstudo.filter(p => p.id !== projetoId);
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: "O rascunho foi atirado às chamas negras." };
+    }
+
+    arquivarProjetoComoManuscrito(vampiroId, projetoId, publico) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Fantasma." };
+        if (v.sangue < 200) return { erro: "Exige 200 Gts de sangue para encadernar e selar a capa do livro." };
+        if (publico && v.nivel < 5) return { erro: "Apenas iniciados de Grau 5+ podem expor doutrinas ao mundo." };
+
+        if (!v.projetosEstudo) v.projetosEstudo = [];
+        const projIdx = v.projetosEstudo.findIndex(p => p.id === projetoId);
+        if (projIdx === -1) return { erro: "Rascunho não encontrado." };
+
+        const proj = v.projetosEstudo[projIdx];
+        if (proj.conteudo.length < 50) return { erro: "O livro está demasiado vazio para ter valor oculto." };
+
+        v.sangue -= 200;
+        v.projetosEstudo.splice(projIdx, 1); // Retira da bancada de rascunhos
+
         const manuscrito = {
             id: crypto.randomBytes(4).toString('hex'),
             autorId: v.id, autorNome: v.nome, autorTitulo: v.tituloAtual,
-            titulo: titulo, conteudo: conteudo, data: Date.now(),
+            titulo: proj.titulo, conteudo: proj.conteudo, data: Date.now(),
             publico: publico
         };
 
@@ -226,14 +290,15 @@ class OraculoAbissal {
         v.manuscritos.push(manuscrito);
 
         if (publico) {
+            if (!this.manuscritos) this.manuscritos = [];
             this.manuscritos.unshift(manuscrito);
-            if (this.manuscritos.length > 50) this.manuscritos.pop(); // Limite de 50 pergaminhos globais recentes
-            this._registrarEventoEspecial('global', 'TOMO REVELADO', `${v.nome} talhou o manuscrito [${titulo}] na pele do Acervo Global.`);
+            if (this.manuscritos.length > 50) this.manuscritos.pop();
+            this._registrarEventoEspecial('global', 'TOMO REVELADO', `${v.nome} selou e publicou o grimório [${proj.titulo}] na Biblioteca Maior.`, true, "Publicação de conhecimento");
         }
 
-        this.ganharXP(v.id, 30);
+        this.ganharXP(v.id, 50);
         this._salvarBancoDeDados();
-        return { sucesso: true, relato: "O teu conhecimento foi entalhado na escuridão." };
+        return { sucesso: true, relato: `O manuscrito [${proj.titulo}] foi selado com o teu sangue e eternizado.` };
     }
 
     async lerAuraMortal(identificador, plataforma) {

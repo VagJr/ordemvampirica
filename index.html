@@ -155,38 +155,48 @@
             <div class="progress-bg"><div class="progress-bar" id="bar-xp"></div></div>
 			<div id="aba-biblioteca" class="aba oculto">
             <div class="card">
-                <h3 style="text-align: center;">O Guardião do Conhecimento</h3>
-                <p style="text-align: center; font-size: 0.85em; color: #888;">Gasta 1 Fúria. A Mente Abissal vasculhará a biblioteca infinita e o tecido do ocultismo para te ensinar Magia e História.</p>
-                <div class="grid-2" style="margin-top:10px;">
-                    <input type="text" id="in-estudo-tema" placeholder="O que desejas estudar? (Ex: Sigilo de Lilith, Veneno, Criação de Golem)" style="margin:0;">
-                    <button class="btn-magick" onclick="estudarBiblioteca()" style="margin:0;">Consultar o Abismo</button>
+                <h3 style="text-align: center;">Bancada de Estudos (Rascunhos)</h3>
+                <p style="text-align: center; font-size: 0.85em; color: #888;">Cria ensaios, investiga magia com o Oráculo e funde-os aos teus rituais.</p>
+                <div class="grid-2" style="margin-bottom: 10px;">
+                    <input type="text" id="in-proj-titulo" placeholder="Título do Novo Tomo" style="margin:0;">
+                    <input type="text" id="in-proj-tema" placeholder="Tema Oculto a Estudar" style="margin:0;">
                 </div>
-                <div id="out-estudo" class="manuscrito-box oculto" style="margin-top: 15px;">
-                    <div class="manuscrito-titulo">Fragmento Revelado</div>
-                    <div class="manuscrito-texto" id="txt-estudo-resultado">O conhecimento exige sacrifício...</div>
+                <button class="btn-magick" onclick="iniciarProjeto()">Abrir Novo Pergaminho</button>
+                <div id="lista-projetos" style="margin-top:15px; border-top: 1px dashed #333; padding-top: 10px;"></div>
+            </div>
+
+            <div id="bancada-ativa" class="card oculto" style="border-color: var(--ouro); background: #0a0500;">
+                <h3>Estudando: <span id="proj-ativo-titulo" class="destaque"></span></h3>
+                
+                <textarea id="in-proj-conteudo" rows="10" style="font-size:0.9em;"></textarea>
+                <button onclick="salvarProjetoManual()" style="background:#111; color:var(--ouro); border-color:#333; margin-bottom: 15px;">Salvar Alterações Manuais (Tua Pena)</button>
+                
+                <div style="border-top: 1px dashed #333; margin: 15px 0; padding-top: 15px;">
+                    <h4 style="color:var(--ouro); margin-bottom:5px;">A Mente Abissal (Pesquisa Contínua)</h4>
+                    <p style="font-size:0.8em; color:#888;">Gasta 1 Fúria. Pede à IA para aprofundar um feitiço e anexar as fórmulas ao livro.</p>
+                    <input type="text" id="in-proj-pesquisa" placeholder="O que ditarás ao Abismo agora? (Ex: Como invocar Bune)">
+                    <button class="btn-magick" id="btn-aprofundar" onclick="aprofundarProjeto()">Sussurrar ao Abismo e Anexar</button>
+                </div>
+
+                <div style="border-top: 1px solid var(--sangue); margin: 15px 0; padding-top: 15px;">
+                    <h4 style="color:var(--sangue-claro); margin-bottom:5px;">Encadernar e Selar o Manuscrito</h4>
+                    <p style="font-size:0.8em; color:#888;">Gasta 200 Gts. Fecha o rascunho e eterniza-o como um Tomo Completo.</p>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom:10px;">
+                        <input type="checkbox" id="in-proj-publico" style="width:auto; margin:0;">
+                        <label for="in-proj-publico" style="color:var(--ouro); font-size: 0.9em; font-family: 'Cinzel', serif;">Publicar na Estante Global (Requer Grau 5+)</label>
+                    </div>
+                    <button onclick="arquivarProjeto()" style="background:#200; border-color:red;">Selar com Sangue (200 Gts)</button>
                 </div>
             </div>
 
             <div class="card">
-                <h3 style="text-align: center;">Forjar Manuscrito (Escrever)</h3>
-                <p style="text-align: center; font-size: 0.85em; color: #888;">Gasta 100 Gts para a tinta. Grava os teus feitiços, regras de Clã ou poemas. Apenas Grau 5+ pode expor na Estante Global.</p>
-                <input type="text" id="in-manuscrito-titulo" placeholder="Título Sagrado do Tomo">
-                <textarea id="in-manuscrito-conteudo" rows="4" placeholder="Escreve aqui o conhecimento profano..."></textarea>
-                <div style="display: flex; align-items: center; margin-bottom: 10px; gap: 10px;">
-                    <input type="checkbox" id="in-manuscrito-publico" style="width:auto; margin:0;">
-                    <label for="in-manuscrito-publico" style="color:var(--ouro); font-size: 0.9em; font-family: 'Cinzel', serif;">Tornar Público (Requer Grau 5+)</label>
-                </div>
-                <button class="btn-magick" onclick="arquivarManuscrito()">Arquivar Escrita a Sangue</button>
-            </div>
-
-            <div class="card">
-                <h3>Estante Global (Público)</h3>
-                <div id="lista-manuscritos-global" style="max-height: 250px; overflow-y: auto; padding-right:5px;"></div>
-            </div>
-
-            <div class="card">
-                <h3>Os Teus Tomos Pessoais</h3>
+                <h3>A Tua Estante (Tomos Selados)</h3>
                 <div id="lista-manuscritos-meus" style="max-height: 250px; overflow-y: auto; padding-right:5px;"></div>
+            </div>
+
+            <div class="card">
+                <h3>Acervo Akáshico Global</h3>
+                <div id="lista-manuscritos-global" style="max-height: 350px; overflow-y: auto; padding-right:5px;"></div>
             </div>
         </div>
 
@@ -948,36 +958,74 @@
         } catch(e) {}
     }
 	
-	// --- MAGIA DA BIBLIOTECA ---
-    async function estudarBiblioteca() {
-        const tema = document.getElementById('in-estudo-tema').value;
-        if (!tema) return;
-        document.getElementById('txt-estudo-resultado').innerText = "A mente viaja pelo astral. A aguardar revelação...";
-        document.getElementById('out-estudo').classList.remove('oculto');
+	// --- MAGIA DA BANCADA DE ESTUDOS ---
+    let projetoAbertoId = null;
+
+    async function iniciarProjeto() {
+        const titulo = document.getElementById('in-proj-titulo').value;
+        const tema = document.getElementById('in-proj-tema').value;
+        if (!titulo || !tema) return alert("Falta título e tema.");
         try {
-            const res = await fetch('/api/biblioteca/estudar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, tema }) });
-            const dados = await res.json(); 
-            if (dados.erro) { document.getElementById('txt-estudo-resultado').innerText = dados.erro; return; }
-            document.getElementById('txt-estudo-resultado').innerText = dados.relato;
-            document.getElementById('in-manuscrito-conteudo').value = dados.relato; // Facilita a vida: copia logo pro editor!
-            syncStatus();
-        } catch(e) { document.getElementById('txt-estudo-resultado').innerText = "A conexão mental quebrou."; }
+            const res = await fetch('/api/biblioteca/iniciar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, titulo, tema }) });
+            const dados = await res.json(); alert(dados.erro || dados.relato); 
+            if (!dados.erro) { document.getElementById('in-proj-titulo').value = ''; document.getElementById('in-proj-tema').value = ''; }
+            syncStatus(); carregarBiblioteca();
+        } catch(e) {}
     }
 
-    async function arquivarManuscrito() {
-        const titulo = document.getElementById('in-manuscrito-titulo').value;
-        const conteudo = document.getElementById('in-manuscrito-conteudo').value;
-        const publico = document.getElementById('in-manuscrito-publico').checked;
-        if (!titulo || !conteudo) return alert("Preenche o título e o pergaminho.");
+    function abrirProjeto(id) {
+        projetoAbertoId = id;
+        const p = meuVampiro.projetosEstudo.find(x => x.id === id);
+        if (!p) return;
+        document.getElementById('bancada-ativa').classList.remove('oculto');
+        document.getElementById('in-proj-conteudo').value = p.conteudo;
+        safeSet('proj-ativo-titulo', p.titulo);
+        document.getElementById('bancada-ativa').scrollIntoView({behavior: "smooth"});
+    }
+
+    async function salvarProjetoManual() {
+        if (!projetoAbertoId) return;
+        const conteudo = document.getElementById('in-proj-conteudo').value;
         try {
-            const res = await fetch('/api/biblioteca/arquivar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, titulo, conteudo, publico }) });
+            const res = await fetch('/api/biblioteca/salvar_manual', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId, conteudo }) });
+            const dados = await res.json(); alert(dados.erro || dados.relato); syncStatus();
+        } catch(e) {}
+    }
+
+    async function aprofundarProjeto() {
+        if (!projetoAbertoId) return;
+        const pesquisa = document.getElementById('in-proj-pesquisa').value;
+        if (!pesquisa) return alert("Dita a tua dúvida.");
+        document.getElementById('btn-aprofundar').innerText = "A consultar as esferas...";
+        try {
+            const res = await fetch('/api/biblioteca/aprofundar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId, novaPesquisa: pesquisa }) });
             const dados = await res.json(); 
-            alert(dados.erro || dados.relato); 
-            if(!dados.erro) {
-                document.getElementById('in-manuscrito-titulo').value = '';
-                document.getElementById('in-manuscrito-conteudo').value = '';
-            }
-            carregarBiblioteca(); syncStatus();
+            document.getElementById('btn-aprofundar').innerText = "Sussurrar ao Abismo e Anexar";
+            if (dados.erro) { alert(dados.erro); return; }
+            document.getElementById('in-proj-pesquisa').value = '';
+            abrirProjeto(projetoAbertoId); // Recarrega a caixa de texto
+            syncStatus();
+        } catch(e) { document.getElementById('btn-aprofundar').innerText = "Sussurrar ao Abismo e Anexar"; }
+    }
+
+    async function arquivarProjeto() {
+        if (!projetoAbertoId) return;
+        const publico = document.getElementById('in-proj-publico').checked;
+        try {
+            const res = await fetch('/api/biblioteca/arquivar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId, publico }) });
+            const dados = await res.json(); alert(dados.erro || dados.relato); 
+            if (!dados.erro) { document.getElementById('bancada-ativa').classList.add('oculto'); projetoAbertoId = null; }
+            syncStatus(); carregarBiblioteca();
+        } catch(e) {}
+    }
+
+    async function apagarProjetoBtn(id) {
+        if(!confirm("Queimar este rascunho? O conhecimento perder-se-á.")) return;
+        try {
+            const res = await fetch('/api/biblioteca/apagar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: id }) });
+            const dados = await res.json(); alert(dados.erro || dados.relato); 
+            if (projetoAbertoId === id) document.getElementById('bancada-ativa').classList.add('oculto');
+            syncStatus(); carregarBiblioteca();
         } catch(e) {}
     }
 
@@ -990,20 +1038,34 @@
                 <div class="manuscrito-box">
                     <div class="manuscrito-titulo">${m.titulo}</div>
                     <div class="manuscrito-texto">${m.conteudo}</div>
-                    <div class="manuscrito-autor">Escrito por: [${m.autorTitulo}] ${m.autorNome}</div>
+                    <div class="manuscrito-autor">Publicado por: [${m.autorTitulo}] ${m.autorNome}</div>
                 </div>
             `).join('') || "<p style='color:#555;font-style:italic;'>A estante global está vazia.</p>";
             safeSet('lista-manuscritos-global', htmlGlobal, true);
 
-            // Renderiza Tomos Pessoais (lidos direto do meuVampiro já sincronizado)
-            if (meuVampiro && meuVampiro.manuscritos) {
-                const htmlMeus = meuVampiro.manuscritos.slice().reverse().map(m => `
+            // Renderiza Tomos Pessoais
+            if (meuVampiro) {
+                const htmlMeus = (meuVampiro.manuscritos || []).slice().reverse().map(m => `
                     <div class="manuscrito-box" style="border-left-color: var(--sangue);">
                         <div class="manuscrito-titulo">${m.titulo} ${m.publico ? '<span style="font-size:0.6em;color:#0f5;">[PÚBLICO]</span>' : '<span style="font-size:0.6em;color:red;">[SECRETO]</span>'}</div>
                         <div class="manuscrito-texto">${m.conteudo}</div>
                     </div>
-                `).join('') || "<p style='color:#555;font-style:italic;'>Ainda não sujaste o papiro de sangue.</p>";
+                `).join('') || "<p style='color:#555;font-style:italic;'>Nenhum livro selado.</p>";
                 safeSet('lista-manuscritos-meus', htmlMeus, true);
+
+                const htmlRascunhos = (meuVampiro.projetosEstudo || []).map(p => `
+                    <div style="border: 1px dashed #444; padding: 10px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="color:var(--ouro);">${p.titulo}</strong><br>
+                            <span style="font-size:0.75em; color:#888;">Foco: ${p.tema}</span>
+                        </div>
+                        <div>
+                            <button class="btn-magick" onclick="abrirProjeto('${p.id}')" style="padding:5px; font-size:0.7em; width:auto; margin:0;">Estudar</button>
+                            <button onclick="apagarProjetoBtn('${p.id}')" style="padding:5px; font-size:0.7em; width:auto; background:transparent; color:red; border-color:red; margin:0;">Queimar</button>
+                        </div>
+                    </div>
+                `).join('') || "<p style='color:#555;font-style:italic; font-size:0.85em;'>Nenhum rascunho na bancada.</p>";
+                safeSet('lista-projetos', htmlRascunhos, true);
             }
         } catch(e) {}
     }
