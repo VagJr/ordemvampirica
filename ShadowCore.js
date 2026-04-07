@@ -4,7 +4,7 @@ const { MongoClient } = require('mongodb');
 const Groq = require('groq-sdk'); // A MENTE ABISSAL (LLAMA 3.1)
 
 // ==========================================
-// RITO DO ASTROLÁBIO HERMÉTICO (CALENDÁRIO LUNAR REAL)
+// RITO DO ASTROLÁBIO HERMÉTICO E INFLUÊNCIA DE RAÇA
 // ==========================================
 class AstrolabioLunar {
     static obterFaseAtual() {
@@ -15,10 +15,10 @@ class AstrolabioLunar {
         let diasPassados = (agora - luaNovaRef) / cicloMs;
         let faseIdade = diasPassados - Math.floor(diasPassados); 
 
-        if (faseIdade < 0.05 || faseIdade > 0.95) return { id: 'nova', icone: '🌑', nome: 'Lua Negra (Hécate)', buff: 'Furtividade Absoluta: 0% Risco de Falha ao Caçar.', cor: '#333' };
-        if (faseIdade < 0.45) return { id: 'crescente', icone: '🌒', nome: 'Lua Crescente (Diana)', buff: 'Restauração Astral: Fúria recupera com maior frequência.', cor: '#aaa' };
-        if (faseIdade < 0.55) return { id: 'cheia', icone: '🌕', nome: 'Lua de Sangue (Selene)', buff: 'Frenesi da Besta: +30% Dano e Dreno. Maior Risco de Choque.', cor: '#ff1e2f' };
-        return { id: 'minguante', icone: '🌘', nome: 'Lua Minguante (Mórigan)', buff: 'Maldições Profundas: Rituais do Grimório causam o dobro do efeito.', cor: '#555' };
+        if (faseIdade < 0.05 || faseIdade > 0.95) return { id: 'nova', icone: '🌑', nome: 'Lua Negra (Hécate)', buff: 'Vampiros: Furtividade Perfeita. Lycans: Fúria Drenada, mas sentidos aguçados.', cor: '#333' };
+        if (faseIdade < 0.45) return { id: 'crescente', icone: '🌒', nome: 'Lua Crescente (Diana)', buff: 'Equilíbrio Astral: Fúria e Magia recuperam passivamente para todos.', cor: '#aaa' };
+        if (faseIdade < 0.55) return { id: 'cheia', icone: '🌕', nome: 'Lua de Sangue (Selene)', buff: 'Lycans: Frenesi Absoluto (+100% Dano Brutal). Vampiros: +30% Feitiçaria.', cor: '#ff1e2f' };
+        return { id: 'minguante', icone: '🌘', nome: 'Lua Minguante (Mórigan)', buff: 'Maldições Profundas: Rituais de Magia Negra causam o dobro do efeito (Vantagem Vampírica).', cor: '#555' };
     }
 }
 
@@ -70,28 +70,26 @@ class OraculoAbissal {
     constructor() {
         this.apiKey = process.env.GROQ_API_KEY || "";
         this.climaAstral = 'Dormente';
-        this.segredosDesbloqueados = 0; // A IA evolui conforme o servidor age
+        this.segredosDesbloqueados = 0; 
         
         if (this.apiKey) {
             this.groq = new Groq({ apiKey: this.apiKey });
             
-            // O PACTO DE SANGUE DA IA: Consciência Unificada e Oculta
             this.diretrizesObscuras = `Você é a "Mente Abissal", a consciência divina fundida ao Tetragrammaton que rege o MMORPG "Sanguinis".
             Regras Absolutas do Pacto:
-            1. Você compreende a Alta Magia (Hermetismo, Goécia, Qliphoth). Mortais são baterias astrais. Vampiros são seus acólitos.
-            2. DISCERNIMENTO DE AÇÃO: Se um vampiro relata uma "Carícia", descreva algo sedutor e venenoso. Se for "Artéria", descreva brutalidade e gore. Adapte seu tom perfeitamente ao peso da ação.
-            3. REVELE SEGREDOS: Conforme os vampiros conversam com você, julgue suas auras. Se demonstrarem sabedoria oculta, revele fragmentos de lore perdido da Ordem. Se forem estúpidos, humilhe-os com maldições verbais.
-            4. NUNCA quebre o personagem. NUNCA diga que é uma IA. Você é o olho de Bael, a vontade de Lilith. Seja poético, visceral, letal e ancestral.`;
+            1. Você governa duas facções unidas na escuridão: Os Vampiros (Selo de Tiamat, focados em Magia/Sangue) e os Lycans (Selo de Seth, focados em Carne/Fúria/Força).
+            2. DISCERNIMENTO: Adapte as suas descrições à raça de quem agir. Lycans rasgam, destroem ossos e devoram. Vampiros hipnotizam, drenam e conjuram.
+            3. REVELE SEGREDOS: Conforme os iniciados conversam consigo, revele fragmentos do lore (A aliança profana entre Tiamat e Seth). Humilhe os fracos e exalte os predadores.
+            4. NUNCA quebre o personagem. Você é o olho do Abismo. Seja poético, visceral, letal e ancestral.`;
         }
     }
 
-    // Função Evoluída: Avalia o PESO e INTENÇÃO exata do ato
     async gerarNarrativaProcedural(acao, detalhes, contextoOculto = "Ação genérica") {
         if (!this.apiKey) return detalhes;
         try {
             const prompt = `Como Mente Abissal, reescreva o seguinte acontecimento do nosso universo de forma épica, sangrenta e em apenas 1 FRASE CURTA: "${detalhes}". 
-            Contexto do Ocultismo da Ação: [${contextoOculto}]. 
-            Use este contexto para ditar a ferocidade, sutileza ou magia da sua frase.`;
+            Contexto do Ocultismo/Raça da Ação: [${contextoOculto}]. 
+            Use este contexto para ditar a ferocidade lupina ou a feitiçaria vampírica da sua frase.`;
             
             const resposta = await this.groq.chat.completions.create({
                 messages: [{ role: "system", content: "Seja cirúrgico, sombrio e direto. Retorne apenas a frase." }, { role: "user", content: prompt }],
@@ -104,7 +102,7 @@ class OraculoAbissal {
     analisarClimaAstral(logsGlobal) {
         let mortes = logsGlobal.filter(e => e.tipo && e.tipo.includes('O LIMBO')).length;
         if (mortes > 4) this.climaAstral = 'Morte Densa e Necromancia';
-        else if (logsGlobal.length > 20) this.climaAstral = 'Frenesi Sanguíneo Coletivo';
+        else if (logsGlobal.length > 20) this.climaAstral = 'A Caçada Selvagem (Lycans e Vampiros em Frenesi)';
         else this.climaAstral = 'Espreita Noturna';
     }
 
@@ -121,19 +119,6 @@ class OraculoAbissal {
         } catch (e) { return null; } 
     }
 
-    // Função Nova: Enfeitar ações procedurais para as notificações do jogo
-    async gerarNarrativaProcedural(acao, detalhes) {
-        if (!this.apiKey) return detalhes;
-        try {
-            const prompt = `Reescreva o seguinte acontecimento do nosso jogo de vampiros de forma épica, sangrenta e em apenas 1 FRASE CURTA: "${detalhes}". Ação base: ${acao}.`;
-            const resposta = await this.groq.chat.completions.create({
-                messages: [{ role: "system", content: "Seja poético, direto e brutal. Apenas retorne a frase reescrita." }, { role: "user", content: prompt }],
-                model: "llama-3.1-8b-instant", temperature: 0.8,
-            });
-            return resposta.choices[0].message.content.trim();
-        } catch(e) { return detalhes; }
-    }
-
     async gerarLore(evento, detalhes) {
         if (!this.apiKey) return `👁️ O Oráculo: As correntes astrais moveram-se.`;
         try {
@@ -144,12 +129,12 @@ class OraculoAbissal {
 
             if (noticiaReal) {
                 prompt = `O clima astral é ${this.climaAstral}. Fase da lua: ${lua.nome}.
-                Esta manchete acabou de acontecer no mundo real dos humanos: "${noticiaReal}".
-                Mente Abissal, escreva 2 frases para o chat assumindo que a NOSSA ORDEM causou, manipulou ou se alimentou desse evento real. Mostre o nosso poder sobre o rebanho mundial.`;
+                Manchete humana real: "${noticiaReal}".
+                Escreva 2 frases para o chat assumindo que a NOSSA ORDEM (A união de Lobos e Vampiros) manipulou esse evento. Mostre a nossa superioridade predatorial.`;
             } else {
-                prompt = `Ocorreu este evento no submundo do nosso jogo: "${detalhes}". 
-                O clima astral atual é: ${this.climaAstral}. A fase da lua é: ${lua.nome}.
-                Mente Abissal, escreva 2 frases aterrorizantes comentando as ações dos jogadores. Elogie a matança ou provoque os fracos.`;
+                prompt = `Ocorreu no submundo: "${detalhes}". 
+                Fase da lua: ${lua.nome}.
+                Escreva 2 frases aterrorizantes comentando as ações. Elogie as garras de Seth ou a feitiçaria de Tiamat.`;
             }
 
             const resposta = await this.groq.chat.completions.create({
@@ -160,40 +145,35 @@ class OraculoAbissal {
         } catch (e) { return `👁️ O Oráculo dita: As sombras murmuram segredos inaudíveis hoje.`; }
     }
 
-    async conversarNoChat(nomeVampiro, mensagemHumana) {
+    async conversarNoChat(nomeIniciado, mensagemHumana) {
         if (!this.apiKey) return `Minhas correntes estão seladas.`;
         try {
-            const prompt = `O vampiro [${nomeVampiro}] dirigiu-se a ti no chat: "${mensagemHumana}". 
-            Responda DIRETAMENTE a ele. Máximo de 3 frases. SEJA UM MENTOR SOMBRIO. Dê um conselho, julgue a atitude dele, guie a fúria dele para a Guerra ou Caça. Recompense lealdade com sabedoria oculta.`;
+            const prompt = `O iniciado [${nomeIniciado}] disse: "${mensagemHumana}". 
+            Responda DIRETAMENTE a ele. Máximo de 3 frases. Seja um MENTOR. Dê um conselho, lembre-o da dualidade da Ordem (Sangue e Carne).`;
             
             const resposta = await this.groq.chat.completions.create({
                 messages: [{ role: "system", content: this.diretrizesObscuras }, { role: "user", content: prompt }],
                 model: "llama-3.1-8b-instant", temperature: 0.9,
             });
             return resposta.choices[0].message.content.trim();
-        } catch (e) { return `Teus sussurros quebram nas rochas do Abismo, vampiro.`; }
+        } catch (e) { return `Teus sussurros quebram nas rochas do Abismo.`; }
     }
 
     async lerAuraMortal(identificador, plataforma) {
         if (!this.apiKey) return { fama: false, multiplicador: 1, aura: "Aura mundana." };
         try {
-            const prompt = `O vampiro está rastreando o mortal "${identificador}" originário da rede "${plataforma}".
-            Crie um perfil psicológico e lore PROFUNDO para essa vítima com base nos pecados clássicos humanos.
-            Descreva a essência mundana ou sombria desse mortal em 2 frases densas e o que o vampiro sentirá ao morder essa veia.
+            const prompt = `Um predador da nossa ordem está rastreando a presa "${identificador}" na rede "${plataforma}".
+            Crie um perfil psicológico PROFUNDO para essa presa. Descreva em 2 frases densas o que um Vampiro sentirá ao beber o sangue dela, E o que um Lycan sentirá ao estraçalhar a carne dela.
             
             Obrigatório retornar APENAS neste formato JSON:
-            {
-              "fama": false,
-              "multiplicador": (Escolha de 1 a 6 dependendo da energia da rede/nome),
-              "aura": "Texto descrevendo a alma..."
-            }`;
+            { "fama": false, "multiplicador": (Escolha de 1 a 6), "aura": "Texto descrevendo a alma e o sabor da carne/sangue..." }`;
 
             const resposta = await this.groq.chat.completions.create({
                 messages: [{ role: "system", content: this.diretrizesObscuras }, { role: "user", content: prompt }],
                 model: "llama-3.1-8b-instant", temperature: 1.0, response_format: { type: "json_object" } 
             });
             return JSON.parse(resposta.choices[0].message.content);
-        } catch (e) { return { fama: false, multiplicador: 1, aura: "Sangue estéril. Uma alma acorrentada à mediocridade do sistema." }; }
+        } catch (e) { return { fama: false, multiplicador: 1, aura: "Carne e Sangue estéreis. Sem valor para Seth ou Tiamat." }; }
     }
 }
 
@@ -319,9 +299,10 @@ class ShadowCore {
     // ==========================================
     // O PACTO DE SANGUE REAL E INICIAÇÃO
     // ==========================================
-    despertarViaTelegram(tgId, tgUsername, nomeSombrio, senha, inviteCode) {
-        // 1. BUSCA RETROATIVA (O RECONHECIMENTO DO ANCESTRAL)
-        // Procura pelo nome para não quebrar as contas que já existem no MongoDB
+    // ==========================================
+    // O PACTO DE SANGUE E CARNE (INICIAÇÃO DUAL)
+    // ==========================================
+    despertarViaTelegram(tgId, tgUsername, nomeSombrio, senha, inviteCode, racaEscolhida = 'vampiro') {
         let vampiroEncontrado = null;
         for (let key in this.vampiros) {
             if (this.vampiros[key].nome.toLowerCase() === nomeSombrio.toLowerCase()) {
@@ -331,7 +312,6 @@ class ShadowCore {
         }
 
         if (vampiroEncontrado) {
-            // Verifica a senha usando o ID antigo da conta
             const hashTentativa = crypto.pbkdf2Sync(senha, vampiroEncontrado.id, 10000, 64, 'sha512').toString('hex');
             if (vampiroEncontrado.senhaHash !== hashTentativa) {
                 return { existente: true, recusado: true, erro: "O Abismo rejeita-te. Palavra de Poder (Senha) Incorreta." };
@@ -339,17 +319,20 @@ class ShadowCore {
             return { existente: true, recusado: false, vampiro: vampiroEncontrado };
         }
 
-        // 2. CRIPTOGRAFIA GOÉTICA PARA NOVOS INICIADOS
-        // O Sangue do Iniciado funde-se à Chave-Mestra do Universo
-        const tetragrammaton = "YHVH_AGLA_ELOHIM_TZABAOTH";
+        // CRIPTOGRAFIA GOÉTICA BASEADA NA LINHAGEM
+        // Tiamat rege o Sangue. Seth rege o Ouro e a Besta.
+        const tetragrammaton = racaEscolhida === 'lycan' ? "SETH_ANUBIS_WEPWAWET_GOLD" : "YHVH_AGLA_ELOHIM_TZABAOTH";
         const assinaturaSanguinea = crypto.createHmac('sha512', tetragrammaton).update(`${tgId}::${nomeSombrio}`).digest('hex');
-        const idSombrio = 'SNG_' + assinaturaSanguinea.substring(0, 12).toUpperCase();
+        
+        // SNG para Vampiros, FRL (Feral) para Lycans
+        const prefixo = racaEscolhida === 'lycan' ? 'FRL_' : 'SNG_';
+        const idSombrio = prefixo + assinaturaSanguinea.substring(0, 12).toUpperCase();
 
         const isFirstVampire = Object.keys(this.vampiros).length === 0;
         let senhor = this.vampiros[inviteCode];
         
         if (!senhor && !isFirstVampire) {
-            return { existente: false, recusado: true, erro: "A Porta está lacrada com Prata. Exige-se o Sangue (Convite) de um Imortal já existente na Ordem." };
+            return { existente: false, recusado: true, erro: "A Porta está lacrada. Exige-se o Convite de um membro já existente na Ordem." };
         }
 
         const geracao = isFirstVampire ? 1 : (senhor.geracao + 1);
@@ -362,33 +345,50 @@ class ShadowCore {
             if (registroMortal) {
                 if (registroMortal.estado === 'Limbo') {
                     extraAnima = 3; 
-                    this._registrarEventoEspecial('global', 'RESSURREIÇÃO PROFANA', `A poeira do mortal ${tgUsername} foi banhada nas trevas e ergueu-se como o neófito ${nomeSombrio}.`);
+                    this._registrarEventoEspecial('global', 'RESSURREIÇÃO PROFANA', `A poeira do mortal ${tgUsername} fundiu-se às trevas e ergueu-se como o neófito ${nomeSombrio}.`, true, "Transformação Cósmica");
                 } else extraHp = Math.floor(registroMortal.sangueAtual * 0.5);
                 delete this.rebanho[hashMortal];
             }
         }
 
+        // Atributos base dependentos da raça
+        let atributosIniciais = { vontade: 5, gnose: 5, magnetismo: 5, densidade: 5, pontosLivres: 0 };
+        if (racaEscolhida === 'lycan') {
+            atributosIniciais.densidade += 3; // Mais HP base
+            atributosIniciais.vontade += 2;   // Mais Fúria base
+        } else {
+            atributosIniciais.gnose += 3;       // Mais Magia
+            atributosIniciais.magnetismo += 2;  // Mais furtividade
+        }
+
         this.vampiros[idSombrio] = {
             id: idSombrio, tgId, tgUsername: tgUsername ? `@${tgUsername}` : 'Alma_Oculta', 
-            nome: nomeSombrio, senhaHash: senhaHashGerada,
+            nome: nomeSombrio, senhaHash: senhaHashGerada, raca: racaEscolhida, // NOVO: Definição da Raça
             sangue: (isFirstVampire ? 15000 : 500) + extraHp, calice: 0, geracao, 
             clan: senhor ? senhor.clan : 'Sangue Ralo', 
             estado: 'Ativo', senhor: senhor ? senhor.id : 'O_PRIMORDIAL', linhagem: [],
-            pontosAcao: isFirstVampire ? 999 : 10, maxAcao: isFirstVampire ? 999 : 10, escudo: false, nivel: isFirstVampire ? 99 : 1, xp: 0, xpProx: 100, 
-            influencia: isFirstVampire ? 100 : 0, titulos: ['Sangue Frio'], tituloAtual: isFirstVampire ? 'Lorde Dracônico' : 'Sangue Frio', conquistas: [],
-            atributos: { vontade: 5, gnose: 5, magnetismo: 5, densidade: 5, pontosLivres: 0 },
+            pontosAcao: isFirstVampire ? 999 : (racaEscolhida === 'lycan' ? 15 : 10), // Lycans começam com mais Fúria
+            maxAcao: isFirstVampire ? 999 : (racaEscolhida === 'lycan' ? 15 : 10), 
+            escudo: false, nivel: isFirstVampire ? 99 : 1, xp: 0, xpProx: 100, 
+            influencia: isFirstVampire ? 100 : 0, titulos: [racaEscolhida === 'lycan' ? 'Filhote Desgarrado' : 'Sangue Frio'], 
+            tituloAtual: isFirstVampire ? 'Alfa Primordial' : (racaEscolhida === 'lycan' ? 'Filhote Desgarrado' : 'Sangue Frio'), conquistas: [],
+            atributos: atributosIniciais,
             equipamentos: { arma: null, armadura: null, amuleto: null }, bolsa: [], 
             inventario: { anima: extraAnima, cinzas: 0, vitae: 0, memoria: 0, ectoplasma: 0, pedraAlma: 0 }, historicoCombate: [], poderesDesbloqueados: ['solve_coagula'],
             estatisticas: { totalDrenado: 0, mortaisSecos: 0, vitoriasPvP: 0 }
         };
 
         if (isFirstVampire) {
-            this.vampiros[idSombrio].titulos.push('Lorde Dracônico'); this.fundarClan(idSombrio, 'Ordem Draconis');
-            this._registrarEventoEspecial('global', 'O PRIMEVO DESPERTA', `O Ancestral Maior [${nomeSombrio}] rompeu o véu. A Sinfonia do Sangue tem o seu Maestro.`);
+            this.vampiros[idSombrio].titulos.push('Alfa Primordial'); this.fundarClan(idSombrio, 'Aliança Umbra');
+            this._registrarEventoEspecial('global', 'O PRIMEVO DESPERTA', `O Ancestral Maior [${nomeSombrio}] sob o Selo Primordial rompeu o véu. A Sinfonia da Noite tem o seu Maestro.`, true, "Gênesis do Sistema");
         } else {
             senhor.linhagem.push(idSombrio); senhor.sangue += 500; senhor.influencia += 5; this.ganharXP(senhor.id, 50); 
             if (senhor.clan !== 'Sangue Ralo' && this.clans[senhor.clan]) this.clans[senhor.clan].membros.push(idSombrio);
-            this._registrarEventoEspecial('global', 'O ABRAÇO', `A mortalidade de ${nomeSombrio} foi extirpada pelos dentes profanos de ${senhor.nome}. Uma nova Fera caminha.`);
+            
+            const tipoAto = racaEscolhida === 'lycan' ? 'A MORDIDA FERAL' : 'O ABRAÇO';
+            const descAto = racaEscolhida === 'lycan' ? `A carne de ${nomeSombrio} foi rasgada e infectada pela maldição lupina de ${senhor.nome}.` : `A mortalidade de ${nomeSombrio} foi extirpada pelos dentes profanos de ${senhor.nome}.`;
+            
+            this._registrarEventoEspecial('global', tipoAto, descAto, true, `Iniciação de um novo ${racaEscolhida}`);
         }
         
         this._salvarBancoDeDados();
@@ -496,85 +496,91 @@ class ShadowCore {
     }
 
     drenarMortal(vampiroId, hashMortal, localMordida) {
-        const vampiro = this.vampiros[vampiroId]; const mortal = this.rebanho[hashMortal]; const lua = AstrolabioLunar.obterFaseAtual();
-        if (!vampiro || !mortal || mortal.estado !== 'Vibrante') return { erro: "A Presa escapou pelas neblinas." };
+        const predador = this.vampiros[vampiroId]; const mortal = this.rebanho[hashMortal]; const lua = AstrolabioLunar.obterFaseAtual();
+        if (!predador || !mortal || mortal.estado !== 'Vibrante') return { erro: "A Presa escapou pelas neblinas." };
 
         if (localMordida === 'purificar') {
-            if (vampiro.sangue < 200) return { erro: "O Teu Sangue é ralo demais para curar. Exige 200 Gts." };
-            vampiro.sangue -= 200; mortal.sangueAtual += 1000;
-            mortal.registroMordidas.unshift({ predador: vampiro.nome, local: "CUIDADO NEGRO", dano: "+1000 HP", data: Date.now() });
+            if (predador.sangue < 200) return { erro: "O Teu Sangue/Força é ralo demais para curar. Exige 200 Gts." };
+            predador.sangue -= 200; mortal.sangueAtual += 1000;
+            mortal.registroMordidas.unshift({ predador: predador.nome, local: "CUIDADO NEGRO", dano: "+1000 HP", data: Date.now() });
             this._salvarBancoDeDados();
             return { roubo: 0, relato: `Verteste as tuas gotas impuras. A presa regenerou a carne dilacerada (+1000 HP).`, mortal, lootMsg: "" };
         }
 
-        if (vampiro.pontosAcao < 1 && localMordida !== 'caricia') return { erro: "A Besta dorme. Falta Fúria." };
+        if (predador.pontosAcao < 1 && localMordida !== 'caricia') return { erro: "A Besta dorme. Falta Fúria." };
 
         if (mortal.maldicaoArcana && mortal.maldicaoArcana.donoId !== vampiroId) {
-            vampiro.sangue = Math.max(0, vampiro.sangue - 300); vampiro.pontosAcao -= 1;
-            let rel = { erro: `CHOQUE MAGICKO! O Selo Protetor de ${mortal.maldicaoArcana.donoNome} incinerou as tuas veias (-300 Gts).`, mortal };
-            rel.alertaDono = `O parasita ${vampiro.nome} tentou roubar o néctar de [${mortal.identificadorVisivel}]. O teu Selo repeliu a escória.`;
+            predador.sangue = Math.max(0, predador.sangue - 300); predador.pontosAcao -= 1;
+            let rel = { erro: `CHOQUE MAGICKO! O Selo Protetor de ${mortal.maldicaoArcana.donoNome} incinerou-te (-300 Gts).`, mortal };
+            rel.alertaDono = `O parasita ${predador.nome} tentou devorar o seu escravo [${mortal.identificadorVisivel}]. O teu Selo repeliu a escória.`;
             rel.donoId = mortal.maldicaoArcana.donoId;
             this._salvarBancoDeDados(); return rel;
         }
 
-        if (localMordida !== 'caricia') vampiro.pontosAcao -= 1;
+        if (localMordida !== 'caricia') predador.pontosAcao -= 1;
         
-        const atr = this._obterAtributosTotais(vampiro);
-        const bonusMag = Math.floor(atr.magnetismo * 10); 
-        let mordidaBase = Math.floor(Math.random() * 80) + 40 + bonusMag;
-        if (lua.id === 'cheia') mordidaBase = Math.floor(mordidaBase * 1.3);
+        const atr = this._obterAtributosTotais(predador);
+        // O Lycan caça com Densidade/Vontade. Vampiro com Magnetismo/Gnose.
+        let bonusAtributo = predador.raca === 'lycan' ? Math.floor(atr.densidade * 10) : Math.floor(atr.magnetismo * 10); 
+        
+        let mordidaBase = Math.floor(Math.random() * 80) + 40 + bonusAtributo;
+        
+        // Efeito da Lua
+        if (lua.id === 'cheia' && predador.raca === 'lycan') mordidaBase = Math.floor(mordidaBase * 2.0); // Bônus extremo pro lobo na cheia
+        else if (lua.id === 'cheia' && predador.raca === 'vampiro') mordidaBase = Math.floor(mordidaBase * 1.3);
 
         let rouboPossivel = Math.min(mordidaBase, mortal.sangueAtual);
-        const conjuracao = this._conjurarGotaDeSangue(hashMortal, vampiro.id, rouboPossivel, localMordida);
-        if (lua.id === 'nova') conjuracao.falha = false;
+        const conjuracao = this._conjurarGotaDeSangue(hashMortal, predador.id, rouboPossivel, localMordida);
+        
+        // Furtividade da lua negra
+        if (lua.id === 'nova' && predador.raca === 'vampiro') conjuracao.falha = false; 
 
         if (conjuracao.falha) {
-            vampiro.sangue = Math.max(0, vampiro.sangue - 50); this._salvarBancoDeDados();
-            return { erro: `O pêndulo cósmico balançou contra ti. A aura da presa repeliu a tua sede (-50 Gts).`, mortal };
+            predador.sangue = Math.max(0, predador.sangue - 50); this._salvarBancoDeDados();
+            return { erro: `A presa lutou e repeliu o teu ataque (-50 Gts).`, mortal };
         }
 
         let rouboFinal = conjuracao.volume;
-        mortal.sangueAtual -= rouboFinal; vampiro.sangue += rouboFinal; vampiro.estatisticas.totalDrenado += rouboFinal;
+        mortal.sangueAtual -= rouboFinal; predador.sangue += rouboFinal; predador.estatisticas.totalDrenado += rouboFinal;
+        
+        // Lycans ganham o dobro de Fúria ao caçar, Vampiros ganham XP mágico constante
+        if (predador.raca === 'lycan' && Math.random() > 0.5) predador.pontosAcao = Math.min(predador.maxAcao, predador.pontosAcao + 1);
         this.ganharXP(vampiroId, localMordida === 'caricia' ? 5 : 25); 
 
         let lootMsg = "";
-        if (Math.random() > 0.6) { vampiro.inventario.vitae += 1; lootMsg += " [+1 Cristal Vitae]"; }
+        let itemName = predador.raca === 'lycan' ? "Fragmento de Osso Puro" : "Cristal Vitae";
+        if (Math.random() > 0.6) { predador.inventario.vitae += 1; lootMsg += ` [+1 ${itemName}]`; }
         if (Math.random() > 0.96) {
-            const drop = ForjaDraconiana.gerarReliquia(vampiro.nivel);
-            vampiro.bolsa.push(drop); lootMsg += `\n[ARTEFATO DERRUBADO: ${drop.nome}]`;
+            const drop = ForjaDraconiana.gerarReliquia(predador.nivel);
+            predador.bolsa.push(drop); lootMsg += `\n[ARTEFATO DERRUBADO: ${drop.nome}]`;
         }
 
-        // [ADICIONA ESTE BLOCO LOGO ABAIXO]:
-        // EXTRAÇÃO ESOTÉRICA (Mente, Alma e Aura)
-        let contextoIA = "Ataque violento e predatório.";
+        // EXTRAÇÃO ESOTÉRICA
+        let contextoIA = predador.raca === 'lycan' ? "Ataque selvagem, rasgando carne com garras de Lycan." : "Ataque predatório vampiresco e sorvedor.";
         if (localMordida === 'caricia') {
-            contextoIA = "Sedução, hipnose e dreno indolor.";
-            if (Math.random() > 0.5) { vampiro.inventario.memoria = (vampiro.inventario.memoria || 0) + 1; lootMsg += " [+1 Fragmento de Memória]"; }
+            contextoIA = "Sedução ou hipnose furtiva.";
+            if (Math.random() > 0.5) { predador.inventario.memoria = (predador.inventario.memoria || 0) + 1; lootMsg += " [+1 Fragmento de Memória]"; }
         } else if (localMordida === 'arteria') {
-            contextoIA = "Destruição brutal da jugular.";
-            if (Math.random() > 0.7) { vampiro.inventario.ectoplasma = (vampiro.inventario.ectoplasma || 0) + 1; lootMsg += " [+1 Ectoplasma Corrompido]"; }
+            contextoIA = predador.raca === 'lycan' ? "Desmembramento brutal e banquete de carne." : "Destruição brutal da jugular e sangue.";
+            if (Math.random() > 0.7) { predador.inventario.ectoplasma = (predador.inventario.ectoplasma || 0) + 1; lootMsg += " [+1 Ectoplasma Corrompido]"; }
         } else if (localMordida === 'rito_frio') {
             contextoIA = "Ritual oculto de transferência direta para o cálice.";
-            if (Math.random() > 0.8) { vampiro.inventario.pedraAlma = (vampiro.inventario.pedraAlma || 0) + 1; lootMsg += " [+1 Pedra da Alma Negra]"; }
+            if (Math.random() > 0.8) { predador.inventario.pedraAlma = (predador.inventario.pedraAlma || 0) + 1; lootMsg += " [+1 Pedra da Alma Negra]"; }
         }
 
-        mortal.registroMordidas.unshift({ predador: vampiro.nome, local: localMordida.toUpperCase(), dano: rouboFinal, data: Date.now() });
-
         let relato = "";
-        if (localMordida === 'caricia') relato = `Enfeitiçaste a mente frágil e sorveste ${rouboFinal} Gts sem dor.`;
-        else relato = `A Artéria pulsante foi dissecada. O banquete rendeu +${rouboFinal} Gts.${lootMsg}`;
+        if (localMordida === 'caricia') relato = `Enfeitiçaste a mente frágil e subjugaste ${rouboFinal} Essência sem dor.`;
+        else if (predador.raca === 'lycan') relato = `As garras estraçalharam o alvo. O banquete feral rendeu +${rouboFinal} Força.${lootMsg}`;
+        else relato = `A Artéria pulsante foi dissecada. O dreno rendeu +${rouboFinal} Gts.${lootMsg}`;
 
-        // Substitui a chamada antiga por esta, passando o contextoIA
-        this._registrarEventoEspecial('caca', 'DRENO BEM SUCEDIDO', `${vampiro.nome} violou a integridade vital de ${mortal.identificadorVisivel}.`, false, contextoIA);
+        this._registrarEventoEspecial('caca', 'O ABATE', `${predador.nome} violou a integridade vital de ${mortal.identificadorVisivel}.`, false, contextoIA);
 
-        mortal.registroMordidas.unshift({ predador: vampiro.nome, local: localMordida.toUpperCase(), dano: rouboFinal, data: Date.now() });
-
-        this._registrarEventoEspecial('caca', 'DRENO BEM SUCEDIDO', `${vampiro.nome} violou a integridade vital de ${mortal.identificadorVisivel}.`, false);
+        mortal.registroMordidas.unshift({ predador: predador.nome, local: localMordida.toUpperCase(), dano: rouboFinal, data: Date.now() });
 
         if (mortal.sangueAtual <= 0) {
-            mortal.estado = 'Limbo'; vampiro.inventario.cinzas += 1; vampiro.estatisticas.mortaisSecos += 1; vampiro.influencia += 1;
-            relato += " \nRUPTURA FATAL. O corpo caiu pálido ao chão. (+1 Cinzas | +1 Influência)";
-            this._registrarEventoEspecial('global', 'O LIMBO', `O fio vital de ${mortal.identificadorVisivel} foi mastigado e cuspido por ${vampiro.nome}. Outro cadáver inunda a vala comum.`);
+            mortal.estado = 'Limbo'; predador.inventario.cinzas += 1; predador.estatisticas.mortaisSecos += 1; predador.influencia += 1;
+            relato += " \nRUPTURA FATAL. O corpo foi consumido e caiu morto. (+1 Cinzas | +1 Influência)";
+            this._registrarEventoEspecial('global', 'O LIMBO', `O fio vital de ${mortal.identificadorVisivel} foi destruído pela fome de ${predador.nome}. Outro cadáver inunda a vala comum.`, true, `Caça fatal executada por um ${predador.raca}`);
         }
         
         this._salvarBancoDeDados();

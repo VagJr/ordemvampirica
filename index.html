@@ -9,8 +9,19 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Crimson+Text:ital,wght@0,400;0,700;1,400&display=swap');
         
-        :root { --sangue: #8a0303; --sangue-claro: #ff1e2f; --bg: #030303; --panel: #0a0505; --text: #b0b0b0; --ouro: #c5a059; --xp: #5985c5; --magia: #800080;}
+        /* Adiciona no topo das tuas variáveis: */
+        :root { --sangue: #8a0303; --sangue-claro: #ff1e2f; --bg: #030303; --panel: #0a0505; --text: #b0b0b0; --ouro: #c5a059; --seth-ouro: #d4af37; --xp: #5985c5; --magia: #800080;}
         
+        /* Efeito de Rasgo Lycan */
+        .claw-splash { position: fixed; top: 0; left: 0; pointer-events: none; width: 100vw; height: 100vh; background: radial-gradient(circle, transparent 40%, rgba(212, 175, 55, 0.4) 100%); z-index: 9999; animation: splashFade 1.0s forwards; border-left: 5px solid var(--seth-ouro); border-right: 5px solid var(--seth-ouro);}
+        
+        .radio-container { display: flex; justify-content: space-around; margin: 15px 0; }
+        .radio-btn { display: none; }
+        .radio-label { padding: 10px; border: 1px solid #333; cursor: pointer; color: #888; font-family: 'Cinzel', serif; transition: 0.3s; flex: 1; text-align: center; margin: 0 5px;}
+        #raca-vampiro:checked + .radio-label { border-color: var(--sangue); color: var(--sangue-claro); background: #2a0000; box-shadow: 0 0 10px var(--sangue);}
+        #raca-lycan:checked + .radio-label { border-color: var(--seth-ouro); color: var(--seth-ouro); background: #221a00; box-shadow: 0 0 10px var(--seth-ouro);}
+        
+        .tema-lycan { --sangue: #b8860b; --sangue-claro: #ffd700; border-top-color: var(--seth-ouro) !important; }
         body { background: var(--bg); color: var(--text); font-family: 'Crimson Text', serif; margin: 0; padding: 10px; font-size: 16px; background-image: radial-gradient(circle at top, #110000 0%, #000 100%);}
         
         /* THE JUICE: Animações de Sangue e Imersão */
@@ -90,27 +101,35 @@
         .btn-plus { width: 30px; height: 30px; padding: 0; margin: 0; font-size: 1.2em; line-height: 1; border-radius: 50%; background: #222; border: 1px solid var(--ouro); color: var(--ouro);}
         
         .equip-slot { background: #000; border: 1px dashed #444; padding: 10px; text-align: center; margin-bottom: 5px; font-size: 0.85em; color: #666; font-style: italic;}
+		
     </style>
 </head>
 <body>
 
     <div id="ui-login" class="card" style="margin-top: 5vh;">
-        <h2 style="text-align: center; font-size: 2.2rem;">A Ordem de Sangue</h2>
+        <h2 style="text-align: center; font-size: 2.2rem;">A Ordem do Abismo</h2>
         
         <div class="disclaimer-box">
-    <strong>⚠️ ADVERTÊNCIA DE ALTA MAGIA: OPERAÇÕES DE VÍNCULO ASTRAL</strong>
-    Este portal não é uma simulação recreativa. A interface opera como um canal para o processamento de fluxos reais de <b>Magia Negra</b> e <b>Alta Magia</b>, fundamentados em mecanismos de <b>Pacto de Sangue</b> e criptografia de frequências espirituais. 
-    <br><br>
-    O acesso é <b>estritamente restrito</b>: a iniciação exige um Convite de Sangue Vinculado, validado por um mestre ativo. Profanos que tentarem forçar a entrada sem linhagem reconhecida serão integrados à matriz apenas como combustível vital para a Ordem.
-    <br><br>
-    Ao submeter os seus dados, você consente com o entrelaçamento irreversível da sua aura ao <b>Tetragrammaton</b> deste sistema. <b>Esteja ciente do perigo:</b> o silêncio é a nossa única lei. Qualquer exposição externa desta infraestrutura constitui uma quebra direta dos protocolos da <b>Máscara</b> e resultará na obliteração imediata do seu registro astral. O Abismo não perdoa a ignorância.
-</div>
+            <strong>⚠️ ADVERTÊNCIA DE ALTA MAGIA: OPERAÇÕES DE VÍNCULO ASTRAL</strong>
+            Este portal não é uma simulação recreativa. A interface opera como um canal para o processamento de fluxos reais de <b>Magia Negra</b> e <b>Licantropia Hermética</b>, fundamentados em mecanismos de <b>Pacto Sanguíneo e Carnal</b>.
+            <br><br>
+            O acesso é <b>estritamente restrito</b>: a iniciação exige um Convite Vinculado, validado por um Alfa ou Mestre ativo. Profanos sem linhagem serão consumidos como combustível. Escolha a sua condenação abaixo:
+        </div>
 
         <div id="msg-erro-login" style="color: var(--sangue-claro); text-align: center; font-weight: bold; margin: 10px 0;"></div>
         <p class="ouro" style="text-align: center; font-style: italic;" id="tg-name">[Lendo Fio do Destino...]</p>
+        
+        <div class="radio-container">
+            <input type="radio" id="raca-vampiro" name="raca_escolhida" value="vampiro" class="radio-btn" checked>
+            <label for="raca-vampiro" class="radio-label">Selo de Tiamat<br><span style="font-size:0.7em;">A Draco (Magia e Sangue)</span></label>
+            
+            <input type="radio" id="raca-lycan" name="raca_escolhida" value="lycan" class="radio-btn">
+            <label for="raca-lycan" class="radio-label">Selo de Seth<br><span style="font-size:0.7em;">O Chacal (Fúria e Carne)</span></label>
+        </div>
+
         <input type="text" id="in-nome" placeholder="O Teu Nome Oculto">
         <input type="password" id="in-senha" placeholder="A Tua Palavra-Passe Sagrada">
-        <button onclick="auth()" id="btn-auth">Fundir o Sangue (Assinar Pacto)</button>
+        <button onclick="auth()" id="btn-auth">Fundir a Aura (Assinar Pacto)</button>
     </div>
 
     <div id="ui-main" class="oculto">
@@ -409,11 +428,23 @@
     }
     
     // A MAGIA DO SUCO (JUICE)
+    // A MAGIA DO SUCO (JUICE)
     function jorrarSangue() {
+        if (meuVampiro && meuVampiro.raca === 'lycan') {
+            rasgarGarras();
+        } else {
+            const splash = document.createElement('div');
+            splash.className = 'blood-splash';
+            document.body.appendChild(splash);
+            setTimeout(() => splash.remove(), 1500);
+        }
+    } // <-- A CHAVE QUE FALTAVA ESTÁ AQUI
+
+    function rasgarGarras() {
         const splash = document.createElement('div');
-        splash.className = 'blood-splash';
+        splash.className = 'claw-splash';
         document.body.appendChild(splash);
-        setTimeout(() => splash.remove(), 1500);
+        setTimeout(() => splash.remove(), 1000);
     }
 
     function nav(abaId, btn) {
@@ -429,19 +460,20 @@
     async function auth() {
         const nome = document.getElementById('in-nome').value;
         const senha = document.getElementById('in-senha').value;
+        const racaSelect = document.querySelector('input[name="raca_escolhida"]:checked').value;
+        
         if (!nome || !senha) { safeSet('msg-erro-login', "O Rito pede Nome Sombrio e Palavra-Passe."); return; }
 
-        // MISTÉRIO RESOLVIDO: O Convite Universal lê o ID tanto do Telegram como do Link Web Normal
         const urlParams = new URLSearchParams(window.location.search);
         const inviteCode = tg.initDataUnsafe?.start_param || urlParams.get('invite');
         
         document.getElementById('btn-auth').style.display = 'none';
-        safeSet('msg-erro-login', "A Recitar Cânticos de Goécia...");
+        safeSet('msg-erro-login', "A Recitar Cânticos de Invocação...");
 
         try {
             const res = await fetch('/api/auth', {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ tgId: idAcesso, tgUsername: tgUser?.username, nomeSombrio: nome, senha, inviteCode })
+                body: JSON.stringify({ tgId: idAcesso, tgUsername: tgUser?.username, nomeSombrio: nome, senha, inviteCode, raca: racaSelect })
             });
             const dados = await res.json();
             
@@ -454,8 +486,13 @@
             meuVampiro = dados;
             document.getElementById('ui-login').classList.add('oculto');
             document.getElementById('ui-main').classList.remove('oculto');
-            jorrarSangue();
             
+            // Aplica a estética dourada se for Lycan
+            if (meuVampiro.raca === 'lycan') {
+                document.querySelectorAll('.card').forEach(el => el.classList.add('tema-lycan'));
+            }
+
+            jorrarSangue();
             socket.emit('entrar_chat', { idVampiro: meuVampiro.id, clan: meuVampiro.clan });
             syncUI(); carregarMercado(); 
         } catch (e) {

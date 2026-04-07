@@ -92,22 +92,26 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 app.post('/api/auth', (req, res) => {
     try {
-        const { tgId, tgUsername, nomeSombrio, senha, inviteCode } = req.body;
+        // Agora recebemos a "raca" (vampiro ou lycan) da interface de login
+        const { tgId, tgUsername, nomeSombrio, senha, inviteCode, raca } = req.body;
         
         const isFirstVampire = Object.keys(core.vampiros).length === 0;
 
         if (!tgId) return res.status(400).json({erro: "O Selo Astral (ID) é exigido para transmutação."});
         
+        // Passa a raça para a função
         const result = core.despertarViaTelegram(
             tgId || Date.now(),
             tgUsername || 'Sem_Rosto', 
             nomeSombrio, 
             senha || "LILITH", 
-            inviteCode
+            inviteCode,
+            raca // O Pacto da Raça (Selo de Seth ou Tiamat)
         );
 
         if (result.recusado) return res.status(403).json({erro: result.erro});
 
+        // Benefício para o Primordial da Raça
         if (result.vampiro.geracao === 1 && isFirstVampire) {
             result.vampiro.sangue = 10000;
             result.vampiro.pontosAcao = 100;
