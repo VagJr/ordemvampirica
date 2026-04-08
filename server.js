@@ -106,6 +106,18 @@ app.post('/api/perfil/despertar', async (req, res) => {
     catch(e){ res.status(500).json({erro:"A Mente Abissal esmagou a tua conexão."}); } 
 });
 
+// --- ADICIONA ESTA ROTA NO SERVER.JS (Onde ficam os app.post) ---
+app.post('/api/clan/egregora', (req, res) => {
+    try {
+        const resultado = core.nutrirEgregoraClã(req.body.id, req.body.material);
+        res.json(resultado);
+        io.emit('sync_geral');
+    } catch(e) {
+        console.error(e);
+        res.status(500).json({erro: "A Egrégora recusou a oferenda."});
+    }
+});
+
 // ==========================================
 // PORTAL DE COMBATE VISCERAL UNIFICADO (PVE, PVP, GOÉTIA, FENDAS)
 // ==========================================

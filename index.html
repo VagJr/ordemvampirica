@@ -154,6 +154,16 @@
         .chat-msg { background: #111; padding: 10px; border-radius: 0; border-left: 2px solid #555; font-size: 0.95em; word-wrap: break-word;}
         .chat-msg.ia { border-color: var(--ouro); background: #1a1000; color: #ffebcc; font-style: italic;}
         .chat-autor { font-weight: bold; color: var(--ouro); margin-right: 5px; font-family: 'Cinzel', serif;}
+		
+		/* TOOLTIPS E MODAIS DE INSPEÇÃO PROFUNDA */
+        #inspect-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0a0000; border: 2px solid var(--ouro); padding: 20px; box-shadow: 0 0 40px #000, inset 0 0 20px var(--sangue); z-index: 10005; width: 300px; text-align: center; pointer-events: none;}
+        .inspect-title { font-family: 'Cinzel', serif; color: var(--ouro); font-size: 1.4em; border-bottom: 1px dashed #555; padding-bottom: 5px; margin-bottom: 10px;}
+        .inspect-desc { color: #ccc; font-style: italic; font-size: 0.9em; margin-bottom: 15px;}
+        
+        /* LOG OPEN WORLD (CANTO DIREITO) */
+        #open-world-log { position: fixed; bottom: 10px; right: 10px; width: 250px; max-height: 200px; overflow-y: hidden; z-index: 999; display: flex; flex-direction: column; justify-content: flex-end; gap: 5px; pointer-events: none;}
+        .ow-event { background: rgba(10, 0, 0, 0.85); border-left: 2px solid var(--sangue-claro); padding: 8px; font-size: 0.8em; color: #ddd; animation: slideInFade 4s forwards; font-family: 'Courier New', monospace;}
+        @keyframes slideInFade { 0% { transform: translateX(100%); opacity: 0; } 10% { transform: translateX(0); opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(-20px); } }
 
         /* Estilos da Biblioteca */
         .manuscrito-box { background: #0f0a05; border: 1px solid var(--ouro); padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--ouro); position: relative;}
@@ -180,6 +190,14 @@
     </style>
 </head>
 <body>
+
+<div id="inspect-modal" class="oculto">
+        <div class="inspect-title" id="insp-title">Carregando...</div>
+        <div class="inspect-desc" id="insp-desc">...</div>
+        <div style="font-size: 0.8em; color: var(--xp); font-weight: bold;" id="insp-extra"></div>
+    </div>
+
+    <div id="open-world-log"></div>
 
     <div class="world-ticker"><span class="ticker-text" id="world-ticker">As brumas encobrem a história do mundo. O Oráculo aguarda o derramamento de sangue...</span></div>
 
@@ -380,7 +398,7 @@
                 
                 <div id="veil-warning" class="disclaimer-box veu-box oculto">
                     <strong>👁️ O VÉU ESTÁ INTACTO</strong>
-                    A tua aura é demasiado fraca para ver o Fio Prateado que liga este mundo ao físico. Somente no <b>Grau 50</b> o Véu rasgar-se-á, libertando a Visão Astral (OSINT). Até lá, treina e caça nas Patrulhas do Umbral.
+                    A tua aura é demasiado fraca para ver o Fio Prateado que liga este mundo ao físico. Somente no <b>Grau 99 (O Auge)</b> o Véu rasgar-se-á, libertando a Visão Astral Suprema (OSINT).
                 </div>
 
                 <div id="osint-container">
@@ -1701,6 +1719,91 @@
         document.getElementById('arena-acao').classList.add('oculto');
         ocultoAlert(msgFinal);
         atualizarConclave(); syncStatus();
+    }
+	// ==========================================
+    // INSCRIÇÃO AKÁSHICA E GERAÇÃO PROCEDURAL VISUAL
+    // ==========================================
+    
+    // Geração Procedural Sombria de Ícones SVG
+    function gerarAvatarSombrio(seedNome, isBoss = false) {
+        let hash = 0; for (let i = 0; i < seedNome.length; i++) { hash = seedNome.charCodeAt(i) + ((hash << 5) - hash); }
+        const r = Math.abs(hash % 200) + 55; const g = Math.abs((hash * 2) % 50); const b = Math.abs((hash * 3) % 100);
+        const corBase = `rgb(${r}, ${g}, ${b})`; const corSec = `rgb(${Math.abs((hash*5)%255)}, 0, 0)`;
+        const lados = (Math.abs(hash) % 4) + 3; // 3 a 6 pontas
+        const scale = isBoss ? "scale(1.2)" : "scale(1)";
+        
+        let poly = ""; const centro = 50; const raio = 40;
+        for(let i=0; i<lados; i++) { let angle = (i * 2 * Math.PI) / lados; poly += `${centro + raio * Math.cos(angle)},${centro + raio * Math.sin(angle)} `; }
+
+        return `<svg viewBox="0 0 100 100" style="width:100%; height:100%; filter: drop-shadow(0 0 15px ${corBase}); transform: ${scale};">
+                  <polygon points="${poly.trim()}" fill="#050000" stroke="${corBase}" stroke-width="3" />
+                  <circle cx="50" cy="50" r="${Math.abs(hash % 15) + 10}" fill="${corSec}" stroke="${corBase}" stroke-width="2" />
+                  <path d="M30,50 Q50,70 70,50" fill="none" stroke="${corSec}" stroke-width="4" opacity="${isBoss ? 1 : 0}" />
+                </svg>`;
+    }
+
+    // Subscrever o Ícone Genérico na Arena de Combate
+    function iniciarCombateVisceral(nomeAlvo, idAlvo, tipoCombate, hpInimigo, isRaidBoss = false, posturaPvP = 1) {
+        // ... (o teu código existente da função) ...
+        
+        // SUBSTITUI a linha: document.getElementById('inimigo-icone').innerText = icones[...];
+        document.getElementById('inimigo-icone').innerHTML = gerarAvatarSombrio(nomeAlvo, isRaidBoss);
+        
+        // ... (resto do código igual)
+    }
+
+    // OPEN WORLD EVENTS (Socket.io)
+    socket.on('evento_open_world', (dados) => {
+        const logContainer = document.getElementById('open-world-log');
+        const evento = document.createElement('div');
+        evento.className = 'ow-event';
+        evento.innerHTML = `<span style="color:var(--ouro)">[${dados.tipo}]</span> ${dados.autor}: ${dados.msg}`;
+        logContainer.appendChild(evento);
+        setTimeout(() => evento.remove(), 4000);
+    });
+
+    // SISTEMA DE HOLD CLICK (Inspeção Oculta)
+    let pressTimer;
+    function IniciarInspecao(evt, tipo, id) {
+        evt.preventDefault();
+        pressTimer = window.setTimeout(() => { 
+            const mod = document.getElementById('inspect-modal');
+            let t = "Desconhecido", d = "Sem registo akáshico.", e = "";
+            
+            // Busca dados locais baseados no que o jogador está tocando
+            if(tipo === 'alquimia') { t = "Receita Alquímica"; d = "Uma fórmula ancestral para transmutar matéria caída."; e = "Uso: Requer recursos do Umbral."; }
+            if(tipo === 'ritual') { t = "Alta Magia"; d = "Cânticos antigos para manipular as leis do plano físico e astral."; e = "Atenção: A tua Gnose reduz o custo de sangue."; }
+            if(tipo === 'perfil') { t = `Poder de Aura`; d = `A força cósmica calculada de ${id}`; e = `Poder Geral: Estimado através da Mente Abissal.`; }
+
+            document.getElementById('insp-title').innerText = t;
+            document.getElementById('insp-desc').innerText = d;
+            document.getElementById('insp-extra').innerText = e;
+            
+            mod.classList.remove('oculto'); 
+            playSfx('espada'); // Som de clique leve
+        }, 500); // Meio segundo segurando
+    }
+
+    function PararInspecao() {
+        clearTimeout(pressTimer);
+        document.getElementById('inspect-modal').classList.add('oculto');
+    }
+
+    // Exemplo de aplicação no HTML (No teu setup da interface, podes injetar estes eventos nos elementos gerados)
+    // Ex: `<div onmousedown="IniciarInspecao(event, 'ritual', 'id_ritual')" onmouseup="PararInspecao()" onmouseleave="PararInspecao()" ...>`
+
+    // ROTA FRONTEND QUE FALTAVA (Egrégora do Santuário)
+    async function alimentarEgregora(material) {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/clan/egregora', { 
+                method: 'POST', headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ id: meuVampiro.id, material: material }) 
+            });
+            const dados = await res.json();
+            ocultoAlert(dados.erro || dados.relato);
+            syncStatus();
+        } catch(e) { ocultoAlert("A Egrégora falhou na comunicação."); }
     }
 </script>
 </body>

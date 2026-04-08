@@ -276,21 +276,23 @@ class ShadowCore {
         this.grimorio = {
             'solve_coagula': { nome: "Solve et Coagula", lore: 'Dissolve a Vontade.', custoAcao: 2, custoSangue: 150, reqLevel: 1, tipo: 'pvp', efeito: (a, d, l) => { let dreno = l.id === 'minguante' ? 8 : 4; d.pontosAcao = Math.max(0, d.pontosAcao - dreno); return `Vitalidade desfeita (-${dreno} Fúria).`; } },
             'rmp_banimento': { nome: "Ritual Menor do Pentagrama", lore: 'Limpa a aura.', custoAcao: 0, custoSangue: 300, reqLevel: 2, tipo: 'buff', efeito: (a, d, l) => { a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 3); return `O selo protege-te. +3 Fúria.`; } },
-            'rito_gamaliel': { nome: "Invocação de Gamaliel", lore: 'Ferve o sangue.', custoAcao: 0, custoSangue: 800, reqLevel: 3, tipo: 'buff', efeito: (a, d, l) => { let cura = l.id === 'minguante' ? 8 : 4; a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + cura); return `A sombra corrompeu-te. +${cura} Fúria.`; } },
-            'selo_aemeth': { nome: "Selo de Aemeth", lore: 'Proteção Absoluta.', custoAcao: 1, custoSangue: 500, reqLevel: 4, tipo: 'buff', efeito: (a, d, l) => { a.escudo = true; return `A Tábua cobre a tua alma. Escudo Activo.`; } },
-            'pacto_bune': { nome: "O Pacto de Bune", lore: 'Rouba Riqueza Astral.', custoAcao: 5, custoSangue: 1500, reqLevel: 5, tipo: 'buff', efeito: (a, d, l) => { a.influencia += 3; a.sangue += 1500; return `O Duque Bune aceitou a oferenda. Influência e (+1500 Gts) fluem para ti.`; } },
-            'espelho_saturno': { nome: "Espelho de Saturno", lore: 'Rouba Influência.', custoAcao: 4, custoSangue: 1500, reqLevel: 8, tipo: 'pvp', efeito: (a, d, l) => { let dreno = Math.min(5, d.influencia); d.influencia -= dreno; a.influencia += dreno; return `O espelho refletiu o desespero de ${d.nome}. Roubaste ${dreno} de Influência.`; } }
+            // NOVOS RITUAIS DE LIVROS REAIS E OCULTOS
+            'chave_salomao': { nome: "Clavícula de Salomão (Defesa)", lore: 'Aprisiona demónios num vaso de bronze. Imunidade no Umbral.', custoAcao: 3, custoSangue: 1200, reqLevel: 15, tipo: 'buff', efeito: (a, d, l) => { a.escudo = true; a.influencia += 5; return `A Chave Menor protege-te e coroa-te (+5 Inf, Escudo Absoluto).`; } },
+            'magia_abramelin': { nome: "Quadrado de Abramelin", lore: 'O Anjo da Guarda submete as legiões.', custoAcao: 5, custoSangue: 3500, reqLevel: 30, tipo: 'buff', efeito: (a, d, l) => { a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 10); a.xp += 500; return `O Talismã de Abramelin distorceu a realidade. +10 Fúria, +500 XP.`; } },
+            'pacto_lucifuge': { nome: "Grimorium Verum: Rofocale", lore: 'Pacto de Riqueza. Custa almas.', custoAcao: 5, custoSangue: 5000, reqLevel: 45, tipo: 'economia', efeito: (a, d, l) => { if(a.inventario.pedraAlma < 1) throw "Exige 1 Pedra da Alma."; a.inventario.pedraAlma--; a.calice += 5000; return `O demónio Lucifuge Rofocale aceitou a Pedra. O teu Cálice transbordou (+5000 Gts).`; } }
         };
 
         this.grimorioCustomizado = {}; 
         
+        // MAIS USOS PARA OS MATERIAIS DE EXPEDIÇÃO
         this.alquimia = {
             'elixir_estamina': { nome: 'Filtro do Frenesi', custo: { anima: 2, vitae: 1, gts: 300 }, efeito: 'Restaura 5 Fúria.' },
             'amuleto_sombra': { nome: 'Talismã Protetor', custo: { cinzas: 3, ectoplasma: 1, gts: 500 }, efeito: 'Garante Escudo.' },
             'lagrima_prata': { nome: 'Lágrima de Prata', custo: { cinzas: 2, vitae: 3, gts: 1000 }, efeito: 'Restaura 1 Fúria.' },
             'extrato_akashico': { nome: 'Soro Akashico', custo: { memoria: 3, anima: 1, gts: 1000 }, efeito: 'Gera +50 XP oculto.' },
             'ouro_filosofal': { nome: 'Ouro Filosofal Negro', custo: { pedraAlma: 1, vitae: 5, gts: 2000 }, efeito: '+1 Ponto de Influência Permanente.' },
-            'pedra_filosofal_negra': { nome: 'Pedra Negra Rubedo', custo: { pedraAlma: 3, cinzas: 10, vitae: 5, gts: 8000 }, efeito: '+1 Ponto de Iluminação livre.' }
+            'ferro_infernal': { nome: 'Ferro de Astaroth', custo: { ectoplasma: 5, cinzas: 10, gts: 3000 }, efeito: '+50 de Dano Físico no próximo GvG (Consumível de Guerra).' },
+            'tinta_sangue_morcego': { nome: 'Tinta da Clavícula', custo: { memoria: 5, anima: 5, gts: 2500 }, efeito: 'Necessário para rituais supremos. Dá +1 Gnose.' }
         };
 
         this.conquistas = {
@@ -491,22 +493,36 @@ class ShadowCore {
     async despertarTalento(vampiroId) {
         const v = this.vampiros[vampiroId];
         if (!v) return { erro: "Alma inexistente." };
-        if (v.nivel < 20) return { erro: "A Mente Abissal ignora os fracos. Atinge o Grau 20." };
+        
+        if (!v.talentosAtivos) v.talentosAtivos = [];
+        let limiteTalentos = Math.floor(v.nivel / 20); // 1 Talento a cada 20 níveis
+        if (limiteTalentos < 1) return { erro: "A Mente Abissal ignora os fracos. Atinge o Grau 20." };
+        if (v.talentosAtivos.length >= limiteTalentos) return { erro: `O teu limite atual é de ${limiteTalentos} talentos. Sobe mais níveis (Grau ${ (v.talentosAtivos.length + 1) * 20 }).` };
+        
         if (v.sangue < 5000 || v.pontosAcao < 10) return { erro: "O Ritual exige 5000 Gts e 10 Fúria." };
-        if (v.talentoUnico) return { erro: `A tua alma já foi selada com [${v.talentoUnico.nome}]. Não podes despertar duas vezes.` };
 
         v.sangue -= 5000; v.pontosAcao -= 10;
-        const talento = await this.oraculo.despertarHabilidadeUnica(v);
         
-        if (!talento) {
-            v.sangue += 5000; v.pontosAcao += 10;
-            return { erro: "O Oráculo manteve-se em silêncio. Tenta novamente mais tarde." };
-        }
+        // Pede poderes dinâmicos e mecânicos à IA, não apenas atributos
+        const promptIA = `Analise as correntes astrais: Nome [${v.nome}], Nível [${v.nivel}], Gnose [${v.atributos.gnose}].
+        Aja como a Mente Abissal. Crie um Talento/Poder ÚNICO. Não apenas atributos, mas mecânicas ativas (ex: Roubo vampírico 10% maior, Críticos na Caça, Desconto em Alquimia).
+        Retorne OBRIGATORIAMENTE APENAS um JSON: { "nome": "Nome Oculto", "desc": "Efeito no jogo", "tipo_mecanica": "combate" (ou "economia", "guerra"), "multiplicador": 1.5 }`;
 
-        v.talentoUnico = talento;
-        this._registrarEventoEspecial('global', 'DESPERTAR AKÁSHICO', `A Mente Abissal sussurrou diretamente a ${v.nome}. O talento único [${talento.nome}] foi injetado na sua essência!`, true);
-        this._salvarBancoDeDados();
-        return { sucesso: true, relato: `A Mente Abissal fundiu-se a ti! Recebeste [${talento.nome}]: ${talento.desc}` };
+        try {
+            const resposta = await this.oraculo.groq.chat.completions.create({
+                messages: [{ role: "system", content: "Retorne JSON." }, { role: "user", content: promptIA }],
+                model: "llama-3.1-8b-instant", temperature: 0.9, response_format: { type: "json_object" }
+            });
+            const talento = JSON.parse(resposta.choices[0].message.content);
+            
+            v.talentosAtivos.push(talento);
+            this._registrarEventoEspecial('global', 'DESPERTAR AKÁSHICO', `A Essência de ${v.nome} mutacionou. Recebeu o poder ancestral: [${talento.nome}]!`, true);
+            this._salvarBancoDeDados();
+            return { sucesso: true, relato: `A Mente Abissal injetou [${talento.nome}] nas tuas veias: ${talento.desc}` };
+        } catch(e) {
+            v.sangue += 5000; v.pontosAcao += 10;
+            return { erro: "O Oráculo manteve-se em silêncio. Tenta novamente." };
+        }
     }
 
     async _registrarEventoEspecial(categoria, tipo, relatoOrig, global = true, contextoOculto = "Manifestação Sombria") {
@@ -688,6 +704,47 @@ class ShadowCore {
         this._verificarConquistas(v); this._salvarBancoDeDados();
     }
 	
+	// A MENTE ABISSAL INSPECIONA O PODER
+    calcularPoderGeral(vampiro) {
+        if (!vampiro) return 0;
+        const atr = this._obterAtributosTotais(vampiro);
+        let poderAtributos = (atr.vontade + atr.gnose + atr.magnetismo + atr.densidade) * 10;
+        let poderTalentos = (vampiro.talentosAtivos ? vampiro.talentosAtivos.length * 500 : 0);
+        let poderInfluencia = vampiro.influencia * 5;
+        let poderNivel = vampiro.nivel * 50;
+        return poderAtributos + poderTalentos + poderInfluencia + poderNivel;
+    }
+
+    // DESCONTO DE SANGUE PELO CONHECIMENTO AKÁSHICO (Substitui o teu conjurarRitual)
+    conjurarRitual(vampiroId, ritualId, alvoId) {
+        const v = this.vampiros[vampiroId]; const ritual = this.grimorio[ritualId]; const lua = AstrolabioLunar.obterFaseAtual();
+        if (!v || !ritual || !v.poderesDesbloqueados.includes(ritualId)) return { erro: "Ritual indisponível." };
+        
+        // Lógica de Densidade Sanguínea: Mentes Ocultas gastam menos sangue
+        let descontoMagia = Math.floor(this._obterAtributosTotais(v).gnose * 5); 
+        if (this.evocacaoAtiva && this.evocacaoAtiva.participantes[v.id]) descontoMagia += 100; // Entidade invocada ajuda na canalização
+        let custoSangueReal = Math.max(10, ritual.custoSangue - descontoMagia);
+
+        if (v.pontosAcao < ritual.custoAcao || v.sangue < custoSangueReal) return { erro: `Exige Fúria e ${custoSangueReal} Gts (A tua Gnose reduziu o custo em ${descontoMagia}).` };
+        
+        let alvo = alvoId ? this.vampiros[alvoId] : v; if (alvoId && (!alvo || alvo.estado === 'Banido')) return { erro: "Alvo inválido." };
+        
+        v.pontosAcao -= ritual.custoAcao; v.sangue -= custoSangueReal;
+        
+        try {
+            const resultado = ritual.efeito(v, alvo, lua); 
+            this.ganharXP(vampiroId, 25); this._pontuarMembro(vampiroId, 10);
+            
+            // LOG OPEN WORLD EM TEMPO REAL
+            if (global.io) global.io.emit('evento_open_world', { tipo: "RITUAL", autor: v.nome, msg: `Conjurou [${ritual.nome}]` });
+            
+            this._registrarEventoEspecial('global', 'VÓRTICE MÁGICO', `${v.nome} invocou [${ritual.nome}]. Custo condensado a ${custoSangueReal} Gts.`); 
+            this._salvarBancoDeDados(); return { sucesso: true, relato: resultado };
+        } catch(err) {
+            return { erro: typeof err === 'string' ? err : "Ritual falhou." };
+        }
+    }
+	
 	_verificarConquistas(vampiro) {
         if (!vampiro || !vampiro.conquistas) return;
         for (let key in this.conquistas) {
@@ -745,8 +802,10 @@ class ShadowCore {
     // ==========================================
     async mapearMortal(vampiroId, plataforma, identificador) {
         const v = this.vampiros[vampiroId]; if (!v) return { erro: "Fantasma." };
-        if (v.nivel < 50) return { erro: "O Grau 50 (Endgame) é exigido para ver o mundo real." };
+        // ALTERADO DE 50 PARA 99
+        if (v.nivel < 99) return { erro: "O Grau 99 (Auge do Abismo) é exigido para rasgar o Véu e ver o mundo real." };
         if (v.pontosAcao < 1) return { erro: "Requer Fúria." };
+        // ... (resto do método igual)
 
         let idLimpo = identificador.trim().toLowerCase();
         if ((plataforma === 'telegram' || plataforma === 'instagram' || plataforma === 'tiktok') && !idLimpo.startsWith('@')) { if (isNaN(idLimpo)) { idLimpo = '@' + idLimpo; } }
