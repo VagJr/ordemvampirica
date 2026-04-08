@@ -101,28 +101,27 @@ app.post('/api/auth', (req, res) => {
     } catch(err) { res.status(500).json({erro: "A Geometria Sagrada falhou."}); }
 });
 
-app.post('/api/pve/patrulha', (req, res) => { 
-        try { res.json(core.patrulharUmbral(req.body.id, req.body.ritmo)); io.emit('sync_geral'); } 
-        catch(e){ res.status(500).json({erro:"Falha na jornada."}); } 
-    });
-
-    app.post('/api/pvp/tatico', async (req, res) => { 
-        try { 
-            const result = await core.atacarVampiro(req.body.atacanteId, req.body.defensorId, parseInt(req.body.postura), req.body.ritmo); 
-            if (result && result.alertaDono && result.donoId) { const defensor = core.vampiros[result.donoId]; if(defensor) enviarDMSombria(defensor.tgId, result.alertaDono); }
-            res.json(result); io.emit('sync_geral'); 
-        } catch(e){ res.status(500).json({erro:"Falha no Coliseu."}); }
-    });
-
-    app.post('/api/goecia/enfrentar', async (req, res) => { 
-        try { res.json(await core.testarVontadeDemonio(req.body.id, req.body.ritmo)); io.emit('sync_geral'); } 
-        catch(e){ res.status(500).json({erro:"O caos venceu."}); } 
-    });
-
-    app.post('/api/conclave/fenda/atacar', (req, res) => { 
-        try { res.json(core.atacarFenda(req.body.id, req.body.fendaId, req.body.ritmo)); io.emit('sync_geral'); } 
-        catch(e){ res.status(500).json({erro:"O Vazio blindou o ataque."}); } 
-    });
+// ==========================================
+// PORTAL DE COMBATE VISCERAL UNIFICADO (PVE, PVP, GOÉTIA, FENDAS)
+// ==========================================
+app.post('/api/combate/action', async (req, res) => { 
+    try { 
+        // Chama a mecânica unificada baseada no desempenho rítmico do frontend
+        const result = await core.processarCombateAcao(req.body); 
+        
+        // Se houver um aviso para enviar na mente de outro jogador (Caso seja um PvP ganho ou contra-ataque)
+        if (result && result.alertaDono && result.donoId) { 
+            const defensor = core.vampiros[result.donoId]; 
+            if(defensor) enviarDMSombria(defensor.tgId, result.alertaDono); 
+        }
+        
+        res.json(result); 
+        io.emit('sync_geral'); 
+    } catch(e){ 
+        console.error("ERRO NO CÓDIGO DA CARNICINA:", e);
+        res.status(500).json({erro:"O Juiz Abissal rejeitou os teus movimentos."}); 
+    }
+});
 
 app.post('/api/convidar', async (req, res) => {
     try {
@@ -153,7 +152,28 @@ app.post('/api/inventario/aprimorar', (req, res) => { try { res.json(core.aprimo
 app.post('/api/perfil/titulo', (req, res) => { try { res.json(core.mudarTitulo(req.body.id, req.body.titulo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
 // PVE, CACA, LEILÃO E PACTOS
-app.post('/api/pve/patrulha', (req, res) => { try { res.json(core.patrulharUmbral(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/pve/patrulha', (req, res) => { 
+        try { res.json(core.patrulharUmbral(req.body.id, req.body.ritmo)); io.emit('sync_geral'); } 
+        catch(e){ res.status(500).json({erro:"Falha na jornada."}); } 
+    });
+
+    app.post('/api/pvp/tatico', async (req, res) => { 
+        try { 
+            const result = await core.atacarVampiro(req.body.atacanteId, req.body.defensorId, parseInt(req.body.postura), req.body.ritmo); 
+            if (result && result.alertaDono && result.donoId) { const defensor = core.vampiros[result.donoId]; if(defensor) enviarDMSombria(defensor.tgId, result.alertaDono); }
+            res.json(result); io.emit('sync_geral'); 
+        } catch(e){ res.status(500).json({erro:"Falha no Coliseu."}); }
+    });
+
+    app.post('/api/goecia/enfrentar', async (req, res) => { 
+        try { res.json(await core.testarVontadeDemonio(req.body.id, req.body.ritmo)); io.emit('sync_geral'); } 
+        catch(e){ res.status(500).json({erro:"O caos venceu."}); } 
+    });
+
+    app.post('/api/conclave/fenda/atacar', (req, res) => { 
+        try { res.json(core.atacarFenda(req.body.id, req.body.fendaId, req.body.ritmo)); io.emit('sync_geral'); } 
+        catch(e){ res.status(500).json({erro:"O Vazio blindou o ataque."}); } 
+    });
 app.post('/api/chat/pacto/pedir', async (req, res) => { try { res.json(await core.pedirPactoIA(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.post('/api/chat/pacto/completar', (req, res) => { try { res.json(core.completarPacto(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 

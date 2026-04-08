@@ -345,43 +345,130 @@ class ShadowCore {
     }
 	
 	processarCombateAcao(dadosAction) {
-        const { id, alvoId, tipoCombate, desempenhoRitmo } = dadosAction;
+        const { id, alvoId, tipoCombate, postura, desempenhoRitmo } = dadosAction;
         const v = this.vampiros[id];
-        if (!v || v.pontosAcao < 3) return { erro: "Falta de Fúria para selar o combate." };
+        if (!v || v.pontosAcao < 3) return { erro: "Falta de Fúria para selar o abate." };
         
         v.pontosAcao -= 3;
-        const atr = this._obterAtributosTotais(v);
         
-        // A matemática de colisão: Atributos * Acertos * Multiplicador de Combo
-        const danoFisico = (atr.vontade * 10) * desempenhoRitmo.ataques;
-        const defesaFisica = (atr.densidade * 10) * desempenhoRitmo.defesas;
-        const danoMagico = (atr.gnose * 15) * desempenhoRitmo.magias;
-        
-        const forcaTotal = Math.floor((danoFisico + danoMagico) * desempenhoRitmo.multiplicadorGeral);
+        // Validação de segurança: O jogador envia o dano que causou e sofreu no Front, 
+        // mas o servidor aplica limites baseados no nível para evitar Cheats/Hacks.
+        let maxDanoPermitido = (this._obterAtributosTotais(v).vontade * 50 * desempenhoRitmo.multiplicadorGeral) + (v.nivel * 500);
+        let danoFinal = Math.min(desempenhoRitmo.danoRealCausado, maxDanoPermitido);
+        let danoSofrido = desempenhoRitmo.danoRealSofrido;
 
+        // Se o jogador sangrou no combate visceral, tira vida real dele no servidor
+        if (danoSofrido > 0) {
+            v.sangue = Math.max(0, v.sangue - danoSofrido);
+            if (v.sangue <= 0) v.estado = 'Banido';
+        }
+
+        // ===================================
+        // RESOLUÇÃO DE CADA TIPO DE COMBATE
+        // ===================================
+        
+        // 1. COMBATE FENDA (IA BOSS)
         if (tipoCombate === 'fenda') {
             const fenda = this.fendaAtiva[alvoId];
-            if(!fenda) return { erro: "A Entidade desvaneceu." };
+            if(!fenda) return { erro: "A Entidade desvaneceu nas brumas." };
             
-            // O boss causa dano baseado na quantidade de defesas que o jogador ERROU/acertou no QTE
-            let danoRecebido = Math.max(0, fenda.dano - defesaFisica);
-            if (danoRecebido > 0) v.sangue = Math.max(0, v.sangue - danoRecebido);
-
-            fenda.hpAtual -= forcaTotal;
-            let relato = `A tua Sincronia (${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x) desferiu ${forcaTotal} de Impacto! Sofreste ${danoRecebido} de revide.`;
+            fenda.hpAtual -= danoFinal;
+            let relato = `[Combo Máx: ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Rasgaste [${fenda.nome}] com ${danoFinal} de Impacto! Sofreste ${danoSofrido} de revide.`;
 
             if (fenda.hpAtual <= 0) {
-                relato = `DESTRUÍSTE [${fenda.nome}] com uma chuva de combos! +1 ${fenda.loot.toUpperCase()}.`; 
-                v.inventario[fenda.loot] = (v.inventario[fenda.loot] || 0) + 1; 
-                this.ganharXP(v.id, 1000 * desempenhoRitmo.multiplicadorGeral); // Recompensa ampliada pela habilidade
+                relato = `DESTRUÍSTE [${fenda.nome}] com uma chuva de violência! +2 ${fenda.loot.toUpperCase()}.`; 
+                v.inventario[fenda.loot] = (v.inventario[fenda.loot] || 0) + 2; 
+                this.ganharXP(v.id, Math.floor(1000 * desempenhoRitmo.multiplicadorGeral)); 
                 delete this.fendaAtiva[alvoId];
                 this._registrarEventoEspecial('global', 'TITÃ ABATIDO', `${v.nome} obliterou a anomalia através da Dança da Morte.`, true);
             }
-            this._salvarBancoDeDados();
-            return { sucesso: true, relato };
+            this._salvarBancoDeDados(); return { sucesso: true, relato };
         }
-        
-        return { erro: "Alvo não suportado na nova mecânica ainda." };
+
+        // 2. COMBATE GOÉTIA (RAID BOSS)
+        if (tipoCombate === 'goetia') {
+            const demonio = this.evocacaoAtiva;
+            if(!demonio) return { erro: "O Pentagrama está vazio." };
+
+            demonio.hpAtual -= danoFinal;
+            if (!demonio.participantes[v.id]) demonio.participantes[v.id] = { nome: v.nome, dano: 0 }; 
+            demonio.participantes[v.id].dano += danoFinal;
+
+            let relato = `[Combo Máx: ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Castigaste ${demonio.nome} causando ${danoFinal} de submissão! Sangraste ${danoSofrido} Gts.`;
+
+            if (demonio.hpAtual <= 0) {
+                relato = `QUEBRASTE A VONTADE DE ${demonio.nome}!`; 
+                let relatorioLoot = `🔥 ${demonio.nome} subjugado! Recompensas:\n`;
+                for (let pid in demonio.participantes) { 
+                    let l = this.vampiros[pid]; 
+                    if (l) { 
+                        l.influencia += 50; l.atributos.pontosLivres += 2; l.inventario.pedraAlma = (l.inventario.pedraAlma || 0) + 5; l.inventario.demoniosSubjugados = (l.inventario.demoniosSubjugados||0)+1; 
+                        relatorioLoot += `> [${l.nome}]: +50 Inf, +5 Pedras, +2 Esferas Livres!\n`; 
+                    } 
+                }
+                this._registrarEventoEspecial('global', 'VITÓRIA GOÉTICA', relatorioLoot); 
+                this.evocacaoAtiva = null; this._pontuarMembro(v.id, 500); 
+            }
+            this.ganharXP(v.id, Math.floor(100 * desempenhoRitmo.multiplicadorGeral)); 
+            this._salvarBancoDeDados(); return { sucesso: true, relato };
+        }
+
+        // 3. COMBATE UMBRAL (PvE NORMAL)
+        if (tipoCombate === 'pve') {
+            if (!desempenhoRitmo.venceu) return { erro: `Foste derrotado e sangraste ${danoSofrido} Gts. O monstro sobreviveu.` };
+
+            let ganhoGts = Math.floor((Math.random() * 100) + 50 + (v.nivel * 25)) * desempenhoRitmo.multiplicadorGeral; 
+            v.sangue += Math.floor(ganhoGts); 
+            this.ganharXP(v.id, Math.floor(40 * desempenhoRitmo.multiplicadorGeral));
+            
+            let relatoExtra = "";
+            if (Math.random() > 0.5) { v.inventario['anima'] = (v.inventario['anima'] || 0) + 1; relatoExtra = ` e despojaste 1x ANIMA.`; } 
+            if (Math.random() > 0.95) { const drop = ForjaDraconiana.gerarReliquia(v.nivel, this.reliquiasCustomizadas); v.bolsa.push(drop); relatoExtra += ` Achaste [${drop.nome}].`; }
+
+            this._salvarBancoDeDados(); return { sucesso: true, relato: `[Combo Máx: ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Despedaçaste a ameaça. +${Math.floor(ganhoGts)} Gts${relatoExtra}` };
+        }
+
+        // 4. COMBATE PvP (JOGADOR VS JOGADOR)
+        if (tipoCombate === 'pvp') {
+            const defensor = this.vampiros[alvoId];
+            if (!defensor || defensor.estado === 'Banido') return { erro: "Alvo inválido ou reduzido a pó." };
+
+            if (defensor.escudo) {
+                defensor.escudo = false; this._salvarBancoDeDados();
+                return { sucesso: false, relato: `O Escudo Arcano de ${defensor.nome} estilhaçou! Anulou a tua investida.`, alertaDono: `O teu Escudo suportou a fúria de ${v.nome}.`, donoId: defensor.id };
+            }
+
+            let dVencedor, dPerdedor, rouboDano, relatoA, relatoD;
+            
+            // O vencedor é ditado pelo desempenho visceral. Se venceste no mini-jogo, tu ganhaste o PvP.
+            if (desempenhoRitmo.venceu) {
+                dVencedor = v; dPerdedor = defensor;
+                rouboDano = Math.min(danoFinal, 10000 + (v.nivel * 500)); 
+                relatoA = `[Combo ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Violaste a aura de ${defensor.nome}! Roubaste ${rouboDano} Gts.`;
+                relatoD = `As tuas barreiras ruíram. ${v.nome} espancou a tua mente e sugou ${rouboDano} Gts.`;
+            } else {
+                // Se o jogador foi espancado no mini-jogo, ele PERDE o PvP contra as defesas estáticas do inimigo.
+                dVencedor = defensor; dPerdedor = v;
+                rouboDano = Math.floor(danoSofrido * 1.5);
+                relatoA = `O teu ataque falhou miseravelmente. A aura de ${defensor.nome} esmagou-te. Cedes-te ${rouboDano} Gts.`;
+                relatoD = `As tuas barreiras defenderam a invasão de ${v.nome}. A tua aura devorou ${rouboDano} Gts dele.`;
+            }
+
+            dPerdedor.sangue = Math.max(0, dPerdedor.sangue - rouboDano); 
+            dVencedor.sangue += rouboDano; 
+            dVencedor.estatisticas.vitoriasPvP += 1;
+            
+            this.ganharXP(dVencedor.id, 50 * desempenhoRitmo.multiplicadorGeral); this._pontuarMembro(dVencedor.id, 30);
+            
+            let dropMsg = "";
+            if (dVencedor.id === v.id && Math.random() > 0.85) { const drop = ForjaDraconiana.gerarReliquia(defensor.nivel, this.reliquiasCustomizadas); v.bolsa.push(drop); dropMsg = ` Pilhaste: [${drop.nome}].`; }
+
+            v.historicoCombate.unshift(`PvP vs ${defensor.nome}: ${relatoA}`); defensor.historicoCombate.unshift(`Defesa vs ${v.nome}: ${relatoD}`);
+            this._registrarEventoEspecial('guerra', 'DUELO DE SANGUE', `${v.nome} lutou brutalmente contra ${defensor.nome}.`);
+            this._salvarBancoDeDados(); return { sucesso: true, relato: relatoA + dropMsg, alertaDono: relatoD, donoId: defensor.id };
+        }
+
+        return { erro: "O Juiz não compreende este plano de batalha." };
     }
 
     async _registrarEventoEspecial(categoria, tipo, relatoOrig, global = true, contextoOculto = "Manifestação Sombria") {

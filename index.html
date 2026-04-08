@@ -80,20 +80,47 @@
         @keyframes flow { 0% { transform: scaleY(0.8) translateY(5px); } 100% { transform: scaleY(1.2) translateY(-5px); } }
         @keyframes move-left { from { transform: translateX(-10%); } to { transform: translateX(-50%); } }
         @keyframes move-right { from { transform: translateX(-50%); } to { transform: translateX(10%); } }
-		
-		/* COMBATE RÍTMICO / ACTION UI ATUALIZADA */
-        #arena-acao { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.98); z-index: 10001; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; backdrop-filter: blur(5px);}
-        .arena-hud { text-align: center; margin-bottom: 20px; }
-        .pista-combate { width: 100%; height: 120px; background: #050000; border: 2px solid var(--sangue); border-radius: 10px; position: relative; overflow: hidden; margin-top: 20px; box-shadow: inset 0 0 50px rgba(138, 3, 3, 0.3);}
-        .hit-zone { width: 60px; height: 100%; border: 3px solid #0ff; position: absolute; left: 15%; background: rgba(0, 255, 255, 0.2); box-shadow: 0 0 20px #0ff; border-radius: 5px; z-index: 5;}
-        .nota-combate { width: 50px; height: 50px; border-radius: 50%; position: absolute; top: 35px; right: -60px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; font-weight: bold; color: #fff; z-index: 10;}
-        .nota-ataque { background: radial-gradient(circle, #ff1e2f, #8a0303); box-shadow: 0 0 15px #ff1e2f;}
-        .nota-defesa { background: radial-gradient(circle, #aaa, #333); box-shadow: 0 0 15px #aaa;}
-        .nota-magia { background: radial-gradient(circle, #d080ff, #800080); box-shadow: 0 0 15px #d080ff;}
-        .arena-botoes { display: flex; justify-content: space-around; margin-top: 30px; gap: 10px;}
-        .btn-combo { padding: 25px 0; font-size: 1.5rem; flex: 1; margin: 0; background: #111; border: 2px solid; color: #fff; border-radius: 10px; text-transform: uppercase; font-family: 'Cinzel', serif;}
-        .btn-combo:active { transform: scale(0.95); }
+
+        /* ========================================== */
+        /* COMBATE VISCERAL CONTÍNUO (FASES E SANGUE) */
+        /* ========================================== */
+        #arena-acao { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,0,0,0.98); z-index: 10001; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; backdrop-filter: blur(5px);}
+        .arena-hud { text-align: center; margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; max-width: 800px; margin: 0 auto; width: 100%;}
         
+        .hp-bar-container { background: #222; height: 25px; width: 100%; border-radius: 5px; overflow: hidden; border: 2px solid #555; position: relative; margin-bottom: 5px;}
+        .hp-bar-fill { height: 100%; width: 100%; transition: width 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+        .hp-boss-fill { background: linear-gradient(90deg, #500, #ff1e2f); }
+        .hp-player-fill { background: linear-gradient(90deg, #003, #5985c5); }
+        
+        .inimigo-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        .inimigo-sprite { font-size: 7rem; text-shadow: 0 0 30px var(--sangue); transition: transform 0.1s, filter 0.3s; user-select: none; z-index: 10002;}
+        .inimigo-intent { margin-top: 15px; font-family: 'Cinzel', serif; font-size: 1.5rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px #000; z-index: 10002;}
+        
+        /* Posturas e Fases do Boss */
+        .intent-idle { color: #888; }
+        .intent-ataque { color: #ff1e2f; animation: pulseRed 0.3s infinite; transform: scale(1.15); filter: drop-shadow(0 0 30px red);}
+        .intent-magia { color: #d080ff; animation: pulsePurple 0.5s infinite; transform: scale(1.15); filter: drop-shadow(0 0 30px purple);}
+        .intent-vulneravel { color: #0f5; text-shadow: 0 0 20px #0f5; filter: drop-shadow(0 0 20px #0f5) grayscale(1); transform: rotate(10deg);}
+        .intent-sync { color: #fff; animation: pulseCyan 0.2s infinite; letter-spacing: 5px; }
+        
+        .boss-phase-2 { filter: drop-shadow(0 0 40px #f0f) hue-rotate(90deg); transform: scale(1.1); }
+        .boss-phase-3 { filter: drop-shadow(0 0 50px #f00) invert(1); transform: scale(1.3); animation: shake 0.2s infinite; }
+
+        .arena-botoes { display: flex; justify-content: space-around; margin-bottom: 10px; gap: 10px; max-width: 600px; width: 100%; margin-left: auto; margin-right: auto;}
+        .btn-combat { padding: 25px 0; font-size: 1.5rem; flex: 1; background: #111; border: 2px solid; color: #fff; border-radius: 10px; text-transform: uppercase; font-family: 'Cinzel', serif; cursor: pointer; user-select: none; transition: 0.1s;}
+        .btn-combat:active { transform: scale(0.90); filter: brightness(1.5); }
+        .btn-flee { background: #300; color: #aaa; border: 1px solid #500; font-family: 'Cinzel', serif; padding: 10px; cursor: pointer; width: 100%; max-width: 600px; margin: 0 auto 20px auto; border-radius: 5px;}
+
+        /* Efeitos Visuais de Combate */
+        .slash-effect { position: absolute; width: 150px; height: 3px; background: #fff; box-shadow: 0 0 15px #fff, 0 0 30px var(--sangue); transform: rotate(-45deg); z-index: 10003; pointer-events: none; animation: slashAnim 0.2s ease-out forwards; }
+        .parry-flash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.8); z-index: 10000; pointer-events: none; animation: flashFade 0.3s forwards; mix-blend-mode: overlay;}
+        .dano-text { position: absolute; font-size: 2.5rem; font-weight: bold; color: #ff1e2f; text-shadow: 2px 2px 0 #000, 0 0 10px #000; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 10004; font-family: 'Cinzel', serif;}
+        
+        @keyframes slashAnim { 0% { width: 0; opacity: 1; } 100% { width: 250px; opacity: 0; transform: rotate(-45deg) translate(80px, -80px); } }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-80px) scale(1.5); } }
+        @keyframes flashFade { 0% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes pulsePurple { 0% { box-shadow: 0 0 5px #d080ff; } 50% { box-shadow: 0 0 30px #d080ff; } 100% { box-shadow: 0 0 5px #d080ff; } }
+
         /* THE JUICE: Demonic & War UI */
         .void-flash { position: fixed; top: 0; left: 0; pointer-events: none; width: 100vw; height: 100vh; background: rgba(128, 0, 128, 0.4); z-index: 9999; animation: flashFade 1s forwards; filter: invert(1); }
         .shake-screen { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
@@ -168,26 +195,38 @@
         </div>
     </div>
 	
-	<!-- A ARENA DE COMBATE EM TEMPO REAL -->
+	<!-- A ARENA VISCERAL DE COMBATE EM TEMPO REAL -->
     <div id="arena-acao" class="oculto">
         <div class="arena-hud">
-            <h2 style="color: var(--sangue-claro); font-size: 2.5rem; margin:0; text-transform: uppercase;" id="arena-alvo-nome">Enfrentando Entidade</h2>
-            <h3 style="color: #888; font-style: italic; margin-top: 5px;">Mestre do Ritmo Astral</h3>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-family: 'Cinzel', serif;">
-            <div style="color: var(--ouro);">Combo Mágico: <span id="arena-combo" style="font-size: 1.5rem; color:#fff;">1.0</span>x</div>
-            <div style="color: var(--xp);">Aura: <span id="arena-feedback">Foca-te...</span></div>
+            <!-- HUD JOGADOR -->
+            <div style="text-align: left;">
+                <h3 style="color: var(--xp); margin:0; font-size: 1.2rem;" id="arena-jogador-nome">O Teu Sangue</h3>
+                <div class="hp-bar-container"><div id="arena-player-hp-bar" class="hp-bar-fill hp-player-fill"></div></div>
+                <div style="color: #888; font-size: 0.9rem;"><span id="arena-player-hp-text">1000</span> Gts</div>
+            </div>
+            <!-- HUD INIMIGO -->
+            <div style="text-align: right;">
+                <h3 style="color: var(--sangue-claro); margin:0; font-size: 1.2rem;" id="arena-alvo-nome">Entidade</h3>
+                <div class="hp-bar-container"><div id="arena-boss-hp-bar" class="hp-bar-fill hp-boss-fill"></div></div>
+                <div style="color: #888; font-size: 0.9rem;"><span id="arena-boss-hp-text">1000</span> HP</div>
+            </div>
         </div>
         
-        <div class="pista-combate" id="pista">
-            <div class="hit-zone" id="hit-zone"></div>
+        <div class="inimigo-container" id="inimigo-zona">
+            <div class="inimigo-sprite" id="inimigo-icone">👹</div>
+            <div class="inimigo-intent intent-idle" id="inimigo-status">A Espreitar...</div>
+            
+            <div style="margin-top:30px; color: var(--ouro); font-size: 1.2rem; font-family:'Cinzel',serif; text-shadow: 0 0 10px #000;">COMBO BRUTAL: <span id="arena-combo" style="font-size:2.5rem; color:#fff;">0</span></div>
+            <div id="arena-feedback" style="font-weight:bold; font-size:1.5rem; margin-top:5px; text-shadow: 0 0 5px #000;"></div>
+            <div id="arena-ciclo-timer" style="margin-top:10px; color:#888; font-size:0.9rem;">Próxima Sincronização: 10s</div>
         </div>
 
         <div class="arena-botoes">
-            <button class="btn-combo" style="border-color: red;" onclick="registrarAcerto('ataque')">⚔️ ATK</button>
-            <button class="btn-combo" style="border-color: gray;" onclick="registrarAcerto('defesa')">🛡️ DEF</button>
-            <button class="btn-combo" style="border-color: purple;" onclick="registrarAcerto('magia')">🔮 MAG</button>
+            <button class="btn-combat" style="border-color: red;" onclick="acaoVisceral('ataque')">⚔️ CORTAR</button>
+            <button class="btn-combat" style="border-color: gray;" onclick="acaoVisceral('defesa')">🛡️ PARRY</button>
+            <button class="btn-combat" style="border-color: purple;" onclick="acaoVisceral('magia')">🔮 DISSIPAR</button>
         </div>
+        <button class="btn-flee" onclick="abortarCombateManual()">Recuar das Brumas (Fugir)</button>
     </div>
 
     <div id="ui-login" class="card" style="margin-top: 5vh;">
@@ -713,7 +752,6 @@
     </div> 
 
 <script>
-const socket = io();
     // ==========================================
     // 1. INICIALIZAÇÃO SEGURA (TELEGRAM & GLOBAIS)
     // ==========================================
@@ -727,6 +765,7 @@ const socket = io();
         console.warn("Aviso: Rodando fora do Telegram ou falha na API.");
     }
 
+    const socket = io();
     let meuVampiro = null; 
     let hashAlvoAtual = null; 
     let fendaAtualId = null;
@@ -742,11 +781,6 @@ const socket = io();
 
     if(tgUser) document.getElementById('tg-name').innerText = `Lendo o Fio do Destino: @${tgUser.username || tgUser.first_name}`;
     else document.getElementById('tg-name').innerText = `Identidade Astral: ${idAcesso}`;
-
-    // ==========================================
-    // 2. FUNÇÕES AUXILIARES E ÁUDIO
-    // ==========================================
-    // ... O resto do seu código continua daqui para baixo intacto!
 
     // ==========================================
     // 2. FUNÇÕES AUXILIARES E ÁUDIO
@@ -1027,16 +1061,6 @@ const socket = io();
     // ==========================================
     // 7. PVE, PACTOS E LEILÃO
     // ==========================================
-    async function patrulharUmbral() { 
-        try { 
-            const res = await fetch('/api/pve/patrulha', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); 
-            const dados = await res.json(); 
-            if (dados.erro) ocultoAlert(dados.erro); 
-            else { jorrarSangue(); ocultoAlert(dados.relato); } 
-            syncStatus(); 
-        } catch(e) {} 
-    }
-    
     async function pedirNovoPacto() { 
         try { 
             const res = await fetch('/api/chat/pacto/pedir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); 
@@ -1104,17 +1128,6 @@ const socket = io();
     // ==========================================
     // 8. COMBATE E MAGIA
     // ==========================================
-    async function atacarPvP(postura) {
-        const defId = document.getElementById('lista-alvos-pvp').value;
-        document.getElementById('pvp-result').innerText = "O Oráculo está julgando as auras...";
-        try {
-            const res = await fetch('/api/pvp/tatico', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ atacanteId: meuVampiro.id, defensorId: defId, postura }) });
-            const dados = await res.json(); 
-            safeSet('pvp-result', dados.erro || dados.relato); 
-            if(!dados.erro) jorrarSangue(); syncStatus();
-        } catch(e){}
-    }
-
     async function forjarAlquimia() { 
         const m = document.getElementById('lista-alquimia').value; 
         try { 
@@ -1382,8 +1395,37 @@ const socket = io();
     }
 
     async function evocarGoetia() { if(!(await ocultoConfirm("Tem a certeza? Isso consumirá 3000 Gts e trará uma Entidade ao Mundo!"))) return; abismoVoid(); try { const res = await fetch('/api/goecia/evocar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); const dados = await res.json(); if(dados.erro) ocultoAlert(dados.erro); atualizarConclave(); syncStatus(); } catch(e){} }
-    async function enfrentarGoetia() { abismoVoid(); try { const res = await fetch('/api/goecia/enfrentar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); const dados = await res.json(); if(dados.erro && !dados.sucesso) ocultoAlert(dados.erro); else ocultoAlert(dados.relato); atualizarConclave(); syncStatus(); } catch(e){} }
-    async function atacarFenda() { if (!fendaAtualId) return; abismoVoid(); try { const res = await fetch('/api/conclave/fenda/atacar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, fendaId: fendaAtualId }) }); const dados = await res.json(); if(dados.erro && !dados.sucesso) ocultoAlert(dados.erro); else ocultoAlert(dados.relato); atualizarConclave(); syncStatus(); } catch(e){} }
+    
+    // AS NOVAS INTEGRAÇÕES DE COMBATE (LIGANDO OS BOTÕES À ARENA VISCERAL)
+    
+    function patrulharUmbral() { 
+        if(!meuVampiro || meuVampiro.pontosAcao < 3) return ocultoAlert("Exige 3 Fúrias para lutar.");
+        let hpMob = 500 + (meuVampiro.nivel * 150);
+        iniciarCombateVisceral("Monstro do Umbral", "umbral", "pve", hpMob, false);
+    }
+    
+    function atacarPvP(postura) {
+        if(!meuVampiro || meuVampiro.pontosAcao < 3) return ocultoAlert("Exige 3 Fúrias para lutar.");
+        const defId = document.getElementById('lista-alvos-pvp').value;
+        const alvoNome = document.getElementById('lista-alvos-pvp').options[document.getElementById('lista-alvos-pvp').selectedIndex].text;
+        let hpInimigo = 2000 + (meuVampiro.nivel * 100); 
+        iniciarCombateVisceral(alvoNome, defId, 'pvp', hpInimigo, false, postura);
+    }
+    
+    function enfrentarGoetia() { 
+        if(!meuVampiro || meuVampiro.pontosAcao < 3) return ocultoAlert("Exige 3 Fúrias para lutar.");
+        const bossName = document.getElementById('boss-name').innerText;
+        const bossHp = parseInt(document.getElementById('boss-hp-text').innerText.replace(/k|M/g, '000')); // Lidar com a formatação (simplificado para o exemplo)
+        iniciarCombateVisceral(bossName, 'goetia', 'goetia', 30000, true); 
+    }
+
+    function atacarFenda() { 
+        if (!fendaAtualId) return; 
+        if(!meuVampiro || meuVampiro.pontosAcao < 3) return ocultoAlert("Exige 3 Fúrias para lutar.");
+        const bossName = document.getElementById('fenda-nome').innerText;
+        iniciarCombateVisceral(bossName, fendaAtualId, 'fenda', 5000, true); 
+    }
+
     async function invadirSantuarioAlvo() {
         const clanInimigo = document.getElementById('alvo-gvg').value; if (!clanInimigo) return; jorrarSangue();
         try { const res = await fetch('/api/conclave/invadir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, clanAlvo: clanInimigo }) }); const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); atualizarConclave(); syncStatus(); } catch(e){}
@@ -1392,270 +1434,255 @@ const socket = io();
     // WEBSOCKET LISTENERS GLOBAIS
     socket.on('sync_geral', () => { carregarMercado(); carregarLeilao(); carregarBiblioteca(); atualizarConclave(); if(meuVampiro) syncStatus(); });
     socket.on('tick', () => { if(meuVampiro) syncStatus(); });
-	
-	// ==========================================
-    // SISTEMA DE COMBATE DE AÇÃO (RHYTHM GAME)
+    
     // ==========================================
-
-    function iniciarCombateReal(nomeAlvo, tipo, hpInimigo) {
-        if(meuVampiro.pontosAcao < 3) return ocultoAlert("Exige 3 Fúrias para entrar na Arena de Ação.");
-        
-        alvoCombateData = { nome: nomeAlvo, tipo };
-        document.getElementById('arena-alvo-nome').innerText = `Obliteração vs ${nomeAlvo}`;
-        document.getElementById('arena-acao').classList.remove('oculto');
-        combateAtivo = true; comboAtual = 1.0; pontuacaoFinalCombate = { ataques: 0, defesas: 0, magias: 0, multiplicadorGeral: 1.0 };
-        document.getElementById('arena-combo').innerText = "1.0";
-        safeSet('arena-feedback', "Sinta o ritmo do sangue...");
-
-        abrisVoid(); // Efeito visual de entrada
-
-        // Sequência de notas gerada baseada no nível do jogador e do alvo
-        let notasSpawnadas = 0;
-        const totalNotas = 15; // Duração do combate (QTEs)
-        
-        const spawnInterval = setInterval(() => {
-            if(!combateAtivo) { clearInterval(spawnInterval); return; }
-            if(notasSpawnadas >= totalNotas) {
-                clearInterval(spawnInterval);
-                setTimeout(finalizarCombateReal, 3000); // Aguarda as últimas notas passarem
-                return;
-            }
-
-            const tipos = ['ataque', 'ataque', 'defesa', 'magia'];
-            const tipoSorteado = tipos[Math.floor(Math.random() * tipos.length)];
-            spawnarNota(tipoSorteado);
-            notasSpawnadas++;
-        }, 800); // Velocidade do jogo. Pode ser diminuída para bosses mais difíceis
-    }
-
-    function spawnarNota(tipo) {
-        const pista = document.getElementById('pista');
-        const nota = document.createElement('div');
-        nota.className = `nota-combate nota-${tipo}`;
-        nota.dataset.tipo = tipo;
-        let icone = tipo === 'ataque' ? '⚔️' : (tipo === 'defesa' ? '🛡️' : '🔮');
-        nota.innerText = icone;
-        pista.appendChild(nota);
-
-        let pos = 100; // Começa da direita (100%)
-        const vel = 1.5; // Velocidade do percurso
-        
-        const mover = setInterval(() => {
-            if(!combateAtivo) { clearInterval(mover); nota.remove(); return; }
-            pos -= vel;
-            nota.style.right = (100 - pos) + '%';
-            
-            // Se passar da zona sem ser clicada
-            if(pos < 0) {
-                clearInterval(mover);
-                if(notasAtivas.includes(nota)) {
-                    quebrarCombo("MISS!");
-                    notasAtivas = notasAtivas.filter(n => n !== nota);
-                }
-                nota.remove();
-            }
-        }, 20);
-
-        nota.dataset.intervalId = mover;
-        notasAtivas.push(nota);
-    }
-
-    // ==========================================
-    // O MOTOR DO RITMO (ARENA DE AÇÃO)
+    // MOTOR DE COMBATE VISCERAL EM TEMPO REAL
     // ==========================================
     let combateAtivo = false;
-    let notasAtivas = [];
-    let comboAtual = 1.0;
-    let maxComboAlcance = 1.0;
-    let pontuacaoCombate = { ataques: 0, defesas: 0, magias: 0 };
-    let intervaloSpawn = null;
+    let isSyncing = false;
+    let loopIA = null;
+    let combateDados = {
+        alvoId: null, tipoCombate: null, isRaid: false, posturaPvP: null,
+        hpMaxInimigo: 0, hpAtualInimigo: 0,
+        hpMaxJogador: 0, hpAtualJogador: 0,
+        estadoInimigo: 'idle', timerAcaoInimigo: 0,
+        cicloTimer: 100, 
+        comboAtual: 0, maxCombo: 0,
+        estatisticas: { ataquesDealt: 0, magiasDealt: 0, parries: 0, danoSofrido: 0, danoCausado: 0 }
+    };
 
-    // Esta função retorna uma Promise, o que significa que o código do jogo PÁRA e espera o jogador terminar o mini-jogo
-    function iniciarArenaRitmo(nomeAlvo, dificuldadeMilisegundos, quantidadeNotas) {
-        return new Promise((resolve) => {
-            document.getElementById('arena-alvo-nome').innerText = nomeAlvo;
-            document.getElementById('arena-acao').classList.remove('oculto');
-            
-            combateAtivo = true; comboAtual = 1.0; maxComboAlcance = 1.0;
-            pontuacaoCombate = { ataques: 0, defesas: 0, magias: 0 };
-            document.getElementById('arena-combo').innerText = "1.0";
-            safeSet('arena-feedback', "Sinta o sangue...");
-            document.getElementById('pista').innerHTML = '<div class="hit-zone" id="hit-zone"></div>';
-
-            abismoVoid();
-
-            let notasSpawnadas = 0;
-            intervaloSpawn = setInterval(() => {
-                if(!combateAtivo) { clearInterval(intervaloSpawn); return; }
-                if(notasSpawnadas >= quantidadeNotas) {
-                    clearInterval(intervaloSpawn);
-                    setTimeout(() => {
-                        encerrarArena(resolve);
-                    }, 3000); // Dá tempo para as últimas notas sumirem da tela
-                    return;
-                }
-
-                const tipos = ['ataque', 'ataque', 'defesa', 'magia', 'magia'];
-                const tipoSorteado = tipos[Math.floor(Math.random() * tipos.length)];
-                spawnarNota(tipoSorteado);
-                notasSpawnadas++;
-            }, dificuldadeMilisegundos); 
-        });
+    function spawnSlash(x, y) {
+        const slash = document.createElement('div'); slash.className = 'slash-effect';
+        slash.style.left = (x - 75) + 'px'; slash.style.top = (y - 20) + 'px';
+        document.getElementById('arena-acao').appendChild(slash);
+        setTimeout(() => slash.remove(), 200);
     }
 
-    function spawnarNota(tipo) {
-        const pista = document.getElementById('pista');
-        const nota = document.createElement('div');
-        nota.className = `nota-combate nota-${tipo}`;
-        nota.dataset.tipo = tipo;
-        nota.innerText = tipo === 'ataque' ? '⚔️' : (tipo === 'defesa' ? '🛡️' : '🔮');
-        pista.appendChild(nota);
-
-        let pos = -10; // Começa colado na direita (-10px invisível)
-        const vel = window.innerWidth > 600 ? 5 : 3; // Adapta velocidade para mobile/PC
-        
-        const mover = setInterval(() => {
-            if(!combateAtivo) { clearInterval(mover); nota.remove(); return; }
-            pos += vel;
-            nota.style.right = pos + 'px';
-            
-            // Se passou direto da tela (Errou)
-            if(pos > window.innerWidth) {
-                clearInterval(mover);
-                if(notasAtivas.includes(nota)) {
-                    quebrarCombo("DRENADO!");
-                    notasAtivas = notasAtivas.filter(n => n !== nota);
-                }
-                nota.remove();
-            }
-        }, 16); // 60 FPS
-
-        nota.dataset.intervalId = mover;
-        notasAtivas.push(nota);
+    function spawnDanoText(txt, cor) {
+        const d = document.createElement('div'); d.className = 'dano-text';
+        d.style.color = cor; d.innerText = txt;
+        const zona = document.getElementById('inimigo-zona');
+        d.style.left = (Math.random() * 40 + 30) + '%'; d.style.top = (Math.random() * 40 + 10) + '%';
+        zona.appendChild(d); setTimeout(() => d.remove(), 800);
     }
 
-    function registrarAcerto(tipoClicado) {
+    function atualizarBarras() {
         if(!combateAtivo) return;
-        const hitZone = document.getElementById('hit-zone').getBoundingClientRect();
+        document.getElementById('arena-player-hp-bar').style.width = `${Math.max(0, (combateDados.hpAtualJogador / combateDados.hpMaxJogador) * 100)}%`;
+        document.getElementById('arena-player-hp-text').innerText = Math.floor(combateDados.hpAtualJogador);
         
-        let notaCerta = null;
-        for(let nota of notasAtivas) {
-            const nRect = nota.getBoundingClientRect();
-            // Verifica se a nota cruzou a barreira do HitZone (com uma margem de folga para mobile)
-            if(nRect.left < hitZone.right + 20 && nRect.right > hitZone.left - 20) {
-                notaCerta = nota; break;
-            }
-        }
-
-        if(notaCerta) {
-            if(notaCerta.dataset.tipo === tipoClicado) {
-                comboAtual = Math.min(3.5, comboAtual + 0.2); // Sobe combo
-                if (comboAtual > maxComboAlcance) maxComboAlcance = comboAtual;
-                
-                document.getElementById('arena-combo').innerText = comboAtual.toFixed(1);
-                safeSet('arena-feedback', "Corte Limpo!");
-                document.getElementById('arena-feedback').style.color = "#0f5";
-                pontuacaoCombate[tipoClicado]++;
-                playSfx('espada');
-                
-                clearInterval(notaCerta.dataset.intervalId);
-                notasAtivas = notasAtivas.filter(n => n !== notaCerta);
-                notaCerta.remove();
-                
-                const fl = document.createElement('div');
-                fl.style.position="absolute"; fl.style.left="15%"; fl.style.top="0"; fl.style.width="60px"; fl.style.height="100%"; fl.style.background="rgba(255,255,255,0.8)"; fl.style.zIndex="99";
-                document.getElementById('pista').appendChild(fl);
-                setTimeout(()=>fl.remove(), 100);
-            } else {
-                quebrarCombo("MAGIA FALHOU!");
-            }
-        } else {
-            quebrarCombo("CEDO DEMAIS!");
-        }
+        document.getElementById('arena-boss-hp-bar').style.width = `${Math.max(0, (combateDados.hpAtualInimigo / combateDados.hpMaxInimigo) * 100)}%`;
+        document.getElementById('arena-boss-hp-text').innerText = Math.floor(combateDados.hpAtualInimigo);
+        document.getElementById('arena-combo').innerText = combateDados.comboAtual;
     }
 
     function quebrarCombo(msg) {
-        comboAtual = 1.0; document.getElementById('arena-combo').innerText = "1.0";
+        combateDados.comboAtual = 0; atualizarBarras();
         safeSet('arena-feedback', msg); document.getElementById('arena-feedback').style.color = "red";
         document.getElementById('arena-acao').classList.add('shake-screen');
         setTimeout(() => document.getElementById('arena-acao').classList.remove('shake-screen'), 300);
     }
 
-    function encerrarArena(resolve) {
-        combateAtivo = false;
-        clearInterval(intervaloSpawn);
-        notasAtivas.forEach(n => clearInterval(n.dataset.intervalId));
-        notasAtivas = [];
-        document.getElementById('arena-acao').classList.add('oculto');
+    function iniciarCombateVisceral(nomeAlvo, idAlvo, tipoCombate, hpInimigo, isRaidBoss = false, posturaPvP = 1) {
+        combateAtivo = true; isSyncing = false;
+        combateDados = {
+            alvoId: idAlvo, tipoCombate: tipoCombate, isRaid: isRaidBoss, posturaPvP: posturaPvP,
+            hpMaxInimigo: hpInimigo, hpAtualInimigo: hpInimigo,
+            hpMaxJogador: meuVampiro.sangue, hpAtualJogador: meuVampiro.sangue,
+            estadoInimigo: 'idle', timerAcaoInimigo: 0,
+            cicloTimer: isRaidBoss ? 100 : 50, 
+            comboAtual: 0, maxCombo: 0,
+            estatisticas: { ataquesDealt: 0, magiasDealt: 0, parries: 0, danoSofrido: 0, danoCausado: 0 }
+        };
+
+        const icones = ['👹', '👁️', '💀', '🕷️', '🦇', '🪬', '🔥'];
+        document.getElementById('inimigo-icone').innerText = icones[Math.floor(Math.random() * icones.length)];
+        document.getElementById('inimigo-icone').className = "inimigo-sprite"; 
+        document.getElementById('arena-alvo-nome').innerText = nomeAlvo;
+        document.getElementById('arena-jogador-nome').innerText = meuVampiro.nome;
+        safeSet('arena-feedback', "PREPARA-TE..."); document.getElementById('arena-feedback').style.color = "#888";
+        document.getElementById('arena-acao').classList.remove('oculto');
         
-        // Devolve os resultados compilados de volta para a função que chamou a Arena
-        resolve({
-            ataques: pontuacaoCombate.ataques,
-            defesas: pontuacaoCombate.defesas,
-            magias: pontuacaoCombate.magias,
-            multiplicadorGeral: parseFloat(maxComboAlcance.toFixed(1))
-        });
+        abismoVoid(); playSfx('magia'); atualizarBarras();
+        loopIA = setInterval(logicaInimigoVisceral, 100);
     }
 
-    // ==========================================
-    // SUBSTITUIÇÃO DAS FUNÇÕES DE COMBATE ANTIGAS
-    // ==========================================
-
-    // PvE UMBRAL
-    async function patrulharUmbral() { 
-        if(meuVampiro.pontosAcao < 2) return ocultoAlert("Exige 2 Fúrias.");
-        // Abre a Arena: Nome Genérico, Difícil, 10 notas
-        const ritmoFinal = await iniciarArenaRitmo("Ameaça do Umbral", 800, 10);
+    function logicaInimigoVisceral() {
+        if (!combateAtivo) return clearInterval(loopIA);
+        if (isSyncing) return; 
         
-        try { 
-            const res = await fetch('/api/pve/patrulha', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, ritmo: ritmoFinal }) }); 
-            const dados = await res.json(); if (dados.erro) ocultoAlert(dados.erro); else { jorrarSangue(); ocultoAlert(dados.relato); } syncStatus(); 
-        } catch(e) {} 
+        const state = combateDados; const statusEl = document.getElementById('inimigo-status');
+        
+        if (state.hpAtualJogador <= 0 || state.hpAtualInimigo <= 0) {
+            processarCicloComServidor(true); 
+            return;
+        }
+
+        state.cicloTimer--;
+        document.getElementById('arena-ciclo-timer').innerText = `Próxima Sincronização: ${(state.cicloTimer / 10).toFixed(1)}s`;
+        if (state.cicloTimer <= 0) {
+            processarCicloComServidor(false);
+            return;
+        }
+
+        if (state.estadoInimigo === 'idle') {
+            statusEl.innerText = "A Espreitar..."; statusEl.className = "inimigo-intent intent-idle";
+            
+            let percHp = state.hpAtualInimigo / state.hpMaxInimigo;
+            let aggro = percHp < 0.3 ? 0.15 : (percHp < 0.6 ? 0.10 : 0.05);
+
+            if (Math.random() < aggro) {
+                state.estadoInimigo = Math.random() > 0.5 ? 'prep_magia' : 'prep_ataque';
+                state.timerAcaoInimigo = percHp < 0.5 ? 8 : 12; 
+            }
+        } 
+        else if (state.estadoInimigo.startsWith('prep_')) {
+            state.timerAcaoInimigo--;
+            
+            if (state.estadoInimigo === 'prep_ataque') {
+                statusEl.innerText = "GOLPE FÍSICO!"; statusEl.className = "inimigo-intent intent-ataque";
+            } else {
+                statusEl.innerText = "CONJURANDO TREVAS!"; statusEl.className = "inimigo-intent intent-magia";
+            }
+
+            if (state.timerAcaoInimigo <= 0) {
+                let danoBase = state.isRaid ? (1000 + (meuVampiro.nivel * 100)) : (100 + (meuVampiro.nivel * 10));
+                let danoSofrido = state.estadoInimigo === 'prep_magia' ? danoBase * 1.5 : danoBase;
+                
+                state.hpAtualJogador -= danoSofrido;
+                state.estatisticas.danoSofrido += danoSofrido;
+                
+                quebrarCombo("SANGRASTE!");
+                jorrarSangue(); spawnDanoText(`-${Math.floor(danoSofrido)}`, '#f00');
+                
+                state.estadoInimigo = 'idle';
+                atualizarBarras();
+            }
+        } 
+        else if (state.estadoInimigo === 'vulneravel') {
+            statusEl.innerText = "ATORDOADO! MATA!"; statusEl.className = "inimigo-intent intent-vulneravel";
+            state.timerAcaoInimigo--;
+            if (state.timerAcaoInimigo <= 0) state.estadoInimigo = 'idle';
+        }
     }
 
-    // PVP JOGADOR VS JOGADOR
-    async function atacarPvP(postura) {
-        const defId = document.getElementById('lista-alvos-pvp').value;
-        const alvoNome = document.getElementById('lista-alvos-pvp').options[document.getElementById('lista-alvos-pvp').selectedIndex].text;
-        if(meuVampiro.pontosAcao < 3) return ocultoAlert("Exige 3 Fúrias.");
+    function acaoVisceral(tipoAcao) {
+        if(!combateAtivo || isSyncing) return;
+        const state = combateDados;
+        const iconeRect = document.getElementById('inimigo-icone').getBoundingClientRect();
+        const cX = iconeRect.left + (iconeRect.width/2); const cY = iconeRect.top + (iconeRect.height/2);
+
+        const atr = meuVampiro.atributosTotais || meuVampiro.atributos;
+        let danoFisico = (atr.vontade * 15) + (meuVampiro.nivel * 5);
+        let danoMagico = (atr.gnose * 25) + (meuVampiro.nivel * 10);
+        let multiplicador = 1 + (state.comboAtual * 0.1); 
         
-        // Abre a Arena: Mais rápido, 15 notas
-        const ritmoFinal = await iniciarArenaRitmo(`Duelo vs ${alvoNome}`, 600, 15);
-        document.getElementById('pvp-result').innerText = "O Oráculo está julgando as auras...";
-        
+        if(state.estadoInimigo === 'vulneravel') multiplicador *= 3;
+
+        if (tipoAcao === 'defesa') {
+            if (state.estadoInimigo === 'prep_ataque' && state.timerAcaoInimigo <= 6) {
+                state.estadoInimigo = 'vulneravel'; state.timerAcaoInimigo = 20; 
+                state.estatisticas.parries++;
+                const flash = document.createElement('div'); flash.className = 'parry-flash'; document.body.appendChild(flash); setTimeout(()=>flash.remove(), 300);
+                playSfx('espada'); spawnDanoText("PARRY!", "#ccc");
+                safeSet('arena-feedback', "CONTRA-ATAQUE!"); document.getElementById('arena-feedback').style.color = "#0f5";
+            } else { quebrarCombo("DEFESA FALHOU"); }
+            return;
+        }
+
+        if (tipoAcao === 'magia') {
+            if (state.estadoInimigo === 'prep_magia' && state.timerAcaoInimigo <= 8) {
+                let danoCausar = Math.floor(danoMagico * multiplicador * 2);
+                state.hpAtualInimigo -= danoCausar; state.estatisticas.danoCausado += danoCausar; state.estatisticas.magiasDealt++;
+                state.estadoInimigo = 'idle'; 
+                playSfx('magia'); abismoVoid(); spawnDanoText(danoCausar, "#d080ff");
+                safeSet('arena-feedback', "MAGIA DISSIPADA!"); document.getElementById('arena-feedback').style.color = "#d080ff";
+            } else {
+                state.hpAtualJogador -= 50; 
+                let danoCausar = Math.floor(danoMagico * multiplicador);
+                state.hpAtualInimigo -= danoCausar; state.estatisticas.danoCausado += danoCausar; state.estatisticas.magiasDealt++;
+                playSfx('magia'); spawnDanoText(danoCausar, "#d080ff");
+            }
+        }
+
+        if (tipoAcao === 'ataque') {
+            if (state.estadoInimigo === 'prep_magia') return quebrarCombo("MAGIA IMUNE A LÂMINA!");
+            let danoCausar = Math.floor(danoFisico * multiplicador);
+            state.hpAtualInimigo -= danoCausar; state.estatisticas.danoCausado += danoCausar; state.estatisticas.ataquesDealt++;
+            
+            state.comboAtual++;
+            if(state.comboAtual > state.maxCombo) state.maxCombo = state.comboAtual;
+            
+            playSfx('espada'); spawnSlash(cX, cY); spawnDanoText(danoCausar, "#fff");
+            safeSet('arena-feedback', "Sangrando..."); document.getElementById('arena-feedback').style.color = "#fff";
+        }
+        atualizarBarras();
+    }
+
+    async function processarCicloComServidor(foiMorte) {
+        isSyncing = true;
+        document.getElementById('inimigo-status').innerText = "COLISÃO COM O ÉTER...";
+        document.getElementById('inimigo-status').className = "inimigo-intent intent-sync";
+        document.getElementById('arena-ciclo-timer').innerText = "Processando no Abismo...";
+
+        let relatorio = {
+            ataques: combateDados.estatisticas.ataquesDealt,
+            defesas: combateDados.estatisticas.parries,
+            magias: combateDados.estatisticas.magiasDealt,
+            multiplicadorGeral: 1 + (combateDados.maxCombo * 0.1),
+            danoRealCausado: combateDados.estatisticas.danoCausado,
+            danoRealSofrido: combateDados.estatisticas.danoSofrido,
+            venceu: combateDados.hpAtualJogador > 0 && combateDados.hpAtualInimigo <= 0
+        };
+
+        const payload = { 
+            id: meuVampiro.id, alvoId: combateDados.alvoId, 
+            tipoCombate: combateDados.tipoCombate, postura: combateDados.posturaPvP, 
+            desempenhoRitmo: relatorio 
+        };
+
         try {
-            const res = await fetch('/api/pvp/tatico', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ atacanteId: meuVampiro.id, defensorId: defId, postura, ritmo: ritmoFinal }) });
-            const dados = await res.json(); safeSet('pvp-result', dados.erro || dados.relato); 
-            if(!dados.erro) jorrarSangue(); syncStatus();
-        } catch(e){}
+            const res = await fetch('/api/combate/action', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            const dados = await res.json();
+            
+            if (dados.erro || dados.finalizado || foiMorte) {
+                encerrarArenaFinal(dados.erro || dados.relato);
+                return;
+            }
+
+            combateDados.hpAtualInimigo = dados.hpRestante;
+            combateDados.hpMaxInimigo = dados.hpMax || combateDados.hpMaxInimigo;
+            
+            let perc = combateDados.hpAtualInimigo / combateDados.hpMaxInimigo;
+            let iconEl = document.getElementById('inimigo-icone');
+            if (perc < 0.2) iconEl.className = "inimigo-sprite boss-phase-3";
+            else if (perc < 0.5) iconEl.className = "inimigo-sprite boss-phase-2";
+
+            combateDados.estatisticas = { ataquesDealt: 0, magiasDealt: 0, parries: 0, danoSofrido: 0, danoCausado: 0 };
+            combateDados.cicloTimer = combateDados.isRaid ? 100 : 50; 
+            
+            syncStatus(); 
+            combateDados.hpAtualJogador = meuVampiro.sangue;
+
+            safeSet('arena-feedback', "SEGUNDO VENTO!"); document.getElementById('arena-feedback').style.color = "var(--ouro)";
+            isSyncing = false; 
+            
+        } catch(e) {
+            encerrarArenaFinal("O Fio de Prata rompeu-se. Desconectado.");
+        }
     }
 
-    // BOSS MUNDIAL GOÉTIA
-    async function enfrentarGoetia() { 
-        if(meuVampiro.pontosAcao < 3) return ocultoAlert("Exige 3 Fúrias.");
-        const bossName = document.getElementById('boss-name').innerText;
-        // Abre a Arena: Muito Rápido, 25 notas (Longo e difícil)
-        const ritmoFinal = await iniciarArenaRitmo(`Subjugando ${bossName}`, 500, 25);
-
-        try { 
-            const res = await fetch('/api/goecia/enfrentar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, ritmo: ritmoFinal }) }); 
-            const dados = await res.json(); if(dados.erro && !dados.sucesso) ocultoAlert(dados.erro); else ocultoAlert(dados.relato); atualizarConclave(); syncStatus(); 
-        } catch(e){} 
+    function abortarCombateManual() {
+        if(!combateAtivo || isSyncing) return;
+        processarCicloComServidor(true);
     }
 
-    // BOSS PROCEDURAL DA IA (FENDA)
-    async function atacarFenda() { 
-        if (!fendaAtualId) return; if(meuVampiro.pontosAcao < 3) return ocultoAlert("Exige 3 Fúrias.");
-        const bossName = document.getElementById('fenda-nome').innerText;
-        // Arena Extrema
-        const ritmoFinal = await iniciarArenaRitmo(`Fenda: ${bossName}`, 450, 20);
-
-        try { 
-            const res = await fetch('/api/conclave/fenda/atacar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, fendaId: fendaAtualId, ritmo: ritmoFinal }) }); 
-            const dados = await res.json(); if(dados.erro && !dados.sucesso) ocultoAlert(dados.erro); else ocultoAlert(dados.relato); atualizarConclave(); syncStatus(); 
-        } catch(e){} 
+    function encerrarArenaFinal(msgFinal) {
+        combateAtivo = false; clearInterval(loopIA);
+        document.getElementById('arena-acao').classList.add('oculto');
+        ocultoAlert(msgFinal);
+        atualizarConclave(); syncStatus();
     }
-	
 </script>
 </body>
 </html>
