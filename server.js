@@ -101,6 +101,11 @@ app.post('/api/auth', (req, res) => {
     } catch(err) { res.status(500).json({erro: "A Geometria Sagrada falhou."}); }
 });
 
+app.post('/api/perfil/despertar', async (req, res) => { 
+    try { res.json(await core.despertarTalento(req.body.id)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"A Mente Abissal esmagou a tua conexão."}); } 
+});
+
 // ==========================================
 // PORTAL DE COMBATE VISCERAL UNIFICADO (PVE, PVP, GOÉTIA, FENDAS)
 // ==========================================

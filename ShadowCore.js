@@ -180,6 +180,30 @@ class OraculoAbissal {
             return JSON.parse(resposta.choices[0].message.content);
         } catch (e) { return null; }
     }
+	
+	async despertarHabilidadeUnica(iniciado) {
+        if (!this.apiKey) return null;
+        try {
+            const prompt = `Analise as correntes astrais deste ser das trevas:
+            Nome: [${iniciado.nome}], Raça: [${iniciado.raca}], Grau: [${iniciado.nivel}].
+            Atributos: Vontade ${iniciado.atributos.vontade}, Gnose ${iniciado.atributos.gnose}, Densidade ${iniciado.atributos.densidade}.
+            
+            Aja como a Mente Abissal. Crie uma Habilidade Passiva ÚNICA e personalizada baseada na essência acima para ser injetada no código do universo.
+            Retorne OBRIGATORIAMENTE APENAS um JSON neste formato:
+            {
+              "nome": "Nome Épico e Obscuro do Talento",
+              "desc": "1 Frase lore descrevendo o efeito no corpo ou mente.",
+              "tipo": "ataque" (se o maior atributo for vontade), "defesa" (se for densidade), ou "magia" (se for gnose),
+              "multiplicador": (um número decimal entre 1.2 e 1.5)
+            }`;
+
+            const resposta = await this.groq.chat.completions.create({
+                messages: [{ role: "system", content: "Retorne ESTRITAMENTE o JSON." }, { role: "user", content: prompt }],
+                model: "llama-3.1-8b-instant", temperature: 0.85, response_format: { type: "json_object" }
+            });
+            return JSON.parse(resposta.choices[0].message.content);
+        } catch (e) { return null; }
+    }
     async vozDoDemonio(nomeDemonio, acao, detalhes) {
         if (!this.apiKey) return `[${nomeDemonio} ruge das profundezas]`;
         try {
@@ -350,14 +374,17 @@ class ShadowCore {
         if (!v || v.pontosAcao < 3) return { erro: "Falta de Fúria para selar o abate." };
         
         v.pontosAcao -= 3;
-        
-        // Validação de segurança: O jogador envia o dano que causou e sofreu no Front, 
-        // mas o servidor aplica limites baseados no nível para evitar Cheats/Hacks.
-        let maxDanoPermitido = (this._obterAtributosTotais(v).vontade * 50 * desempenhoRitmo.multiplicadorGeral) + (v.nivel * 500);
-        let danoFinal = Math.min(desempenhoRitmo.danoRealCausado, maxDanoPermitido);
-        let danoSofrido = desempenhoRitmo.danoRealSofrido;
+        const atr = this._obterAtributosTotais(v);
 
-        // Se o jogador sangrou no combate visceral, tira vida real dele no servidor
+        // Aplica a Mutação do Talento Único (Despertar Akáshico)
+        let multAtaque = v.talentoUnico && v.talentoUnico.tipo === 'ataque' ? v.talentoUnico.multiplicador : 1;
+        let multDefesa = v.talentoUnico && v.talentoUnico.tipo === 'defesa' ? v.talentoUnico.multiplicador : 1;
+        let multMagia = v.talentoUnico && v.talentoUnico.tipo === 'magia' ? v.talentoUnico.multiplicador : 1;
+        
+        let maxDanoPermitido = ((atr.vontade * multAtaque * 50) * desempenhoRitmo.multiplicadorGeral) + (v.nivel * 500);
+        let danoFinal = Math.min(desempenhoRitmo.danoRealCausado, maxDanoPermitido);
+        let danoSofrido = Math.floor(desempenhoRitmo.danoRealSofrido / multDefesa);
+
         if (danoSofrido > 0) {
             v.sangue = Math.max(0, v.sangue - danoSofrido);
             if (v.sangue <= 0) v.estado = 'Banido';
@@ -366,26 +393,23 @@ class ShadowCore {
         // ===================================
         // RESOLUÇÃO DE CADA TIPO DE COMBATE
         // ===================================
-        
-        // 1. COMBATE FENDA (IA BOSS)
         if (tipoCombate === 'fenda') {
             const fenda = this.fendaAtiva[alvoId];
             if(!fenda) return { erro: "A Entidade desvaneceu nas brumas." };
             
             fenda.hpAtual -= danoFinal;
-            let relato = `[Combo Máx: ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Rasgaste [${fenda.nome}] com ${danoFinal} de Impacto! Sofreste ${danoSofrido} de revide.`;
+            let relato = `[Combo ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Rasgaste [${fenda.nome}] com ${danoFinal} de Impacto! Sofreste ${danoSofrido} de revide.`;
 
             if (fenda.hpAtual <= 0) {
                 relato = `DESTRUÍSTE [${fenda.nome}] com uma chuva de violência! +2 ${fenda.loot.toUpperCase()}.`; 
                 v.inventario[fenda.loot] = (v.inventario[fenda.loot] || 0) + 2; 
-                this.ganharXP(v.id, Math.floor(1000 * desempenhoRitmo.multiplicadorGeral)); 
+                this.ganharXP(v.id, Math.floor(2000 * desempenhoRitmo.multiplicadorGeral)); 
                 delete this.fendaAtiva[alvoId];
                 this._registrarEventoEspecial('global', 'TITÃ ABATIDO', `${v.nome} obliterou a anomalia através da Dança da Morte.`, true);
             }
-            this._salvarBancoDeDados(); return { sucesso: true, relato };
+            this._salvarBancoDeDados(); return { sucesso: true, relato, hpRestante: fenda ? fenda.hpAtual : 0, hpMax: fenda ? fenda.hpMax : 1 };
         }
 
-        // 2. COMBATE GOÉTIA (RAID BOSS)
         if (tipoCombate === 'goetia') {
             const demonio = this.evocacaoAtiva;
             if(!demonio) return { erro: "O Pentagrama está vazio." };
@@ -394,7 +418,7 @@ class ShadowCore {
             if (!demonio.participantes[v.id]) demonio.participantes[v.id] = { nome: v.nome, dano: 0 }; 
             demonio.participantes[v.id].dano += danoFinal;
 
-            let relato = `[Combo Máx: ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Castigaste ${demonio.nome} causando ${danoFinal} de submissão! Sangraste ${danoSofrido} Gts.`;
+            let relato = `[Combo ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Castigaste ${demonio.nome} com ${danoFinal} de submissão! Sangraste ${danoSofrido} Gts.`;
 
             if (demonio.hpAtual <= 0) {
                 relato = `QUEBRASTE A VONTADE DE ${demonio.nome}!`; 
@@ -402,33 +426,28 @@ class ShadowCore {
                 for (let pid in demonio.participantes) { 
                     let l = this.vampiros[pid]; 
                     if (l) { 
-                        l.influencia += 50; l.atributos.pontosLivres += 2; l.inventario.pedraAlma = (l.inventario.pedraAlma || 0) + 5; l.inventario.demoniosSubjugados = (l.inventario.demoniosSubjugados||0)+1; 
-                        relatorioLoot += `> [${l.nome}]: +50 Inf, +5 Pedras, +2 Esferas Livres!\n`; 
+                        l.influencia += 100; l.atributos.pontosLivres += 3; l.inventario.pedraAlma = (l.inventario.pedraAlma || 0) + 10; l.inventario.demoniosSubjugados = (l.inventario.demoniosSubjugados||0)+1; 
+                        relatorioLoot += `> [${l.nome}]: +100 Inf, +10 Pedras, +3 Esferas Livres!\n`; 
                     } 
                 }
                 this._registrarEventoEspecial('global', 'VITÓRIA GOÉTICA', relatorioLoot); 
-                this.evocacaoAtiva = null; this._pontuarMembro(v.id, 500); 
+                this.evocacaoAtiva = null; this._pontuarMembro(v.id, 1000); 
             }
-            this.ganharXP(v.id, Math.floor(100 * desempenhoRitmo.multiplicadorGeral)); 
-            this._salvarBancoDeDados(); return { sucesso: true, relato };
+            this.ganharXP(v.id, Math.floor(150 * desempenhoRitmo.multiplicadorGeral)); 
+            this._salvarBancoDeDados(); return { sucesso: true, relato, hpRestante: demonio ? demonio.hpAtual : 0, hpMax: demonio ? demonio.hpMax : 1 };
         }
 
-        // 3. COMBATE UMBRAL (PvE NORMAL)
         if (tipoCombate === 'pve') {
             if (!desempenhoRitmo.venceu) return { erro: `Foste derrotado e sangraste ${danoSofrido} Gts. O monstro sobreviveu.` };
-
             let ganhoGts = Math.floor((Math.random() * 100) + 50 + (v.nivel * 25)) * desempenhoRitmo.multiplicadorGeral; 
             v.sangue += Math.floor(ganhoGts); 
             this.ganharXP(v.id, Math.floor(40 * desempenhoRitmo.multiplicadorGeral));
-            
             let relatoExtra = "";
             if (Math.random() > 0.5) { v.inventario['anima'] = (v.inventario['anima'] || 0) + 1; relatoExtra = ` e despojaste 1x ANIMA.`; } 
             if (Math.random() > 0.95) { const drop = ForjaDraconiana.gerarReliquia(v.nivel, this.reliquiasCustomizadas); v.bolsa.push(drop); relatoExtra += ` Achaste [${drop.nome}].`; }
-
-            this._salvarBancoDeDados(); return { sucesso: true, relato: `[Combo Máx: ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Despedaçaste a ameaça. +${Math.floor(ganhoGts)} Gts${relatoExtra}` };
+            this._salvarBancoDeDados(); return { sucesso: true, relato: `[Combo: ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Despedaçaste a ameaça. +${Math.floor(ganhoGts)} Gts${relatoExtra}` };
         }
 
-        // 4. COMBATE PvP (JOGADOR VS JOGADOR)
         if (tipoCombate === 'pvp') {
             const defensor = this.vampiros[alvoId];
             if (!defensor || defensor.estado === 'Banido') return { erro: "Alvo inválido ou reduzido a pó." };
@@ -440,14 +459,12 @@ class ShadowCore {
 
             let dVencedor, dPerdedor, rouboDano, relatoA, relatoD;
             
-            // O vencedor é ditado pelo desempenho visceral. Se venceste no mini-jogo, tu ganhaste o PvP.
             if (desempenhoRitmo.venceu) {
                 dVencedor = v; dPerdedor = defensor;
                 rouboDano = Math.min(danoFinal, 10000 + (v.nivel * 500)); 
                 relatoA = `[Combo ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Violaste a aura de ${defensor.nome}! Roubaste ${rouboDano} Gts.`;
                 relatoD = `As tuas barreiras ruíram. ${v.nome} espancou a tua mente e sugou ${rouboDano} Gts.`;
             } else {
-                // Se o jogador foi espancado no mini-jogo, ele PERDE o PvP contra as defesas estáticas do inimigo.
                 dVencedor = defensor; dPerdedor = v;
                 rouboDano = Math.floor(danoSofrido * 1.5);
                 relatoA = `O teu ataque falhou miseravelmente. A aura de ${defensor.nome} esmagou-te. Cedes-te ${rouboDano} Gts.`;
@@ -471,6 +488,36 @@ class ShadowCore {
         return { erro: "O Juiz não compreende este plano de batalha." };
     }
 
+    async despertarTalento(vampiroId) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Alma inexistente." };
+        if (v.nivel < 20) return { erro: "A Mente Abissal ignora os fracos. Atinge o Grau 20." };
+        if (v.sangue < 5000 || v.pontosAcao < 10) return { erro: "O Ritual exige 5000 Gts e 10 Fúria." };
+        if (v.talentoUnico) return { erro: `A tua alma já foi selada com [${v.talentoUnico.nome}]. Não podes despertar duas vezes.` };
+
+        v.sangue -= 5000; v.pontosAcao -= 10;
+        const talento = await this.oraculo.despertarHabilidadeUnica(v);
+        
+        if (!talento) {
+            v.sangue += 5000; v.pontosAcao += 10;
+            return { erro: "O Oráculo manteve-se em silêncio. Tenta novamente mais tarde." };
+        }
+
+        v.talentoUnico = talento;
+        this._registrarEventoEspecial('global', 'DESPERTAR AKÁSHICO', `A Mente Abissal sussurrou diretamente a ${v.nome}. O talento único [${talento.nome}] foi injetado na sua essência!`, true);
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: `A Mente Abissal fundiu-se a ti! Recebeste [${talento.nome}]: ${talento.desc}` };
+    }
+
+    async _registrarEventoEspecial(categoria, tipo, relatoOrig, global = true, contextoOculto = "Manifestação Sombria") {
+        const lua = AstrolabioLunar.obterFaseAtual();
+        const relatoEnfeitado = await this.oraculo.gerarNarrativaProcedural(tipo, relatoOrig, contextoOculto);
+        const evento = { tipo: `${tipo} [${lua.nome}]`, relato: relatoEnfeitado, data: Date.now() };
+        
+        if (this.logs[categoria]) { this.logs[categoria].unshift(evento); if (this.logs[categoria].length > 100) this.logs[categoria].pop(); }
+        if (global) { this.logs.global.unshift(evento); if (this.logs.global.length > 200) this.logs.global.pop(); this.oraculo.analisarClimaAstral(this.logs.global); }
+        return evento;
+    }
     async _registrarEventoEspecial(categoria, tipo, relatoOrig, global = true, contextoOculto = "Manifestação Sombria") {
         const lua = AstrolabioLunar.obterFaseAtual();
         const relatoEnfeitado = await this.oraculo.gerarNarrativaProcedural(tipo, relatoOrig, contextoOculto);
@@ -1152,7 +1199,8 @@ class ShadowCore {
     abrirSeloGoetico(vampiroId) {
         const v = this.vampiros[vampiroId]; if (!v || v.sangue < 3000 || v.pontosAcao < 10) return { erro: "Falta poder." }; if (this.evocacaoAtiva) return { erro: "O véu já está rasgado!" };
         v.sangue -= 3000; v.pontosAcao -= 10;
-        const demonios = [{ nome: "Rei Bael (A Besta)", hpMax: 30000, desc: "Caos cego." }, { nome: "Duque Agares", hpMax: 25000, desc: "Destruição da honra." }, { nome: "Rei Paimon", hpMax: 40000, desc: "Impenetrável." }];
+        // HPs COLOSSAIS para forçar batalhas de atrito com a nova Arena
+        const demonios = [{ nome: "Rei Bael (A Besta)", hpMax: 300000, desc: "Caos cego." }, { nome: "Duque Agares", hpMax: 250000, desc: "Destruição da honra." }, { nome: "Rei Paimon", hpMax: 400000, desc: "Impenetrável." }];
         const demon = demonios[Math.floor(Math.random() * demonios.length)];
         this.evocacaoAtiva = { id: crypto.randomBytes(4).toString('hex'), nome: demon.nome, desc: demon.desc, hpMax: demon.hpMax, hpAtual: demon.hpMax, evocador: v.nome, participantes: {} };
         this._pontuarMembro(v.id, 100); this.ganharXP(v.id, 200);

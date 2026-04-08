@@ -308,6 +308,7 @@
         </div>
 
         <div id="aba-perfil" class="aba oculto">
+		
             <div class="card">
                 <h3>A Identidade</h3>
                 <select id="lista-titulos" onchange="mudarTitulo()"></select>
@@ -337,7 +338,13 @@
                 <h3>Caixa de Ossos (Inventário)</h3>
                 <div id="lista-bolsa" style="max-height: 150px; overflow-y: auto;"></div>
             </div>
-
+<div class="card" style="border-color: var(--magia);">
+                <h3 style="color: var(--magia);">O Selo do Despertar Akáshico</h3>
+                <div id="box-talento-unico" style="background: #110011; padding: 15px; border: 1px dashed var(--magia); margin-bottom: 10px;">
+                    <p style="color: #888; font-size: 0.85em; text-align: center; margin: 0;">A Mente Abissal ainda não tocou a tua alma.</p>
+                </div>
+                <button id="btn-despertar" class="btn-magick" style="border-color:#d080ff; color:#d080ff;" onclick="invocarDespertar()">Despertar Talento (Nível 20 | 5000 Gts)</button>
+            </div>
             <div class="card">
                 <h3>A Raiz e os Ramos (Árvore Genealógica)</h3>
                 <div style="font-size:0.85em; color:#bbb;">
@@ -928,6 +935,11 @@
             if(!htmlCrias) htmlCrias = "<div style='font-style:italic; color:#555; margin-left:20px;'>Nenhuma semente plantada. Sem geração.</div>";
             safeSet('tree-crias', htmlCrias, true);
         }
+		
+		if (meuVampiro.talentoUnico) {
+            safeSet('box-talento-unico', `<h4 style="color:var(--magia); margin:0;">${meuVampiro.talentoUnico.nome}</h4><p style="color:#d0c0a0; font-style:italic; font-size:0.9em;">"${meuVampiro.talentoUnico.desc}"</p><p style="color:#0f5; font-size:0.8em; margin:0;">Multiplicador Ativo: +${((meuVampiro.talentoUnico.multiplicador - 1)*100).toFixed(0)}% em ${meuVampiro.talentoUnico.tipo.toUpperCase()}</p>`, true);
+            document.getElementById('btn-despertar').classList.add('oculto');
+        }
 
         const painelAdmin = document.getElementById('painel-primordial'); if (painelAdmin) { if (meuVampiro.geracao === 1) painelAdmin.classList.remove('oculto'); else painelAdmin.classList.add('oculto'); }
     } 
@@ -961,7 +973,14 @@
     }
     
     async function mudarTitulo() { const val = document.getElementById('lista-titulos').value; try { await fetch('/api/perfil/titulo', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, titulo: val }) }); syncStatus(); } catch(e) { } }
-    
+    async function invocarDespertar() {
+        if(!(await ocultoConfirm("Suplicar à Mente Abissal consumirá 5000 Gts e 10 Fúria. Ela irá forjar uma habilidade única baseada no teu ser. Continuar?"))) return;
+        abismoVoid();
+        try { 
+            const res = await fetch('/api/perfil/despertar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); 
+            const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); syncStatus(); 
+        } catch(e) { } 
+    }
     // ==========================================
     // 6. SISTEMAS DE CAÇA E OSINT
     // ==========================================
