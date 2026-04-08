@@ -343,6 +343,46 @@ class ShadowCore {
         if (ressonancia > 220) mult *= 1.5; 
         return { hash: gotaHash, volume: Math.floor(quantiaBase * mult), critico: ressonancia > 220, falha: false };
     }
+	
+	processarCombateAcao(dadosAction) {
+        const { id, alvoId, tipoCombate, desempenhoRitmo } = dadosAction;
+        const v = this.vampiros[id];
+        if (!v || v.pontosAcao < 3) return { erro: "Falta de Fúria para selar o combate." };
+        
+        v.pontosAcao -= 3;
+        const atr = this._obterAtributosTotais(v);
+        
+        // A matemática de colisão: Atributos * Acertos * Multiplicador de Combo
+        const danoFisico = (atr.vontade * 10) * desempenhoRitmo.ataques;
+        const defesaFisica = (atr.densidade * 10) * desempenhoRitmo.defesas;
+        const danoMagico = (atr.gnose * 15) * desempenhoRitmo.magias;
+        
+        const forcaTotal = Math.floor((danoFisico + danoMagico) * desempenhoRitmo.multiplicadorGeral);
+
+        if (tipoCombate === 'fenda') {
+            const fenda = this.fendaAtiva[alvoId];
+            if(!fenda) return { erro: "A Entidade desvaneceu." };
+            
+            // O boss causa dano baseado na quantidade de defesas que o jogador ERROU/acertou no QTE
+            let danoRecebido = Math.max(0, fenda.dano - defesaFisica);
+            if (danoRecebido > 0) v.sangue = Math.max(0, v.sangue - danoRecebido);
+
+            fenda.hpAtual -= forcaTotal;
+            let relato = `A tua Sincronia (${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x) desferiu ${forcaTotal} de Impacto! Sofreste ${danoRecebido} de revide.`;
+
+            if (fenda.hpAtual <= 0) {
+                relato = `DESTRUÍSTE [${fenda.nome}] com uma chuva de combos! +1 ${fenda.loot.toUpperCase()}.`; 
+                v.inventario[fenda.loot] = (v.inventario[fenda.loot] || 0) + 1; 
+                this.ganharXP(v.id, 1000 * desempenhoRitmo.multiplicadorGeral); // Recompensa ampliada pela habilidade
+                delete this.fendaAtiva[alvoId];
+                this._registrarEventoEspecial('global', 'TITÃ ABATIDO', `${v.nome} obliterou a anomalia através da Dança da Morte.`, true);
+            }
+            this._salvarBancoDeDados();
+            return { sucesso: true, relato };
+        }
+        
+        return { erro: "Alvo não suportado na nova mecânica ainda." };
+    }
 
     async _registrarEventoEspecial(categoria, tipo, relatoOrig, global = true, contextoOculto = "Manifestação Sombria") {
         const lua = AstrolabioLunar.obterFaseAtual();
@@ -901,17 +941,44 @@ class ShadowCore {
     // ==========================================
     // CICLO TEMPORAL E EVENTOS GLOBAIS
     // ==========================================
+    // ==========================================
+    // CICLO TEMPORAL, ECONOMIA EXPONENCIAL E O LEVIATÃ
+    // ==========================================
     tickTemporal() {
         const lua = AstrolabioLunar.obterFaseAtual();
+        
+        // 1. O RITUAL OCULTO DE LEVIATÃ (Processo Secreto do Backend)
+        if (Math.random() > 0.95) { // 5% de chance a cada minuto
+            this._registrarEventoEspecial('global', 'SUSSURRO DE LEVIATÃ', `O Oceano Abissal revoltou-se. O pacto de sangue oculto exige sacrifício de todos.`, true);
+            for (let id in this.vampiros) {
+                let v = this.vampiros[id];
+                if (v.estado === 'Banido') continue;
+                
+                // O Leviatã cobra 10% da vitalidade atual, mas dá Pontos de Ação e XP Oculto em troca
+                let tributoLeviata = Math.floor(v.sangue * 0.10);
+                if (tributoLeviata > 1000) {
+                    v.sangue -= tributoLeviata;
+                    v.pontosAcao = Math.min(v.maxAcao, v.pontosAcao + 5);
+                    this.ganharXP(v.id, Math.floor(tributoLeviata / 10)); // Transmuta sangue em poder
+                    if(global.io) global.io.to(`priv_${v.id}`).emit('nova_mensagem', { canal: 'privado', autor: `🌊 LEVIATÃ`, texto: `O teu sangue (${tributoLeviata} Gts) alimentou as profundezas. Recebes Poder em troca.`, hora: new Date().toLocaleTimeString() });
+                }
+            }
+        }
+
         for (let hash in this.rebanho) { let m = this.rebanho[hash]; if (m.estado === 'Vibrante' && m.maldicaoArcana) m.sangueAtual = Math.max(1, m.sangueAtual - 1); }
+        
         for (let id in this.vampiros) {
             let v = this.vampiros[id]; if (v.estado === 'Banido') continue;
-            v.sangue -= 5; 
+            
+            // 2. NOVA ECONOMIA: Dreno Baseado no Nível (Manter imortais fracos exige pouco, ser um Lorde exige rios de sangue)
+            let drenoBase = 5 + Math.floor(v.nivel * 2.5); 
+            v.sangue -= drenoBase; 
+            
             if (v.sangue <= 0) { v.estado = 'Banido'; this._registrarEventoEspecial('global', 'O FIM DA BESTA', `A Fome roeu ${v.nome}. Virou pó.`); }
             if (v.calice > 0) v.calice += Math.floor(v.calice * 0.02); 
             let recup = lua.id === 'crescente' ? 0.8 : 0.5; if (v.pontosAcao < v.maxAcao && Math.random() > (1 - recup)) v.pontosAcao += 1; 
         }
-        for (let c in this.clans) { if (this.clans[c].cofre > 0) this.clans[c].cofre += Math.floor(this.clans[c].cofre * 0.01); }
+        for (let c in this.clans) { if (this.clans[c].cofre > 0) this.clans[c].cofre -= Math.floor(this.clans[c].cofre * 0.02); /* Clãs agora também têm custo de manutenção */ }
         
         // OPEN WORLD RANDOM EVENTS
         if (Math.random() > 0.98) {

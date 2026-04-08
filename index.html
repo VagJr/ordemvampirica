@@ -80,6 +80,16 @@
         @keyframes flow { 0% { transform: scaleY(0.8) translateY(5px); } 100% { transform: scaleY(1.2) translateY(-5px); } }
         @keyframes move-left { from { transform: translateX(-10%); } to { transform: translateX(-50%); } }
         @keyframes move-right { from { transform: translateX(-50%); } to { transform: translateX(10%); } }
+		
+		/* COMBATE RÍTMICO / ACTION UI */
+        #arena-acao { position: fixed; top: 10%; left: 5%; width: 90%; height: 80%; background: rgba(0,0,0,0.95); border: 2px solid var(--sangue-claro); z-index: 10001; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column;}
+        .pista-combate { width: 100%; height: 80px; background: #111; border: 1px dashed var(--ouro); position: relative; overflow: hidden; margin-top: 20px;}
+        .hit-zone { width: 50px; height: 100%; border: 3px solid #0ff; position: absolute; left: 10%; background: rgba(0, 255, 255, 0.1); box-shadow: 0 0 15px #0ff;}
+        .nota-combate { width: 40px; height: 40px; border-radius: 50%; position: absolute; top: 18px; right: -50px; display: flex; justify-content: center; align-items: center; font-weight: bold; font-family: 'Cinzel', serif; color: #fff;}
+        .nota-ataque { background: radial-gradient(circle, #ff1e2f, #8a0303); box-shadow: 0 0 15px #ff1e2f;}
+        .nota-defesa { background: radial-gradient(circle, #ccc, #444); box-shadow: 0 0 15px #ccc;}
+        .nota-magia { background: radial-gradient(circle, #d080ff, #800080); box-shadow: 0 0 15px #d080ff;}
+        .btn-combo { padding: 20px; font-size: 1.2rem; flex: 1; margin: 5px;}
         
         /* THE JUICE: Demonic & War UI */
         .void-flash { position: fixed; top: 0; left: 0; pointer-events: none; width: 100vw; height: 100vh; background: rgba(128, 0, 128, 0.4); z-index: 9999; animation: flashFade 1s forwards; filter: invert(1); }
@@ -152,6 +162,24 @@
                 <button id="modal-btn-ok" onclick="closeModal()" style="width:auto;">Compreendido</button>
                 <button id="modal-btn-cancel" onclick="cancelModal()" class="btn-magick oculto" style="width:auto;">Recusar</button>
             </div>
+        </div>
+    </div>
+	
+	<div id="arena-acao" class="oculto">
+        <h2 style="text-align: center; color: var(--sangue-claro);" id="arena-alvo-nome">Enfrentando Entidade</h2>
+        <div style="display: flex; justify-content: space-between;">
+            <div style="color: var(--ouro);">Combo Multiplicador: <span id="arena-combo">1.0</span>x</div>
+            <div style="color: var(--xp);">Sincronia: <span id="arena-feedback">Preparado...</span></div>
+        </div>
+        
+        <div class="pista-combate" id="pista">
+            <div class="hit-zone" id="hit-zone"></div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: auto; margin-bottom: 20px;">
+            <button class="btn-combo" style="border-color: red;" onclick="registrarAcerto('ataque')">⚔️ ATAQUE</button>
+            <button class="btn-combo" style="border-color: gray;" onclick="registrarAcerto('defesa')">🛡️ DEFESA</button>
+            <button class="btn-combo" style="border-color: purple;" onclick="registrarAcerto('magia')">🔮 MAGIA</button>
         </div>
     </div>
 
@@ -1355,6 +1383,151 @@ const socket = io();
     // WEBSOCKET LISTENERS GLOBAIS
     socket.on('sync_geral', () => { carregarMercado(); carregarLeilao(); carregarBiblioteca(); atualizarConclave(); if(meuVampiro) syncStatus(); });
     socket.on('tick', () => { if(meuVampiro) syncStatus(); });
+	
+	// ==========================================
+    // SISTEMA DE COMBATE DE AÇÃO (RHYTHM GAME)
+    // ==========================================
+    let combateAtivo = false;
+    let notasAtivas = [];
+    let comboAtual = 1.0;
+    let pontuacaoFinalCombate = { ataques: 0, defesas: 0, magias: 0, multiplicadorGeral: 1.0 };
+    let alvoCombateData = null;
+
+    function iniciarCombateReal(nomeAlvo, tipo, hpInimigo) {
+        if(meuVampiro.pontosAcao < 3) return ocultoAlert("Exige 3 Fúrias para entrar na Arena de Ação.");
+        
+        alvoCombateData = { nome: nomeAlvo, tipo };
+        document.getElementById('arena-alvo-nome').innerText = `Obliteração vs ${nomeAlvo}`;
+        document.getElementById('arena-acao').classList.remove('oculto');
+        combateAtivo = true; comboAtual = 1.0; pontuacaoFinalCombate = { ataques: 0, defesas: 0, magias: 0, multiplicadorGeral: 1.0 };
+        document.getElementById('arena-combo').innerText = "1.0";
+        safeSet('arena-feedback', "Sinta o ritmo do sangue...");
+
+        abrisVoid(); // Efeito visual de entrada
+
+        // Sequência de notas gerada baseada no nível do jogador e do alvo
+        let notasSpawnadas = 0;
+        const totalNotas = 15; // Duração do combate (QTEs)
+        
+        const spawnInterval = setInterval(() => {
+            if(!combateAtivo) { clearInterval(spawnInterval); return; }
+            if(notasSpawnadas >= totalNotas) {
+                clearInterval(spawnInterval);
+                setTimeout(finalizarCombateReal, 3000); // Aguarda as últimas notas passarem
+                return;
+            }
+
+            const tipos = ['ataque', 'ataque', 'defesa', 'magia'];
+            const tipoSorteado = tipos[Math.floor(Math.random() * tipos.length)];
+            spawnarNota(tipoSorteado);
+            notasSpawnadas++;
+        }, 800); // Velocidade do jogo. Pode ser diminuída para bosses mais difíceis
+    }
+
+    function spawnarNota(tipo) {
+        const pista = document.getElementById('pista');
+        const nota = document.createElement('div');
+        nota.className = `nota-combate nota-${tipo}`;
+        nota.dataset.tipo = tipo;
+        let icone = tipo === 'ataque' ? '⚔️' : (tipo === 'defesa' ? '🛡️' : '🔮');
+        nota.innerText = icone;
+        pista.appendChild(nota);
+
+        let pos = 100; // Começa da direita (100%)
+        const vel = 1.5; // Velocidade do percurso
+        
+        const mover = setInterval(() => {
+            if(!combateAtivo) { clearInterval(mover); nota.remove(); return; }
+            pos -= vel;
+            nota.style.right = (100 - pos) + '%';
+            
+            // Se passar da zona sem ser clicada
+            if(pos < 0) {
+                clearInterval(mover);
+                if(notasAtivas.includes(nota)) {
+                    quebrarCombo("MISS!");
+                    notasAtivas = notasAtivas.filter(n => n !== nota);
+                }
+                nota.remove();
+            }
+        }, 20);
+
+        nota.dataset.intervalId = mover;
+        notasAtivas.push(nota);
+    }
+
+    function registrarAcerto(tipoClicado) {
+        if(!combateAtivo) return;
+        const hitZone = document.getElementById('hit-zone').getBoundingClientRect();
+        
+        // Acha a nota mais próxima da zona
+        let notaCerta = null;
+        for(let nota of notasAtivas) {
+            const nRect = nota.getBoundingClientRect();
+            // Verifica sobreposição no eixo X
+            if(nRect.left < hitZone.right && nRect.right > hitZone.left) {
+                notaCerta = nota; break;
+            }
+        }
+
+        if(notaCerta) {
+            if(notaCerta.dataset.tipo === tipoClicado) {
+                // ACERTO!
+                comboAtual = Math.min(3.0, comboAtual + 0.1);
+                document.getElementById('arena-combo').innerText = comboAtual.toFixed(1);
+                safeSet('arena-feedback', "PERFEITO!");
+                document.getElementById('arena-feedback').style.color = "#0f5";
+                pontuacaoFinalCombate[tipoClicado]++;
+                playSfx('espada');
+                
+                clearInterval(notaCerta.dataset.intervalId);
+                notasAtivas = notasAtivas.filter(n => n !== notaCerta);
+                notaCerta.remove();
+            } else {
+                quebrarCombo("TIPO ERRADO!");
+            }
+        } else {
+            quebrarCombo("MUITO CEDO!");
+        }
+    }
+
+    function quebrarCombo(msg) {
+        comboAtual = 1.0;
+        document.getElementById('arena-combo').innerText = "1.0";
+        safeSet('arena-feedback', msg);
+        document.getElementById('arena-feedback').style.color = "red";
+        document.getElementById('arena-acao').classList.add('shake-screen');
+        setTimeout(() => document.getElementById('arena-acao').classList.remove('shake-screen'), 300);
+    }
+
+    async function finalizarCombateReal() {
+        combateAtivo = false;
+        document.getElementById('arena-acao').classList.add('oculto');
+        document.getElementById('pista').innerHTML = '<div class="hit-zone" id="hit-zone"></div>';
+        notasAtivas = [];
+        
+        pontuacaoFinalCombate.multiplicadorGeral = comboAtual;
+
+        // Envia os resultados de habilidade rítmica para o servidor processar com os Atributos Reais
+        document.getElementById('world-ticker').innerText = "A Mente Abissal processa o teu ritmo e atributos...";
+        
+        try {
+            // Adapte a chamada dependendo se foi GvG, Fenda (Boss) ou PvP
+            const payload = {
+                id: meuVampiro.id,
+                alvoId: alvoCombateData.nome, // Devemos guardar o ID real na chamada da função
+                tipoCombate: alvoCombateData.tipo,
+                desempenhoRitmo: pontuacaoFinalCombate
+            };
+
+            const res = await fetch('/api/combate/action', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            const dados = await res.json();
+            
+            ocultoAlert(dados.erro || dados.relato);
+            if(!dados.erro) jorrarSangue();
+            atualizarConclave(); syncStatus();
+        } catch(e) {}
+    }
 </script>
 </body>
 </html>

@@ -101,6 +101,14 @@ app.post('/api/auth', (req, res) => {
     } catch(err) { res.status(500).json({erro: "A Geometria Sagrada falhou."}); }
 });
 
+app.post('/api/combate/action', (req, res) => { 
+    try { 
+        // Chama a nova função da ShadowCore que mistura o Mini-Jogo (QTE) com o RPG real
+        res.json(core.processarCombateAcao(req.body)); 
+        io.emit('sync_geral'); 
+    } catch(e){ res.status(500).json({erro:"O Juiz rejeitou os movimentos."}); }
+});
+
 app.post('/api/convidar', async (req, res) => {
     try {
         const { vampiroId, tgTargetUsername } = req.body; const vampiro = core.vampiros[vampiroId];
