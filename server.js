@@ -101,13 +101,28 @@ app.post('/api/auth', (req, res) => {
     } catch(err) { res.status(500).json({erro: "A Geometria Sagrada falhou."}); }
 });
 
-app.post('/api/combate/action', (req, res) => { 
-    try { 
-        // Chama a nova função da ShadowCore que mistura o Mini-Jogo (QTE) com o RPG real
-        res.json(core.processarCombateAcao(req.body)); 
-        io.emit('sync_geral'); 
-    } catch(e){ res.status(500).json({erro:"O Juiz rejeitou os movimentos."}); }
-});
+app.post('/api/pve/patrulha', (req, res) => { 
+        try { res.json(core.patrulharUmbral(req.body.id, req.body.ritmo)); io.emit('sync_geral'); } 
+        catch(e){ res.status(500).json({erro:"Falha na jornada."}); } 
+    });
+
+    app.post('/api/pvp/tatico', async (req, res) => { 
+        try { 
+            const result = await core.atacarVampiro(req.body.atacanteId, req.body.defensorId, parseInt(req.body.postura), req.body.ritmo); 
+            if (result && result.alertaDono && result.donoId) { const defensor = core.vampiros[result.donoId]; if(defensor) enviarDMSombria(defensor.tgId, result.alertaDono); }
+            res.json(result); io.emit('sync_geral'); 
+        } catch(e){ res.status(500).json({erro:"Falha no Coliseu."}); }
+    });
+
+    app.post('/api/goecia/enfrentar', async (req, res) => { 
+        try { res.json(await core.testarVontadeDemonio(req.body.id, req.body.ritmo)); io.emit('sync_geral'); } 
+        catch(e){ res.status(500).json({erro:"O caos venceu."}); } 
+    });
+
+    app.post('/api/conclave/fenda/atacar', (req, res) => { 
+        try { res.json(core.atacarFenda(req.body.id, req.body.fendaId, req.body.ritmo)); io.emit('sync_geral'); } 
+        catch(e){ res.status(500).json({erro:"O Vazio blindou o ataque."}); } 
+    });
 
 app.post('/api/convidar', async (req, res) => {
     try {
