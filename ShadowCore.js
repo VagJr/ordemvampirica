@@ -269,22 +269,24 @@ class ShadowCore {
         
         this.fendaAtiva = {}; 
         this.pactosAtivos = {}; 
+        this.cercosAtivos = {}; // NOVO: MOTINS DEMONÍACOS
         this.reliquiasCustomizadas = []; 
 
-        this.historicoChat = { global: [], clan: {}, privado: {} }; // O NOVO FIO DO DESTINO (CHAT)
+        this.historicoChat = { global: [], clan: {}, privado: {} };
         
+        // GRIMÓRIO RESTAURADO E EXPANDIDO (OCULTISMO REAL)
         this.grimorio = {
-            'solve_coagula': { nome: "Solve et Coagula", lore: 'Dissolve a Vontade.', custoAcao: 2, custoSangue: 150, reqLevel: 1, tipo: 'pvp', efeito: (a, d, l) => { let dreno = l.id === 'minguante' ? 8 : 4; d.pontosAcao = Math.max(0, d.pontosAcao - dreno); return `Vitalidade desfeita (-${dreno} Fúria).`; } },
-            'rmp_banimento': { nome: "Ritual Menor do Pentagrama", lore: 'Limpa a aura.', custoAcao: 0, custoSangue: 300, reqLevel: 2, tipo: 'buff', efeito: (a, d, l) => { a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 3); return `O selo protege-te. +3 Fúria.`; } },
-            // NOVOS RITUAIS DE LIVROS REAIS E OCULTOS
-            'chave_salomao': { nome: "Clavícula de Salomão (Defesa)", lore: 'Aprisiona demónios num vaso de bronze. Imunidade no Umbral.', custoAcao: 3, custoSangue: 1200, reqLevel: 15, tipo: 'buff', efeito: (a, d, l) => { a.escudo = true; a.influencia += 5; return `A Chave Menor protege-te e coroa-te (+5 Inf, Escudo Absoluto).`; } },
-            'magia_abramelin': { nome: "Quadrado de Abramelin", lore: 'O Anjo da Guarda submete as legiões.', custoAcao: 5, custoSangue: 3500, reqLevel: 30, tipo: 'buff', efeito: (a, d, l) => { a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 10); a.xp += 500; return `O Talismã de Abramelin distorceu a realidade. +10 Fúria, +500 XP.`; } },
-            'pacto_lucifuge': { nome: "Grimorium Verum: Rofocale", lore: 'Pacto de Riqueza. Custa almas.', custoAcao: 5, custoSangue: 5000, reqLevel: 45, tipo: 'economia', efeito: (a, d, l) => { if(a.inventario.pedraAlma < 1) throw "Exige 1 Pedra da Alma."; a.inventario.pedraAlma--; a.calice += 5000; return `O demónio Lucifuge Rofocale aceitou a Pedra. O teu Cálice transbordou (+5000 Gts).`; } }
+            'solve_coagula': { nome: "Solve et Coagula", lore: 'Fórmula alquímica para dissolver a matéria. Dissolve a Vontade.', custoAcao: 2, custoSangue: 150, reqLevel: 1, tipo: 'pvp', efeito: (a, d, l) => { let dreno = l.id === 'minguante' ? 8 : 4; d.pontosAcao = Math.max(0, d.pontosAcao - dreno); return `Vitalidade desfeita (-${dreno} Fúria).`; } },
+            'rmp_banimento': { nome: "Ritual Menor do Pentagrama", lore: 'Selo da Golden Dawn. Limpa a aura das miasmas do umbral.', custoAcao: 0, custoSangue: 300, reqLevel: 2, tipo: 'buff', efeito: (a, d, l) => { a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 3); return `A Cruz Cabalística defende-te. +3 Fúria.`; } },
+            'chave_salomao': { nome: "Clavícula de Salomão (Defesa)", lore: 'Aprisiona demónios num vaso de bronze. Imunidade espiritual.', custoAcao: 3, custoSangue: 1200, reqLevel: 15, tipo: 'buff', efeito: (a, d, l) => { a.escudo = true; a.influencia += 5; return `A Chave Menor coroa-te (+5 Inf, Escudo Absoluto).`; } },
+            'magia_abramelin': { nome: "Quadrado de Abramelin", lore: 'O Santo Anjo Guardião subjuga os Príncipes do Inferno.', custoAcao: 5, custoSangue: 3500, reqLevel: 30, tipo: 'buff', efeito: (a, d, l) => { a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 10); a.xp += 500; return `A geometria sagrada distorceu o tempo. +10 Fúria, +500 XP.`; } },
+            'pacto_lucifuge': { nome: "Grimorium Verum: Rofocale", lore: 'Pacto Goético de Riqueza. Custa Almas Humanas.', custoAcao: 5, custoSangue: 5000, reqLevel: 45, tipo: 'economia', efeito: (a, d, l) => { if(a.inventario.pedraAlma < 1) throw "Exige 1 Pedra da Alma."; a.inventario.pedraAlma--; a.calice += 5000; return `O demónio Lucifuge aceitou o sacrifício. +5000 Gts no Cálice.`; } },
+            'ars_goetia_furia': { nome: "Selo de Andras (O Matador)", lore: 'O Marquês Andras incita à matança e à discórdia.', custoAcao: 0, custoSangue: 2000, reqLevel: 10, tipo: 'buff', efeito: (a, d, l) => { a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 5); return `O lobo montado cedeu-te a sua raiva. +5 Fúria.`; } },
+            'picatrix_loucura': { nome: "Ghayat al-Hakim (A Imagem de Saturno)", lore: 'Astrologia Árabe. Invoca a melancolia negra de Saturno sobre o alvo.', custoAcao: 4, custoSangue: 2500, reqLevel: 25, tipo: 'pvp', efeito: (a, d, l) => { d.pontosAcao = Math.max(0, d.pontosAcao - 10); d.hpAtual = Math.max(1, d.hpAtual - 500); return `Saturno devorou a mente do alvo (-10 Fúria, -500 HP).`; } }
         };
 
         this.grimorioCustomizado = {}; 
         
-        // MAIS USOS PARA OS MATERIAIS DE EXPEDIÇÃO
         this.alquimia = {
             'elixir_estamina': { nome: 'Filtro do Frenesi', custo: { anima: 2, vitae: 1, gts: 300 }, efeito: 'Restaura 5 Fúria.' },
             'amuleto_sombra': { nome: 'Talismã Protetor', custo: { cinzas: 3, ectoplasma: 1, gts: 500 }, efeito: 'Garante Escudo.' },
@@ -302,8 +304,47 @@ class ShadowCore {
             'arquiteto_realidade': { id: 'arquiteto_realidade', titulo: 'Arquiteto Astral', requisito: v => v.nivel >= 15 },
             'lorde_supremo': { id: 'lorde_supremo', titulo: 'Senhor do Véu Rasgado', requisito: v => v.nivel >= 50 }
         };
-    }
+    }	
 	
+	curarCarne(vampiroId) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Alma perdida." };
+        if (v.hpAtual >= v.hpMax) return { erro: "A tua carne já está inteira." };
+        
+        let danoSofrido = v.hpMax - v.hpAtual;
+        let custoCura = Math.floor(danoSofrido * 2); // Custa o dobro do Sangue Gts para fechar a ferida do HP
+        
+        if (v.sangue < custoCura) {
+            // Cura parcial se não houver sangue que chegue
+            let curaParcial = Math.floor(v.sangue / 2);
+            v.hpAtual += curaParcial; v.sangue = 0;
+            this._salvarBancoDeDados();
+            return { sucesso: true, relato: `Sangue esgotado. Curaste apenas ${curaParcial} HP.` };
+        }
+
+        v.sangue -= custoCura;
+        v.hpAtual = v.hpMax;
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: `Veias seladas. Gastaste ${custoCura} Gts para curar toda a Vitalidade.` };
+    }
+    
+    // Novo método para atacar os cercos demoníacos
+    atacarCerco(vampiroId, cercoId, ritmo) {
+        const v = this.vampiros[vampiroId]; const cerco = this.cercosAtivos[cercoId];
+        if (!v || !cerco) return { erro: "O Cerco já ruiu ou foi dissolvido." }; if (v.pontosAcao < 2) return { erro: "Exige 2 Fúrias." };
+        v.pontosAcao -= 2; const atr = this._obterAtributosTotais(v); 
+        const danoCausado = Math.floor(((atr.vontade * 10) + (atr.gnose * 15) + Math.floor(Math.random() * 500)) * (ritmo.multiplicadorGeral));
+
+        if (Math.random() > 0.5) v.hpAtual = Math.max(0, v.hpAtual - (cerco.danoTick * 2)); // Monstro revida
+        cerco.hpAtual -= danoCausado; let relato = `[Combo ${ritmo.multiplicadorGeral}x] Afastaste os demónios de ${cerco.alvoNome} com ${danoCausado} de Dano!`;
+
+        if (cerco.hpAtual <= 0) {
+            relato = `SALVASTE [${cerco.alvoNome}] DO MOTIM DE ${cerco.demonio.toUpperCase()}!`; 
+            v.influencia += 50; this.ganharXP(v.id, 1000); delete this.cercosAtivos[cercoId];
+            this._registrarEventoEspecial('global', 'SÍTIO QUEBRADO', `${v.nome} libertou ${cerco.alvoNome} das garras de ${cerco.demonio}!`, true);
+        }
+        this._salvarBancoDeDados(); return { sucesso: true, relato, hpRestante: cerco ? cerco.hpAtual : 0, hpMax: cerco ? cerco.hpMax : 1 };
+    }
 
     async conectarDatabase() {
         const uri = process.env.MONGO_URI;
@@ -378,36 +419,28 @@ class ShadowCore {
         v.pontosAcao -= 3;
         const atr = this._obterAtributosTotais(v);
 
-        // Aplica a Mutação do Talento Único (Despertar Akáshico)
         let multAtaque = v.talentoUnico && v.talentoUnico.tipo === 'ataque' ? v.talentoUnico.multiplicador : 1;
         let multDefesa = v.talentoUnico && v.talentoUnico.tipo === 'defesa' ? v.talentoUnico.multiplicador : 1;
-        let multMagia = v.talentoUnico && v.talentoUnico.tipo === 'magia' ? v.talentoUnico.multiplicador : 1;
         
         let maxDanoPermitido = ((atr.vontade * multAtaque * 50) * desempenhoRitmo.multiplicadorGeral) + (v.nivel * 500);
         let danoFinal = Math.min(desempenhoRitmo.danoRealCausado, maxDanoPermitido);
         let danoSofrido = Math.floor(desempenhoRitmo.danoRealSofrido / multDefesa);
 
         if (danoSofrido > 0) {
-            v.sangue = Math.max(0, v.sangue - danoSofrido);
-            if (v.sangue <= 0) v.estado = 'Banido';
+            v.hpAtual = Math.max(0, v.hpAtual - danoSofrido); // AGORA SUBTRAI DO HP FÍSICO
+            if (v.hpAtual <= 0) v.estado = 'Banido';
         }
 
-        // ===================================
-        // RESOLUÇÃO DE CADA TIPO DE COMBATE
-        // ===================================
+        // FENDA E GOETIA PERMANECEM IGUAIS
         if (tipoCombate === 'fenda') {
             const fenda = this.fendaAtiva[alvoId];
             if(!fenda) return { erro: "A Entidade desvaneceu nas brumas." };
-            
             fenda.hpAtual -= danoFinal;
             let relato = `[Combo ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Rasgaste [${fenda.nome}] com ${danoFinal} de Impacto! Sofreste ${danoSofrido} de revide.`;
-
             if (fenda.hpAtual <= 0) {
                 relato = `DESTRUÍSTE [${fenda.nome}] com uma chuva de violência! +2 ${fenda.loot.toUpperCase()}.`; 
-                v.inventario[fenda.loot] = (v.inventario[fenda.loot] || 0) + 2; 
-                this.ganharXP(v.id, Math.floor(2000 * desempenhoRitmo.multiplicadorGeral)); 
-                delete this.fendaAtiva[alvoId];
-                this._registrarEventoEspecial('global', 'TITÃ ABATIDO', `${v.nome} obliterou a anomalia através da Dança da Morte.`, true);
+                v.inventario[fenda.loot] = (v.inventario[fenda.loot] || 0) + 2; this.ganharXP(v.id, Math.floor(2000 * desempenhoRitmo.multiplicadorGeral)); 
+                delete this.fendaAtiva[alvoId]; this._registrarEventoEspecial('global', 'TITÃ ABATIDO', `${v.nome} obliterou a anomalia através da Dança da Morte.`, true);
             }
             this._salvarBancoDeDados(); return { sucesso: true, relato, hpRestante: fenda ? fenda.hpAtual : 0, hpMax: fenda ? fenda.hpMax : 1 };
         }
@@ -415,32 +448,19 @@ class ShadowCore {
         if (tipoCombate === 'goetia') {
             const demonio = this.evocacaoAtiva;
             if(!demonio) return { erro: "O Pentagrama está vazio." };
-
             demonio.hpAtual -= danoFinal;
-            if (!demonio.participantes[v.id]) demonio.participantes[v.id] = { nome: v.nome, dano: 0 }; 
-            demonio.participantes[v.id].dano += danoFinal;
-
-            let relato = `[Combo ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Castigaste ${demonio.nome} com ${danoFinal} de submissão! Sangraste ${danoSofrido} Gts.`;
-
+            if (!demonio.participantes[v.id]) demonio.participantes[v.id] = { nome: v.nome, dano: 0 }; demonio.participantes[v.id].dano += danoFinal;
+            let relato = `[Combo ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Castigaste ${demonio.nome} com ${danoFinal} de submissão! Feriste o corpo em ${danoSofrido} HP.`;
             if (demonio.hpAtual <= 0) {
-                relato = `QUEBRASTE A VONTADE DE ${demonio.nome}!`; 
-                let relatorioLoot = `🔥 ${demonio.nome} subjugado! Recompensas:\n`;
-                for (let pid in demonio.participantes) { 
-                    let l = this.vampiros[pid]; 
-                    if (l) { 
-                        l.influencia += 100; l.atributos.pontosLivres += 3; l.inventario.pedraAlma = (l.inventario.pedraAlma || 0) + 10; l.inventario.demoniosSubjugados = (l.inventario.demoniosSubjugados||0)+1; 
-                        relatorioLoot += `> [${l.nome}]: +100 Inf, +10 Pedras, +3 Esferas Livres!\n`; 
-                    } 
-                }
-                this._registrarEventoEspecial('global', 'VITÓRIA GOÉTICA', relatorioLoot); 
-                this.evocacaoAtiva = null; this._pontuarMembro(v.id, 1000); 
+                relato = `QUEBRASTE A VONTADE DE ${demonio.nome}!`; let relatorioLoot = `🔥 ${demonio.nome} subjugado! Recompensas:\n`;
+                for (let pid in demonio.participantes) { let l = this.vampiros[pid]; if (l) { l.influencia += 100; l.atributos.pontosLivres += 3; l.inventario.pedraAlma = (l.inventario.pedraAlma || 0) + 10; l.inventario.demoniosSubjugados = (l.inventario.demoniosSubjugados||0)+1; relatorioLoot += `> [${l.nome}]: +100 Inf, +10 Pedras!\n`; } }
+                this._registrarEventoEspecial('global', 'VITÓRIA GOÉTICA', relatorioLoot); this.evocacaoAtiva = null; this._pontuarMembro(v.id, 1000); 
             }
-            this.ganharXP(v.id, Math.floor(150 * desempenhoRitmo.multiplicadorGeral)); 
-            this._salvarBancoDeDados(); return { sucesso: true, relato, hpRestante: demonio ? demonio.hpAtual : 0, hpMax: demonio ? demonio.hpMax : 1 };
+            this.ganharXP(v.id, Math.floor(150 * desempenhoRitmo.multiplicadorGeral)); this._salvarBancoDeDados(); return { sucesso: true, relato, hpRestante: demonio ? demonio.hpAtual : 0, hpMax: demonio ? demonio.hpMax : 1 };
         }
 
         if (tipoCombate === 'pve') {
-            if (!desempenhoRitmo.venceu) return { erro: `Foste derrotado e sangraste ${danoSofrido} Gts. O monstro sobreviveu.` };
+            if (!desempenhoRitmo.venceu) return { erro: `Foste espancado pelos espectros. Perdeste ${danoSofrido} de Vitalidade (HP). O monstro sobreviveu.` };
             let ganhoGts = Math.floor((Math.random() * 100) + 50 + (v.nivel * 25)) * desempenhoRitmo.multiplicadorGeral; 
             v.sangue += Math.floor(ganhoGts); 
             this.ganharXP(v.id, Math.floor(40 * desempenhoRitmo.multiplicadorGeral));
@@ -450,6 +470,7 @@ class ShadowCore {
             this._salvarBancoDeDados(); return { sucesso: true, relato: `[Combo: ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Despedaçaste a ameaça. +${Math.floor(ganhoGts)} Gts${relatoExtra}` };
         }
 
+        // PVP: Rouba Sangue, Mas fere HP se perder
         if (tipoCombate === 'pvp') {
             const defensor = this.vampiros[alvoId];
             if (!defensor || defensor.estado === 'Banido') return { erro: "Alvo inválido ou reduzido a pó." };
@@ -466,30 +487,26 @@ class ShadowCore {
                 rouboDano = Math.min(danoFinal, 10000 + (v.nivel * 500)); 
                 relatoA = `[Combo ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Violaste a aura de ${defensor.nome}! Roubaste ${rouboDano} Gts.`;
                 relatoD = `As tuas barreiras ruíram. ${v.nome} espancou a tua mente e sugou ${rouboDano} Gts.`;
+                dPerdedor.hpAtual = Math.max(0, dPerdedor.hpAtual - Math.floor(rouboDano/2)); // Fere o inimigo também fisicamente
             } else {
                 dVencedor = defensor; dPerdedor = v;
                 rouboDano = Math.floor(danoSofrido * 1.5);
-                relatoA = `O teu ataque falhou miseravelmente. A aura de ${defensor.nome} esmagou-te. Cedes-te ${rouboDano} Gts.`;
-                relatoD = `As tuas barreiras defenderam a invasão de ${v.nome}. A tua aura devorou ${rouboDano} Gts dele.`;
+                relatoA = `O teu ataque falhou miseravelmente. A aura de ${defensor.nome} esmagou a tua Carne. Perdeste ${rouboDano} HP.`;
+                relatoD = `As tuas barreiras defenderam a invasão de ${v.nome}. A tua aura feriu-o de volta.`;
             }
 
-            dPerdedor.sangue = Math.max(0, dPerdedor.sangue - rouboDano); 
-            dVencedor.sangue += rouboDano; 
-            dVencedor.estatisticas.vitoriasPvP += 1;
-            
+            if (desempenhoRitmo.venceu) { dPerdedor.sangue = Math.max(0, dPerdedor.sangue - rouboDano); dVencedor.sangue += rouboDano; dVencedor.estatisticas.vitoriasPvP += 1; }
             this.ganharXP(dVencedor.id, 50 * desempenhoRitmo.multiplicadorGeral); this._pontuarMembro(dVencedor.id, 30);
             
             let dropMsg = "";
             if (dVencedor.id === v.id && Math.random() > 0.85) { const drop = ForjaDraconiana.gerarReliquia(defensor.nivel, this.reliquiasCustomizadas); v.bolsa.push(drop); dropMsg = ` Pilhaste: [${drop.nome}].`; }
 
             v.historicoCombate.unshift(`PvP vs ${defensor.nome}: ${relatoA}`); defensor.historicoCombate.unshift(`Defesa vs ${v.nome}: ${relatoD}`);
-            this._registrarEventoEspecial('guerra', 'DUELO DE SANGUE', `${v.nome} lutou brutalmente contra ${defensor.nome}.`);
             this._salvarBancoDeDados(); return { sucesso: true, relato: relatoA + dropMsg, alertaDono: relatoD, donoId: defensor.id };
         }
-
         return { erro: "O Juiz não compreende este plano de batalha." };
     }
-
+	
     async despertarTalento(vampiroId) {
         const v = this.vampiros[vampiroId];
         if (!v) return { erro: "Alma inexistente." };
@@ -594,11 +611,14 @@ class ShadowCore {
         let atributosIniciais = { vontade: 5, gnose: 5, magnetismo: 5, densidade: 5, pontosLivres: 0 };
         if (racaEscolhida === 'lycan') { atributosIniciais.densidade += 3; atributosIniciais.vontade += 2; } 
         else { atributosIniciais.gnose += 3; atributosIniciais.magnetismo += 2; }
+        
+        let hpInicial = (atributosIniciais.densidade * 200) + 1100; // Cálcula a vida física real
 
         this.vampiros[idSombrio] = {
             id: idSombrio, tgId, tgUsername: tgUsername ? `@${tgUsername}` : 'Alma_Oculta', 
             nome: nomeSombrio, senhaHash: senhaHashGerada, raca: racaEscolhida,
             sangue: (isFirstVampire ? 15000 : 500) + extraHp, calice: 0, geracao, 
+            hpAtual: hpInicial, hpMax: hpInicial, // NOVO: VITALIDADE FÍSICA
             clan: senhor ? senhor.clan : 'Sangue Ralo', 
             estado: 'Ativo', senhor: senhor ? senhor.id : 'O_PRIMORDIAL', linhagem: [],
             pontosAcao: isFirstVampire ? 999 : (racaEscolhida === 'lycan' ? 15 : 10), 
@@ -1160,24 +1180,45 @@ class ShadowCore {
    // ==========================================
     // CICLO TEMPORAL, ECONOMIA EXPONENCIAL E O LEVIATÃ
     // ==========================================
+   // ==========================================
+    // CICLO TEMPORAL E EVENTOS GLOBAIS
+    // ==========================================
     tickTemporal() {
         const lua = AstrolabioLunar.obterFaseAtual();
         
-        // 1. O RITUAL OCULTO DE LEVIATÃ (Processo Secreto do Backend)
-        if (Math.random() > 0.95) { // 5% de chance a cada minuto
-            this._registrarEventoEspecial('global', 'SUSSURRO DE LEVIATÃ', `O Oceano Abissal revoltou-se. O pacto de sangue oculto exige sacrifício de todos.`, true);
+        // 1. O RITUAL OCULTO DE LEVIATÃ (Sacrifício Global)
+        if (Math.random() > 0.95) { 
+            this._registrarEventoEspecial('global', 'SUSSURRO DE LEVIATÃ', `O Oceano Abissal revoltou-se. O pacto exige sacrifício.`, true);
             for (let id in this.vampiros) {
-                let v = this.vampiros[id];
-                if (v.estado === 'Banido') continue;
-                
-                // O Leviatã cobra 10% da vitalidade atual, mas dá Pontos de Ação e XP Oculto em troca
+                let v = this.vampiros[id]; if (v.estado === 'Banido') continue;
                 let tributoLeviata = Math.floor(v.sangue * 0.10);
                 if (tributoLeviata > 1000) {
-                    v.sangue -= tributoLeviata;
-                    v.pontosAcao = Math.min(v.maxAcao, v.pontosAcao + 5);
-                    this.ganharXP(v.id, Math.floor(tributoLeviata / 10)); // Transmuta sangue em poder
-                    if(global.io) global.io.to(`priv_${v.id}`).emit('nova_mensagem', { canal: 'privado', autor: `🌊 LEVIATÃ`, texto: `O teu sangue (${tributoLeviata} Gts) alimentou as profundezas. Recebes Poder em troca.`, hora: new Date().toLocaleTimeString() });
+                    v.sangue -= tributoLeviata; v.pontosAcao = Math.min(v.maxAcao, v.pontosAcao + 5); this.ganharXP(v.id, Math.floor(tributoLeviata / 10));
+                    if(global.io) global.io.to(`priv_${v.id}`).emit('nova_mensagem', { canal: 'privado', autor: `🌊 LEVIATÃ`, texto: `Levaste um dreno de ${tributoLeviata} Gts ao mar.`, hora: new Date().toLocaleTimeString() });
                 }
+            }
+        }
+
+        // 2. ORQUESTRAÇÃO DA IA: O CERCO DEMONÍACO (NOVO)
+        if (Math.random() > 0.96) { // ~4% de chance por minuto
+            let vitimas = Object.values(this.vampiros).filter(v => v.estado !== 'Banido' && v.nivel >= 5);
+            if (vitimas.length > 0) {
+                let alvo = vitimas[Math.floor(Math.random() * vitimas.length)];
+                let cercoId = crypto.randomBytes(4).toString('hex');
+                let demonName = ["Asmodeus", "Belial", "Pazuzu", "Marchosias"][Math.floor(Math.random()*4)];
+                let vidaCerco = alvo.nivel * 5000; // Difícil, precisa de muita pancada
+                
+                this.cercosAtivos[cercoId] = { id: cercoId, alvoId: alvo.id, alvoNome: alvo.nome, clanNome: alvo.clan, demonio: demonName, hpAtual: vidaCerco, hpMax: vidaCerco, danoTick: alvo.nivel * 50 };
+                this._registrarEventoEspecial('global', 'MOTIM DEMONÍACO', `O exército de ${demonName} sitiou a alma de [${alvo.nome}]! Estão a drenar a sua carne implacavelmente! Auxiliem-no no Conclave.`, true);
+            }
+        }
+
+        // 3. PROCESSAR DANOS DOS CERCOS ATIVOS
+        for(let cid in this.cercosAtivos) {
+            let cerco = this.cercosAtivos[cid]; let alvo = this.vampiros[cerco.alvoId];
+            if(alvo && alvo.estado !== 'Banido') {
+                alvo.hpAtual = Math.max(0, alvo.hpAtual - cerco.danoTick); // Drena a vida!
+                if(alvo.hpAtual <= 0) alvo.estado = 'Banido';
             }
         }
 
@@ -1186,24 +1227,26 @@ class ShadowCore {
         for (let id in this.vampiros) {
             let v = this.vampiros[id]; if (v.estado === 'Banido') continue;
             
-            // 2. NOVA ECONOMIA: Dreno Baseado no Nível (Manter imortais fracos exige pouco, ser um Lorde exige rios de sangue)
             let drenoBase = 5 + Math.floor(v.nivel * 2.5); 
             v.sangue -= drenoBase; 
             
+            // Recalcula Max HP passivamente para manter sincronizado com nível
+            const atrTot = this._obterAtributosTotais(v);
+            v.hpMax = (atrTot.densidade * 200) + (v.nivel * 100) + 1000;
+            
+            if (v.hpAtual === undefined) v.hpAtual = v.hpMax;
+
             if (v.sangue <= 0) { v.estado = 'Banido'; this._registrarEventoEspecial('global', 'O FIM DA BESTA', `A Fome roeu ${v.nome}. Virou pó pela falta de Vitae.`); }
             if (v.calice > 0) v.calice += Math.floor(v.calice * 0.02); 
             let recup = lua.id === 'crescente' ? 0.8 : 0.5; if (v.pontosAcao < v.maxAcao && Math.random() > (1 - recup)) v.pontosAcao += 1; 
         }
         
-        // Egrégoras de clã agora sugam Riqueza (5% ao tick) para existirem.
         for (let c in this.clans) { if (this.clans[c].cofre > 0) this.clans[c].cofre -= Math.floor(this.clans[c].cofre * 0.05); }
         
-        // OPEN WORLD RANDOM EVENTS
         if (Math.random() > 0.98) {
             const mundos = ["Tempestade de Ectoplasma", "Procissão dos Mortos", "Aurora de Prata"];
             const e = mundos[Math.floor(Math.random()*mundos.length)];
-            this._registrarEventoEspecial('global', 'SOPRO DO UMBRAL', `O evento mundial [${e}] derrama bençãos estáticas sobre os ativos.`, true);
-            for (let id in this.vampiros) { if (this.vampiros[id].estado !== 'Banido' && this.vampiros[id].pontosAcao < this.vampiros[id].maxAcao) { this.vampiros[id].pontosAcao += 5; this.vampiros[id].sangue += (v.nivel * 100); } }
+            this._registrarEventoEspecial('global', 'SOPRO DO UMBRAL', `O evento mundial [${e}] derrama bençãos estáticas.`, true);
         }
         if (Math.random() > 0.8) this._salvarBancoDeDados(); 
     }

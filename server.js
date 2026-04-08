@@ -263,6 +263,29 @@ app.get('/api/social/:id', (req, res) => {
     } catch(e){ res.status(500).json({erro:"Falha."}); }
 });
 
+// --- ROTAS NOVAS DE CURA E CERCOS ---
+app.post('/api/perfil/curar', (req, res) => {
+    try { res.json(core.curarCarne(req.body.id)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"A feitiçaria sanguínea falhou."}); }
+});
+
+app.post('/api/conclave/cerco/atacar', (req, res) => { 
+    try { res.json(core.atacarCerco(req.body.id, req.body.cercoId, req.body.ritmo)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"O caos venceu."}); } 
+});
+
+// A rota de Status agora devolve os Cercos para o Conclave ler:
+app.get('/api/conclave/status', (req, res) => {
+    try { res.json({ 
+        balanca: core.balancaCosmica, 
+        evocacao: core.evocacaoAtiva, 
+        fendas: core.fendaAtiva, 
+        cercos: core.cercosAtivos, // Manda os motins para o mapa global
+        clansData: Object.values(core.clans).map(c => ({nome: c.nome, egregoraNv: c.egregora ? c.egregora.nivel : 0, cofre: c.cofre})) 
+    }); } 
+    catch(e){ res.status(500).json({erro:"Falha."}); }
+});
+
 app.get('/api/status/:id', (req, res) => {
     try {
         if(core.vampiros[req.params.id]) {

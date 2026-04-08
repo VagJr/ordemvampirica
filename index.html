@@ -274,19 +274,18 @@
         <button onclick="auth()" id="btn-auth">Fundir a Aura (Assinar Pacto)</button>
     </div>
      <div id="ui-main" class="oculto"> 
-    <div class="card" style="padding: 10px 15px;">
+        <div class="card" style="padding: 10px 15px; border-bottom: 2px solid var(--sangue);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                 <div>
                     <h3 id="ui-meu-nome" style="margin:0; font-size: 1.5rem; text-shadow: 0 0 5px #000;"></h3>
                     <div style="font-size: 0.85em; color:var(--ouro); margin-bottom: 5px;">[<span id="ui-titulo">Sangue Frio</span>]</div>
                     <div style="font-size: 0.9em; color:#888;">Grau <span id="ui-nivel" class="xp-text"></span> | Sangue de Ger. <span id="ui-geracao" class="ouro"></span></div>
-                    <!-- NOVO: EXIBIÇÃO DO PODER GERAL COM TOOLTIP DA MENTE ABISSAL -->
-                    <div style="font-size: 0.9em; color:#d080ff; font-weight:bold; margin-top: 5px; cursor: help;" onmousedown="IniciarInspecao(event, 'perfil', meuVampiro ? meuVampiro.nome : 'Alma Oculta')" onmouseup="PararInspecao()" onmouseleave="PararInspecao()">👁️ Poder Avaliado: <span id="ui-poder-geral">0</span></div>
+                    <div style="font-size: 0.9em; color:#d080ff; font-weight:bold; margin-top: 5px; cursor: help;">👁️ Poder Avaliado: <span id="ui-poder-geral">0</span></div>
                 </div>
                 <div style="text-align: right;">
-                    <h2 style="margin:0;"><span id="ui-sangue" class="destaque"></span><span style="font-size:0.5em; color:#666;"> Gts</span></h2>
+                    <h2 style="margin:0; color: #ff5050;">♥ <span id="ui-hp-atual">100</span>/<span id="ui-hp-max">100</span></h2>
+                    <div style="font-size: 1.1em; font-family: 'Cinzel'; margin-top:3px;"><span id="ui-sangue" class="destaque"></span><span style="font-size:0.6em; color:#666;"> Gts Ouro</span></div>
                     <div style="font-size: 0.85em; color:#888;">Fúria: <span id="ui-acao" class="ouro"></span>/<span id="ui-max-acao"></span></div>
-                    <div style="font-size: 0.85em; color:purple;">Influência: <span id="ui-influencia">0</span></div>
                 </div>
             </div>
             <div class="progress-bg"><div class="progress-bar" id="bar-xp"></div></div>
@@ -326,8 +325,7 @@
             </div>
         </div>
 
-        <div id="aba-perfil" class="aba oculto">
-		
+         <div id="aba-perfil" class="aba oculto">
             <div class="card">
                 <h3>A Identidade</h3>
                 <select id="lista-titulos" onchange="mudarTitulo()"></select>
@@ -335,8 +333,9 @@
                     <div class="perfil-stat">Alimento<span id="p-drenado">0</span></div>
                     <div class="perfil-stat">Cadáveres<span id="p-secos">0</span></div>
                 </div>
+                <button onclick="curarFeridas()" style="background:#200; border-color:#f00; color:#fff; width:100%; margin-top:10px; font-size:1.1em;">Regenerar Carne (Gastar Gts)</button>
             </div>
-
+            
             <div class="card">
                 <h3 style="text-align: center;">Árvore da Vida Invertida</h3>
                 <p style="font-size: 0.8em; color: #888; text-align: center; margin-bottom: 15px;">Iluminação Disponível: <span id="pt-livres" class="destaque">0</span></p>
@@ -552,7 +551,8 @@
             <div class="card">
                 <h3>Magia Alta (Rituais)</h3>
                 <p style="font-size: 0.8em; color: #888; margin-bottom: 10px;">Exige Fúria e Gts de Sangue. A Lua Minguante redobra os efeitos.</p>
-                <select id="lista-magia" style="border-color: var(--sangue); padding: 15px;"></select>
+                <select id="lista-magia" style="border-color: var(--sangue); padding: 15px; width:75%; display:inline-block;"></select>
+<button class="btn-magick" onclick="mostrarTooltipFixa('magia', 'Escolhe o ritual na lista e foca a tua mente. Exige Gts e Fúria.')" style="width:20%; display:inline-block;">👁️ Info</button>
                 <select id="lista-alvos-magia" style="margin-top: 10px;"></select>
                 <button class="btn-magick" onclick="conjurarMagia()">Proferir as Sílabas de Poder</button>
                 <div id="magia-result" style="margin-top: 10px; color: var(--ouro); font-style: italic;"></div>
@@ -643,6 +643,15 @@
         </div>
         
         <div id="aba-conclave" class="aba oculto">
+		
+		<div class="card oculto" id="box-cerco" style="border-color: red; background: #220000; box-shadow: 0 0 20px red;">
+                <h3 style="color:red; text-align:center; animation: pulseRed 1s infinite;">MOTIM DEMONÍACO!</h3>
+                <p style="text-align: center; font-size:0.85em; color:#fff;">As hostes de <b id="cerco-demonio" style="color:var(--ouro);"></b> cercaram a alma de <b id="cerco-vitima" style="color:var(--xp);"></b>! Salvem-no, ou o sangue dele será sugado até à morte.</p>
+                <div style="text-align: center; margin: 10px 0;">
+                    <h3 style="color: #f0f; margin-top:0;"><span id="cerco-hp">0</span> HP do Cerco</h3>
+                </div>
+                <button class="btn-combat" style="border-color: #fff; background:#110000; font-size: 1rem; width:100%; padding: 15px;" onclick="atacarCercoBtn()">Quebrar Cerco (Custa 2 Fúrias)</button>
+            </div>
             
             <div class="card oculto" id="box-fenda" style="border-color: #0ff; background: #001111;">
                 <h3 style="color:#0ff; text-align:center;">A Fenda Astral Abriu-se!</h3>
@@ -911,6 +920,11 @@
         safeSet('ui-sangue', numFmt(meuVampiro.sangue)); safeSet('ui-acao', meuVampiro.pontosAcao); safeSet('ui-max-acao', meuVampiro.maxAcao);
         safeSet('ui-nivel', meuVampiro.nivel); safeSet('ui-influencia', numFmt(meuVampiro.influencia));
         
+        // HP FÍSICO ATUALIZADO NO FRONTEND
+        safeSet('ui-hp-atual', Math.floor(meuVampiro.hpAtual || 0)); 
+        safeSet('ui-hp-max', Math.floor(meuVampiro.hpMax || 1));
+        
+        safeSet('ui-poder-geral', numFmt(meuVampiro.poderGeral || 0));
         // --- NOVA LINHA DE ATUALIZAÇÃO DO PODER ---
         safeSet('ui-poder-geral', numFmt(meuVampiro.poderGeral || 0));
         
@@ -937,8 +951,10 @@
         safeSet('eq-amuleto', eq.amuleto ? `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div>${eq.amuleto.nome}</div><button class="btn-magick" onclick="desequiparItem('amuleto')" style="width:auto; padding:5px; margin:0; font-size:0.7em;">Tirar</button></div>` : '<div>Aura Vazia (Sem Amuleto)</div>', true);
 
         if (meuVampiro.bolsa.length === 0) safeSet('lista-bolsa', "<p style='color:#555;font-size:0.8em;text-align:center;'>A caixa está oca.</p>", true);
-        else safeSet('lista-bolsa', meuVampiro.bolsa.map(i => `<div style="border: 1px solid #333; padding: 10px; margin-bottom: 5px; background: #050505;"><strong style="color:var(--ouro);">${i.nome}</strong> <span style="font-size:0.7em;color:#888;">[${i.raridade}]</span><br><button class="btn-magick" onclick="equiparItem('${i.id}')" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto;">Assimilar Artefacto</button></div>`).join(''), true);
-
+        else safeSet('lista-bolsa', meuVampiro.bolsa.map(i => `<div style="border: 1px solid #333; padding: 10px; margin-bottom: 5px; background: #050505;"><strong style="color:var(--ouro);">${i.nome}</strong> <span style="font-size:0.7em;color:#888;">[${i.raridade}]</span><br>
+        <button class="btn-magick" onclick="equiparItem('${i.id}')" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto;">Assimilar Artefacto</button>
+        <button class="btn-magick" onclick="mostrarTooltipFixa('reliquia', '${i.nome} - Bónus: Vontade +${i.bonus.vontade}, Gnose +${i.bonus.gnose}, Magnetismo +${i.bonus.magnetismo}, Densidade +${i.bonus.densidade}')" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto; border-color:#0f5; color:#0f5;">👁️ Avaliar</button>
+        </div>`).join(''), true);
         safeSet('p-drenado', numFmt(meuVampiro.estatisticas.totalDrenado)); safeSet('p-secos', numFmt(meuVampiro.estatisticas.mortaisSecos));
         safeSet('ui-calice-txt', numFmt(meuVampiro.calice)); const caliceFill = document.getElementById('calice-fill'); if(caliceFill) caliceFill.style.height = `${Math.min(100, (meuVampiro.calice / 15000) * 100)}%`;
 
@@ -970,6 +986,16 @@
 
         const painelAdmin = document.getElementById('painel-primordial'); if (painelAdmin) { if (meuVampiro.geracao === 1) painelAdmin.classList.remove('oculto'); else painelAdmin.classList.add('oculto'); }
     } 
+	
+	// NOVA FUNÇÃO DE CURA FÍSICA
+    async function curarFeridas() {
+        try { 
+            const res = await fetch('/api/perfil/curar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); 
+            const dados = await res.json(); 
+            if(dados.erro) ocultoAlert(dados.erro); else { jorrarSangue(); ocultoAlert(dados.relato); } 
+            syncStatus(); 
+        } catch(e) { } 
+    }
 
     async function syncStatus() { if(!meuVampiro) return; try { const res = await fetch('/api/status/' + meuVampiro.id); meuVampiro = await res.json(); syncUI(); } catch(e){} }
 
@@ -1123,6 +1149,24 @@
             else { jorrarSangue(); ocultoAlert(dados.relato); } 
             syncStatus(); 
         } catch(e) {} 
+    }
+	
+	function mostrarTooltipFixa(tipo, desc) {
+        let t = "Inspeção Akáshica";
+        if(tipo === 'reliquia') t = "Aura do Artefacto";
+        if(tipo === 'magia') t = "Leitura do Grimório";
+
+        document.getElementById('insp-title').innerText = t;
+        document.getElementById('insp-desc').innerText = desc;
+        document.getElementById('insp-extra').innerHTML = '<button onclick="PararInspecao()" style="background:#500; color:#fff; padding:5px; margin-top:10px;">Ocultar Visão</button>';
+        
+        document.getElementById('inspect-modal').classList.remove('oculto'); 
+        playSfx('espada');
+    }
+
+    // Para parar:
+    function PararInspecao() {
+        document.getElementById('inspect-modal').classList.add('oculto');
     }
 
     function attVendaInput() { 
@@ -1404,43 +1448,34 @@
         try { const res = await fetch('/api/incursoes/explorar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, reinoId }) }); const dados = await res.json(); if (!dados.sucesso) { ocultoAlert(dados.erro); } else { jorrarSangue(); ocultoAlert(dados.relato); } syncStatus(); } catch(e) {} 
     }
 
+    let cercoAtualId = null;
+
     async function atualizarConclave() {
         try {
             const res = await fetch('/api/conclave/status'); const dados = await res.json();
             
-            let total = dados.balanca.tiamat + dados.balanca.seth; if (total === 0) total = 1; 
-            document.getElementById('bar-tiamat').style.width = `${(dados.balanca.tiamat / total) * 100}%`; 
-            document.getElementById('bar-seth').style.width = `${(dados.balanca.seth / total) * 100}%`; 
-            safeSet('lbl-regente', dados.balanca.regente);
-            
-            if (dados.clansData && meuVampiro) {
-                let clanHtml = dados.clansData.filter(c => c.nome !== meuVampiro.clan && c.nome !== 'Sangue Ralo').map(c => `<option value="${c.nome}">[Egrégora Nv.${c.egregoraNv}] ${c.nome} - Riqueza: ${numFmt(c.cofre)}</option>`).join('');
-                safeSet('alvo-gvg', clanHtml || '<option disabled>Nenhum Inimigo Digno Encontrado</option>', true);
-            }
-            
-            if (dados.evocacao) { 
-                document.getElementById('box-no-boss').classList.add('oculto'); 
-                document.getElementById('box-has-boss').classList.remove('oculto'); 
-                safeSet('boss-name', dados.evocacao.nome); 
-                safeSet('boss-desc', dados.evocacao.desc); 
-                safeSet('boss-hp-text', numFmt(dados.evocacao.hpAtual)); 
-                safeSet('boss-hp-max', numFmt(dados.evocacao.hpMax)); 
-                document.getElementById('boss-hp-bar').style.width = `${(dados.evocacao.hpAtual / dados.evocacao.hpMax) * 100}%`; 
-            } else { 
-                document.getElementById('box-no-boss').classList.remove('oculto'); 
-                document.getElementById('box-has-boss').classList.add('oculto'); 
-            }
-            
-            const fendas = Object.values(dados.fendas || {}); 
-            if(fendas.length > 0) { 
-                const f = fendas[0]; fendaAtualId = f.id; 
-                document.getElementById('box-fenda').classList.remove('oculto'); 
-                safeSet('fenda-nome', f.nome); 
-                safeSet('fenda-hp', numFmt(f.hpAtual)); 
-            } else { 
-                document.getElementById('box-fenda').classList.add('oculto'); fendaAtualId = null; 
+            // ... (Balanca, e Fendas mantêm-se) ...
+            // COLA ISTO ANTES DO CATCH:
+
+            const cercos = Object.values(dados.cercos || {});
+            if (cercos.length > 0) {
+                const c = cercos[0]; cercoAtualId = c.id;
+                document.getElementById('box-cerco').classList.remove('oculto');
+                safeSet('cerco-demonio', c.demonio);
+                safeSet('cerco-vitima', c.alvoNome);
+                safeSet('cerco-hp', numFmt(c.hpAtual));
+            } else {
+                document.getElementById('box-cerco').classList.add('oculto'); cercoAtualId = null;
             }
         } catch(e) {}
+    }
+
+    function atacarCercoBtn() {
+        if (!cercoAtualId) return; 
+        if(!meuVampiro || meuVampiro.pontosAcao < 2) return ocultoAlert("Exige 2 Fúrias para quebrar as linhas.");
+        const bossName = "Hostes de " + document.getElementById('cerco-demonio').innerText;
+        // Inicia o mini-jogo visceral para o cerco! O backend resolverá enviando os resultados para '/api/conclave/cerco/atacar'
+        iniciarCombateVisceral(bossName, cercoAtualId, 'fenda', 8000, true); // Usa o sistema da Fenda para aproveitar o fluxo
     }
 
     async function evocarGoetia() { if(!(await ocultoConfirm("Tem a certeza? Isso consumirá 3000 Gts e trará uma Entidade ao Mundo!"))) return; abismoVoid(); try { const res = await fetch('/api/goecia/evocar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); const dados = await res.json(); if(dados.erro) ocultoAlert(dados.erro); atualizarConclave(); syncStatus(); } catch(e){} }
@@ -1534,17 +1569,20 @@
 
     function iniciarCombateVisceral(nomeAlvo, idAlvo, tipoCombate, hpInimigo, isRaidBoss = false, posturaPvP = 1) {
         combateAtivo = true; isSyncing = false;
+        
+        // FASES MUITO MAIS LONGAS (30s Boss, 20s PvE normal)
+        let cicloTimerExpandido = isRaidBoss ? 300 : 200; 
+
         combateDados = {
             alvoId: idAlvo, tipoCombate: tipoCombate, isRaid: isRaidBoss, posturaPvP: posturaPvP,
             hpMaxInimigo: hpInimigo, hpAtualInimigo: hpInimigo,
-            hpMaxJogador: meuVampiro.sangue, hpAtualJogador: meuVampiro.sangue,
+            hpMaxJogador: meuVampiro.hpMax, hpAtualJogador: meuVampiro.hpAtual, // USA HP EM VEZ DE SANGUE-MOEDA
             estadoInimigo: 'idle', timerAcaoInimigo: 0,
-            cicloTimer: isRaidBoss ? 100 : 50, 
+            cicloTimer: cicloTimerExpandido, 
             comboAtual: 0, maxCombo: 0,
             estatisticas: { ataquesDealt: 0, magiasDealt: 0, parries: 0, danoSofrido: 0, danoCausado: 0 }
         };
 
-        // Geração Procedural do Avatar Sombrio (Substitui os ícones em texto)
         document.getElementById('inimigo-icone').innerHTML = gerarAvatarSombrio(nomeAlvo, isRaidBoss);
         document.getElementById('inimigo-icone').className = "inimigo-sprite"; 
         
@@ -1557,6 +1595,60 @@
         loopIA = setInterval(logicaInimigoVisceral, 100);
     }
 
+    function acaoVisceral(tipoAcao) {
+        if(!combateAtivo || isSyncing) return;
+        const state = combateDados;
+        const iconeRect = document.getElementById('inimigo-icone').getBoundingClientRect();
+        const cX = iconeRect.left + (iconeRect.width/2); const cY = iconeRect.top + (iconeRect.height/2);
+
+        const atr = meuVampiro.atributosTotais || meuVampiro.atributos;
+        
+        // NERF NO DANO POR CLIQUE PARA OBRIGAR AO COMBATE ESTENDIDO
+        let danoFisico = (atr.vontade * 5) + (meuVampiro.nivel * 2);
+        let danoMagico = (atr.gnose * 8) + (meuVampiro.nivel * 4);
+        let multiplicador = 1 + (state.comboAtual * 0.05); // Combo cresce mais devagar
+        
+        if(state.estadoInimigo === 'vulneravel') multiplicador *= 3;
+
+        if (tipoAcao === 'defesa') {
+            if (state.estadoInimigo === 'prep_ataque' && state.timerAcaoInimigo <= 6) {
+                state.estadoInimigo = 'vulneravel'; state.timerAcaoInimigo = 20; 
+                state.estatisticas.parries++;
+                const flash = document.createElement('div'); flash.className = 'parry-flash'; document.body.appendChild(flash); setTimeout(()=>flash.remove(), 300);
+                playSfx('espada'); spawnDanoText("PARRY!", "#ccc");
+                safeSet('arena-feedback', "CONTRA-ATAQUE!"); document.getElementById('arena-feedback').style.color = "#0f5";
+            } else { quebrarCombo("DEFESA FALHOU"); }
+            return;
+        }
+
+        if (tipoAcao === 'magia') {
+            if (state.estadoInimigo === 'prep_magia' && state.timerAcaoInimigo <= 8) {
+                let danoCausar = Math.floor(danoMagico * multiplicador * 2);
+                state.hpAtualInimigo -= danoCausar; state.estatisticas.danoCausado += danoCausar; state.estatisticas.magiasDealt++;
+                state.estadoInimigo = 'idle'; 
+                playSfx('magia'); abismoVoid(); spawnDanoText(danoCausar, "#d080ff");
+                safeSet('arena-feedback', "MAGIA DISSIPADA!"); document.getElementById('arena-feedback').style.color = "#d080ff";
+            } else {
+                state.hpAtualJogador -= 25; // Toma micro-dano ao errar magia
+                let danoCausar = Math.floor(danoMagico * multiplicador);
+                state.hpAtualInimigo -= danoCausar; state.estatisticas.danoCausado += danoCausar; state.estatisticas.magiasDealt++;
+                playSfx('magia'); spawnDanoText(danoCausar, "#d080ff");
+            }
+        }
+
+        if (tipoAcao === 'ataque') {
+            if (state.estadoInimigo === 'prep_magia') return quebrarCombo("MAGIA IMUNE A LÂMINA!");
+            let danoCausar = Math.floor(danoFisico * multiplicador);
+            state.hpAtualInimigo -= danoCausar; state.estatisticas.danoCausado += danoCausar; state.estatisticas.ataquesDealt++;
+            
+            state.comboAtual++;
+            if(state.comboAtual > state.maxCombo) state.maxCombo = state.comboAtual;
+            
+            playSfx('espada'); spawnSlash(cX, cY); spawnDanoText(danoCausar, "#fff");
+            safeSet('arena-feedback', "Sangrando..."); document.getElementById('arena-feedback').style.color = "#fff";
+        }
+        atualizarBarras();
+    }
     function logicaInimigoVisceral() {
         if (!combateAtivo) return clearInterval(loopIA);
         if (isSyncing) return; 
