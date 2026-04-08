@@ -1544,9 +1544,10 @@
             estatisticas: { ataquesDealt: 0, magiasDealt: 0, parries: 0, danoSofrido: 0, danoCausado: 0 }
         };
 
-        const icones = ['👹', '👁️', '💀', '🕷️', '🦇', '🪬', '🔥'];
-        document.getElementById('inimigo-icone').innerText = icones[Math.floor(Math.random() * icones.length)];
+        // Geração Procedural do Avatar Sombrio (Substitui os ícones em texto)
+        document.getElementById('inimigo-icone').innerHTML = gerarAvatarSombrio(nomeAlvo, isRaidBoss);
         document.getElementById('inimigo-icone').className = "inimigo-sprite"; 
+        
         document.getElementById('arena-alvo-nome').innerText = nomeAlvo;
         document.getElementById('arena-jogador-nome').innerText = meuVampiro.nome;
         safeSet('arena-feedback', "PREPARA-TE..."); document.getElementById('arena-feedback').style.color = "#888";
@@ -1752,16 +1753,6 @@
                   <circle cx="50" cy="50" r="${Math.abs(hash % 15) + 10}" fill="${corSec}" stroke="${corBase}" stroke-width="2" />
                   <path d="M30,50 Q50,70 70,50" fill="none" stroke="${corSec}" stroke-width="4" opacity="${isBoss ? 1 : 0}" />
                 </svg>`;
-    }
-
-    // Subscrever o Ícone Genérico na Arena de Combate
-    function iniciarCombateVisceral(nomeAlvo, idAlvo, tipoCombate, hpInimigo, isRaidBoss = false, posturaPvP = 1) {
-        // ... (o teu código existente da função) ...
-        
-        // SUBSTITUI a linha: document.getElementById('inimigo-icone').innerText = icones[...];
-        document.getElementById('inimigo-icone').innerHTML = gerarAvatarSombrio(nomeAlvo, isRaidBoss);
-        
-        // ... (resto do código igual)
     }
 
     // OPEN WORLD EVENTS (Socket.io)
