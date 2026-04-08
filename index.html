@@ -11,8 +11,17 @@
         
         :root { --sangue: #8a0303; --sangue-claro: #ff1e2f; --bg: #030303; --panel: #0a0505; --text: #b0b0b0; --ouro: #c5a059; --seth-ouro: #d4af37; --xp: #5985c5; --magia: #800080;}
         
-        /* Efeito de Rasgo Lycan */
+        /* THE TICKER GLOBAL */
+        .world-ticker { position: fixed; top: 0; left: 0; width: 100%; background: #110000; border-bottom: 2px solid var(--ouro); color: var(--ouro); padding: 5px 0; font-size: 0.85em; z-index: 1000; overflow: hidden; white-space: nowrap; font-family: 'Cinzel', serif;}
+        .ticker-text { display: inline-block; padding-left: 100%; animation: scrollTicker 20s linear infinite; }
+        @keyframes scrollTicker { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+
+        body { background: var(--bg); color: var(--text); font-family: 'Crimson Text', serif; margin: 0; padding: 10px; padding-top: 35px; font-size: 16px; background-image: radial-gradient(circle at top, #110000 0%, #000 100%);}
+        
+        /* Efeito de Rasgo Lycan e Sangue */
         .claw-splash { position: fixed; top: 0; left: 0; pointer-events: none; width: 100vw; height: 100vh; background: radial-gradient(circle, transparent 40%, rgba(212, 175, 55, 0.4) 100%); z-index: 9999; animation: splashFade 1.0s forwards; border-left: 5px solid var(--seth-ouro); border-right: 5px solid var(--seth-ouro);}
+        .blood-splash { position: fixed; top: 0; left: 0; pointer-events: none; width: 100vw; height: 100vh; background: radial-gradient(circle, transparent 20%, rgba(138, 3, 3, 0.9) 100%); z-index: 9999; animation: splashFade 1.5s forwards; }
+        @keyframes splashFade { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.1); } }
         
         .radio-container { display: flex; justify-content: space-around; margin: 15px 0; }
         .radio-btn { display: none; }
@@ -21,11 +30,6 @@
         #raca-lycan:checked + .radio-label { border-color: var(--seth-ouro); color: var(--seth-ouro); background: #221a00; box-shadow: 0 0 10px var(--seth-ouro);}
         
         .tema-lycan { --sangue: #b8860b; --sangue-claro: #ffd700; border-top-color: var(--seth-ouro) !important; }
-        body { background: var(--bg); color: var(--text); font-family: 'Crimson Text', serif; margin: 0; padding: 10px; font-size: 16px; background-image: radial-gradient(circle at top, #110000 0%, #000 100%);}
-        
-        /* THE JUICE: Animações de Sangue e Imersão */
-        .blood-splash { position: fixed; top: 0; left: 0; pointer-events: none; width: 100vw; height: 100vh; background: radial-gradient(circle, transparent 20%, rgba(138, 3, 3, 0.9) 100%); z-index: 9999; animation: splashFade 1.5s forwards; }
-        @keyframes splashFade { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.1); } }
         
         @keyframes pulse-vibrante { 0% { box-shadow: inset 0 0 5px rgba(255, 30, 47, 0.1); border-left-color: var(--sangue-claro); } 50% { box-shadow: inset 0 0 25px rgba(255, 30, 47, 0.4); border-left-color: #fff; } 100% { box-shadow: inset 0 0 5px rgba(255, 30, 47, 0.1); border-left-color: var(--sangue-claro); } }
         .estado-vibrante { animation: pulse-vibrante 2s infinite; }
@@ -121,10 +125,35 @@
         .attr-val { font-family: 'Cinzel', serif; font-size: 1.1em; color: var(--sangue-claro); width: 30px; text-align: center;}
         .btn-plus { width: 30px; height: 30px; padding: 0; margin: 0; font-size: 1.2em; line-height: 1; border-radius: 50%; background: #222; border: 1px solid var(--ouro); color: var(--ouro);}
         
-        .equip-slot { background: #000; border: 1px dashed #444; padding: 10px; text-align: center; margin-bottom: 5px; font-size: 0.85em; color: #666; font-style: italic;}
+        .equip-slot { background: #000; border: 1px dashed #444; padding: 10px; text-align: center; margin-bottom: 5px; font-size: 0.85em; color: #666; font-style: italic; display: flex; justify-content: space-between; align-items: center;}
+        
+        /* NOTIFICATIONS MODALS */
+        #occult-overlay { position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.8); z-index: 10000; display:flex; justify-content:center; align-items:center; backdrop-filter: blur(2px);}
+        .occult-modal { background: #0a0000; border: 2px solid var(--sangue); padding: 20px; max-width: 90%; width: 400px; box-shadow: 0 0 30px #500; text-align: center;}
+        .occult-modal h3 { color: var(--ouro); margin-top:0;}
+        .occult-modal p { color: #ccc; margin-bottom: 20px;}
+        .modal-btns { display: flex; gap: 10px; justify-content: center;}
+
+        /* ÁRVORE GENEALÓGICA */
+        .tree-node { border: 1px solid #333; padding: 5px; margin: 5px 0; background: #050505; border-left: 3px solid var(--ouro);}
+        .tree-cria { margin-left: 20px; border-left-color: var(--sangue);}
     </style>
 </head>
 <body>
+
+    <div class="world-ticker"><span class="ticker-text" id="world-ticker">As brumas encobrem a história do mundo. O Oráculo aguarda o derramamento de sangue...</span></div>
+
+    <!-- CUSTOM NOTIFICATION SYSTEM -->
+    <div id="occult-overlay" class="oculto">
+        <div class="occult-modal">
+            <h3 id="modal-title">Revelação</h3>
+            <p id="modal-msg"></p>
+            <div class="modal-btns">
+                <button id="modal-btn-ok" onclick="closeModal()" style="width:auto;">Compreendido</button>
+                <button id="modal-btn-cancel" onclick="cancelModal()" class="btn-magick oculto" style="width:auto;">Recusar</button>
+            </div>
+        </div>
+    </div>
 
     <div id="ui-login" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; font-size: 2.2rem;">A Ordem do Abismo</h2>
@@ -133,7 +162,7 @@
             <strong>⚠️ ADVERTÊNCIA DE ALTA MAGIA: OPERAÇÕES DE VÍNCULO ASTRAL</strong>
             Este portal não é uma simulação recreativa. A interface opera como um canal para o processamento de fluxos reais de <b>Magia Negra</b> e <b>Licantropia Hermética</b>, fundamentados em mecanismos de <b>Pacto Sanguíneo e Carnal</b>.
             <br><br>
-            O acesso é <b>estritamente restrito</b>: a iniciação exige um Convite Vinculado, validado por um Alfa ou Mestre ativo. Profanos sem linhagem serão consumidos como combustível. Escolha a sua condenação abaixo:
+            O acesso é <b>estritamente restrito</b>: a iniciação exige um Convite Vinculado, validado por um Alfa ou Mestre ativo. <b>A geração determina os limites de procriação.</b> Profanos sem linhagem serão consumidos como combustível. Escolha a sua condenação abaixo:
         </div>
 
         <div id="msg-erro-login" style="color: var(--sangue-claro); text-align: center; font-weight: bold; margin: 10px 0;"></div>
@@ -236,6 +265,15 @@
             </div>
 
             <div class="card">
+                <h3>A Raiz e os Ramos (Árvore Genealógica)</h3>
+                <div style="font-size:0.85em; color:#bbb;">
+                    <div class="tree-node">Senhor Primordial:<br><b id="tree-senhor" style="color:var(--ouro);"></b></div>
+                    <div style="margin: 10px 0;">As Tuas Crias e Escravos:</div>
+                    <div id="tree-crias"></div>
+                </div>
+            </div>
+
+            <div class="card">
                 <h3>O Convite Universal (Link Físico)</h3>
                 <button class="btn-magick" onclick="gerarConviteUniversal()">Partilhar Link Universal (Qualquer Rede)</button>
                 <p id="invite-status" style="text-align: center; color: var(--ouro); font-size: 0.85em; margin-top:10px;"></p>
@@ -318,7 +356,7 @@
         <div id="aba-pvp" class="aba oculto">
             <div class="card">
                 <h3>O Duelo de Sombras (PvP)</h3>
-                <p style="font-size: 0.8em; color: #888; font-style: italic;">Ataque exige 3 Fúrias. O Vencedor pode pilhar artefactos.</p>
+                <p style="font-size: 0.8em; color: #888; font-style: italic;">Ataque exige 3 Fúrias. O Juiz Abissal avaliará os atributos e posturas. O Vencedor pode pilhar artefactos.</p>
                 <select id="lista-alvos-pvp"></select>
                 <div class="grid-3" style="margin-top: 15px;">
                     <button onclick="atacarPvP(1)" style="font-size:0.7em; padding: 15px 5px; border-color: red;" title="Usa VONTADE vs DENSIDADE do Inimigo">Ataque Astral</button>
@@ -635,717 +673,585 @@
             </div>
         </div>
 
-    </div> <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    </div> 
+
+<script>
+    // ==========================================
+    // 1. INICIALIZAÇÃO SEGURA (TELEGRAM & GLOBAIS)
+    // ==========================================
+    let tg = null;
+    try {
+        if (window.Telegram && window.Telegram.WebApp) {
+            tg = window.Telegram.WebApp;
+            tg.expand();
+        }
+    } catch (e) {
+        console.warn("Aviso: Rodando fora do Telegram ou falha na API.");
+    }
+
     const socket = io();
-    let meuVampiro = null;
-    let hashAlvoAtual = null;
+    let meuVampiro = null; 
+    let hashAlvoAtual = null; 
     let fendaAtualId = null;
 
-    let storedTgId = localStorage.getItem('tgId');
-    const tgUser = tg.initDataUnsafe?.user;
-    if (!tgUser && !storedTgId) { storedTgId = Math.floor(Math.random() * 9000000).toString(); localStorage.setItem('tgId', storedTgId); }
+    let storedTgId = localStorage.getItem('tgId'); 
+    const tgUser = tg?.initDataUnsafe?.user; 
+    
+    if (!tgUser && !storedTgId) { 
+        storedTgId = Math.floor(Math.random() * 9000000).toString(); 
+        localStorage.setItem('tgId', storedTgId); 
+    }
     const idAcesso = tgUser ? tgUser.id : storedTgId;
 
     if(tgUser) document.getElementById('tg-name').innerText = `Lendo o Fio do Destino: @${tgUser.username || tgUser.first_name}`;
     else document.getElementById('tg-name').innerText = `Identidade Astral: ${idAcesso}`;
 
-    function safeSet(id, val, isHTML = false) {
-        const el = document.getElementById(id);
-        if(el) { if(isHTML) el.innerHTML = val; else el.innerText = val; }
-    }
-    
-    function jorrarSangue() {
-        if (meuVampiro && meuVampiro.raca === 'lycan') {
-            rasgarGarras();
-        } else {
-            const splash = document.createElement('div');
-            splash.className = 'blood-splash';
-            document.body.appendChild(splash);
-            setTimeout(() => splash.remove(), 1500);
-        }
-    } 
+    // ==========================================
+    // 2. FUNÇÕES AUXILIARES E ÁUDIO
+    // ==========================================
+    function safeSet(id, val, isHTML = false) { const el = document.getElementById(id); if(el) { if(isHTML) el.innerHTML = val; else el.innerText = val; } }
+    function numFmt(num) { if(num >= 1000000) return (num/1000000).toFixed(1) + 'M'; if(num >= 1000) return (num/1000).toFixed(1) + 'k'; return num; }
 
-    function rasgarGarras() {
-        const splash = document.createElement('div');
-        splash.className = 'claw-splash';
-        document.body.appendChild(splash);
-        setTimeout(() => splash.remove(), 1000);
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSfx(type) {
+        if(!audioCtx || audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        if(type === 'sangue') { osc.type = 'sine'; osc.frequency.setValueAtTime(150, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.5); gain.gain.setValueAtTime(0.5, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); osc.start(); osc.stop(audioCtx.currentTime + 0.5); }
+        if(type === 'espada') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2); osc.start(); osc.stop(audioCtx.currentTime + 0.2); }
+        if(type === 'magia') { osc.type = 'square'; osc.frequency.setValueAtTime(300, audioCtx.currentTime); osc.frequency.linearRampToValueAtTime(600, audioCtx.currentTime + 0.4); gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); osc.start(); osc.stop(audioCtx.currentTime + 0.5); }
     }
 
-    function abismoVoid() {
-        const splash = document.createElement('div');
-        splash.className = 'void-flash';
-        document.body.appendChild(splash);
-        document.body.classList.add('shake-screen');
-        setTimeout(() => { splash.remove(); document.body.classList.remove('shake-screen'); }, 1000);
+    let modalPromiseResolve = null;
+    function ocultoAlert(msg) {
+        playSfx('sangue');
+        document.getElementById('modal-title').innerText = "A Mente Abissal Revela:";
+        document.getElementById('modal-msg').innerText = msg;
+        document.getElementById('modal-btn-cancel').classList.add('oculto');
+        document.getElementById('occult-overlay').classList.remove('oculto');
     }
+    function ocultoConfirm(msg) {
+        playSfx('magia');
+        return new Promise((resolve) => {
+            document.getElementById('modal-title').innerText = "O Oráculo Pergunta:";
+            document.getElementById('modal-msg').innerText = msg;
+            document.getElementById('modal-btn-cancel').classList.remove('oculto');
+            document.getElementById('occult-overlay').classList.remove('oculto');
+            modalPromiseResolve = resolve;
+        });
+    }
+    window.closeModal = function() { document.getElementById('occult-overlay').classList.add('oculto'); if(modalPromiseResolve) { modalPromiseResolve(true); modalPromiseResolve = null; } }
+    window.cancelModal = function() { document.getElementById('occult-overlay').classList.add('oculto'); if(modalPromiseResolve) { modalPromiseResolve(false); modalPromiseResolve = null; } }
+
+    function jorrarSangue() { playSfx('sangue'); if (meuVampiro && meuVampiro.raca === 'lycan') { const s = document.createElement('div'); s.className = 'claw-splash'; document.body.appendChild(s); setTimeout(() => s.remove(), 1000); } else { const s = document.createElement('div'); s.className = 'blood-splash'; document.body.appendChild(s); setTimeout(() => s.remove(), 1500); } } 
+    function abismoVoid() { playSfx('magia'); const s = document.createElement('div'); s.className = 'void-flash'; document.body.appendChild(s); document.body.classList.add('shake-screen'); setTimeout(() => { s.remove(); document.body.classList.remove('shake-screen'); }, 1000); }
 
     function nav(abaId, btn) {
+        playSfx('sangue');
         document.querySelectorAll('.aba').forEach(el => el.classList.add('oculto'));
         document.querySelectorAll('.tabs button').forEach(el => el.classList.remove('active'));
-        const abaTarget = document.getElementById('aba-' + abaId);
-        if(abaTarget) abaTarget.classList.remove('oculto');
+        const abaTarget = document.getElementById('aba-' + abaId); if(abaTarget) abaTarget.classList.remove('oculto');
         btn.classList.add('active');
         if (['pvp', 'magia', 'chat'].includes(abaId)) carregarSocial();
         if (abaId === 'leilao') carregarLeilao();
         if (abaId === 'biblioteca') carregarBiblioteca(); 
     }
 
+    // ==========================================
+    // 3. RITO DE AUTENTICAÇÃO
+    // ==========================================
     async function auth() {
         const nome = document.getElementById('in-nome').value;
         const senha = document.getElementById('in-senha').value;
         const racaSelect = document.querySelector('input[name="raca_escolhida"]:checked').value;
         
-        if (!nome || !senha) { safeSet('msg-erro-login', "O Rito pede Nome Sombrio e Palavra-Passe."); return; }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const inviteCode = tg.initDataUnsafe?.start_param || urlParams.get('invite');
+        if (!nome || !senha) return safeSet('msg-erro-login', "O Rito pede Nome e Palavra-Passe.");
         
-        document.getElementById('btn-auth').style.display = 'none';
-        safeSet('msg-erro-login', "A Recitar Cânticos de Invocação...");
+        const urlParams = new URLSearchParams(window.location.search); 
+        const inviteCode = tg?.initDataUnsafe?.start_param || urlParams.get('invite');
+        
+        document.getElementById('btn-auth').style.display = 'none'; 
+        safeSet('msg-erro-login', "Recitando Cânticos...");
 
         try {
-            const res = await fetch('/api/auth', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ tgId: idAcesso, tgUsername: tgUser?.username, nomeSombrio: nome, senha, inviteCode, raca: racaSelect })
+            const res = await fetch('/api/auth', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ tgId: idAcesso, tgUsername: tgUser?.username, nomeSombrio: nome, senha, inviteCode, raca: racaSelect }) 
             });
             const dados = await res.json();
             
-            if (dados.erro) {
-                safeSet('msg-erro-login', dados.erro);
-                document.getElementById('btn-auth').style.display = 'block';
-                return;
-            }
+            if (dados.erro) { safeSet('msg-erro-login', dados.erro); document.getElementById('btn-auth').style.display = 'block'; return; }
 
-            meuVampiro = dados;
-            document.getElementById('ui-login').classList.add('oculto');
+            meuVampiro = dados; 
+            document.getElementById('ui-login').classList.add('oculto'); 
             document.getElementById('ui-main').classList.remove('oculto');
             
-            if (meuVampiro.raca === 'lycan') {
-                document.querySelectorAll('.card').forEach(el => el.classList.add('tema-lycan'));
-            }
-
-            jorrarSangue();
+            if (meuVampiro.raca === 'lycan') document.querySelectorAll('.card').forEach(el => el.classList.add('tema-lycan'));
+            
+            jorrarSangue(); 
             socket.emit('entrar_chat', { idVampiro: meuVampiro.id, clan: meuVampiro.clan });
             syncUI(); carregarMercado(); 
-        } catch (e) {
-            safeSet('msg-erro-login', "O Portão enrijeceu. A magia falhou.");
-            document.getElementById('btn-auth').style.display = 'block';
+        } catch (e) { 
+            safeSet('msg-erro-login', "O Portão enrijeceu."); 
+            document.getElementById('btn-auth').style.display = 'block'; 
         }
     }
 
+    // ==========================================
+    // 4. ATUALIZAÇÃO DE INTERFACE
+    // ==========================================
     function syncUI() {
         if(!meuVampiro) return;
         if(meuVampiro.estado === 'Banido') return document.body.innerHTML = "<div style='display:flex; justify-content:center; align-items:center; height:100vh;'><h1 style='color:red; text-align:center;'>A TUA ALMA FOI DEVORADA PELO ABISMO.<br>O TEU SANGUE SECRETOU.</h1></div>";
         
-        safeSet('ui-meu-nome', meuVampiro.nome);
-        safeSet('ui-titulo', meuVampiro.tituloAtual);
-        safeSet('ui-geracao', meuVampiro.geracao);
-        safeSet('ui-sangue', meuVampiro.sangue);
-        safeSet('ui-acao', meuVampiro.pontosAcao);
-        safeSet('ui-max-acao', meuVampiro.maxAcao);
-        safeSet('ui-nivel', meuVampiro.nivel);
-        safeSet('ui-influencia', meuVampiro.influencia);
-        safeSet('inv-memoria', meuVampiro.inventario.memoria || 0);
-        safeSet('inv-ecto', meuVampiro.inventario.ectoplasma || 0);
-        safeSet('inv-pedra', meuVampiro.inventario.pedraAlma || 0);
+        safeSet('ui-meu-nome', meuVampiro.nome); safeSet('ui-titulo', meuVampiro.tituloAtual); safeSet('ui-geracao', meuVampiro.geracao);
+        safeSet('ui-sangue', numFmt(meuVampiro.sangue)); safeSet('ui-acao', meuVampiro.pontosAcao); safeSet('ui-max-acao', meuVampiro.maxAcao);
+        safeSet('ui-nivel', meuVampiro.nivel); safeSet('ui-influencia', numFmt(meuVampiro.influencia));
         
-        const barXp = document.getElementById('bar-xp');
-        if(barXp && meuVampiro.xpProx) barXp.style.width = `${(meuVampiro.xp / meuVampiro.xpProx) * 100}%`;
+        safeSet('inv-anima', meuVampiro.inventario.anima); safeSet('inv-cinzas', meuVampiro.inventario.cinzas); safeSet('inv-vitae', meuVampiro.inventario.vitae);
+        safeSet('inv-memoria', meuVampiro.inventario.memoria || 0); safeSet('inv-ecto', meuVampiro.inventario.ectoplasma || 0); safeSet('inv-pedra', meuVampiro.inventario.pedraAlma || 0);
         
-        safeSet('inv-anima', meuVampiro.inventario.anima);
-        safeSet('inv-cinzas', meuVampiro.inventario.cinzas);
-        safeSet('inv-vitae', meuVampiro.inventario.vitae);
+        const barXp = document.getElementById('bar-xp'); if(barXp && meuVampiro.xpProx) barXp.style.width = `${(meuVampiro.xp / meuVampiro.xpProx) * 100}%`;
+        if (meuVampiro.faseLua) { safeSet('lua-icone', meuVampiro.faseLua.icone); safeSet('lua-nome', meuVampiro.faseLua.nome); safeSet('lua-buff', meuVampiro.faseLua.buff); }
 
-        if (meuVampiro.faseLua) {
-            safeSet('lua-icone', meuVampiro.faseLua.icone);
-            safeSet('lua-nome', meuVampiro.faseLua.nome);
-            safeSet('lua-buff', meuVampiro.faseLua.buff);
-        }
+        const titulosOpts = meuVampiro.titulos.map(t => `<option value="${t}" ${t === meuVampiro.tituloAtual ? 'selected' : ''}>${t}</option>`).join(''); safeSet('lista-titulos', titulosOpts, true);
 
-        const titulosOpts = meuVampiro.titulos.map(t => `<option value="${t}" ${t === meuVampiro.tituloAtual ? 'selected' : ''}>${t}</option>`).join('');
-        safeSet('lista-titulos', titulosOpts, true);
-
-        const atrBase = meuVampiro.atributos;
-        const atrTot = meuVampiro.atributosTotais || atrBase;
-        
+        const atrBase = meuVampiro.atributos; const atrTot = meuVampiro.atributosTotais || atrBase;
         safeSet('pt-livres', atrBase.pontosLivres);
-        ['vontade', 'gnose', 'magnetismo', 'densidade'].forEach(a => {
-            safeSet(`atr-${a}`, atrBase[a]);
-            let bonus = atrTot[a] - atrBase[a];
-            safeSet(`b-${a}`, bonus > 0 ? `(+${bonus})` : '');
-        });
+        ['vontade', 'gnose', 'magnetismo', 'densidade'].forEach(a => { safeSet(`atr-${a}`, atrBase[a]); let bonus = atrTot[a] - atrBase[a]; safeSet(`b-${a}`, bonus > 0 ? `(+${bonus})` : ''); });
 
         const eq = meuVampiro.equipamentos;
-        safeSet('eq-arma', eq.arma ? `${eq.arma.nome}` : 'Garras (Sem Lâmina)');
-        safeSet('eq-armadura', eq.armadura ? `${eq.armadura.nome}` : 'Pele Fria (Sem Armadura)');
-        safeSet('eq-amuleto', eq.amuleto ? `${eq.amuleto.nome}` : 'Aura Vazia (Sem Amuleto)');
+        safeSet('eq-arma', eq.arma ? `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div>${eq.arma.nome}</div><button class="btn-magick" onclick="desequiparItem('arma')" style="width:auto; padding:5px; margin:0; font-size:0.7em;">Tirar</button></div>` : '<div>Garras Limpas (Sem Arma)</div>', true);
+        safeSet('eq-armadura', eq.armadura ? `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div>${eq.armadura.nome}</div><button class="btn-magick" onclick="desequiparItem('armadura')" style="width:auto; padding:5px; margin:0; font-size:0.7em;">Tirar</button></div>` : '<div>Pele Fria (Sem Armadura)</div>', true);
+        safeSet('eq-amuleto', eq.amuleto ? `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div>${eq.amuleto.nome}</div><button class="btn-magick" onclick="desequiparItem('amuleto')" style="width:auto; padding:5px; margin:0; font-size:0.7em;">Tirar</button></div>` : '<div>Aura Vazia (Sem Amuleto)</div>', true);
 
-        if (meuVampiro.bolsa.length === 0) {
-            safeSet('lista-bolsa', "<p style='color:#555;font-size:0.8em;text-align:center;'>A tua caixa está oca.</p>", true);
-        } else {
-            const htmlBolsa = meuVampiro.bolsa.map(i => `
-                <div style="border: 1px solid #333; padding: 10px; margin-bottom: 5px; background: #050505;">
-                    <strong style="color:var(--ouro);">${i.nome}</strong> <span style="font-size:0.7em;color:#888;">[${i.raridade}]</span><br>
-                    <button class="btn-magick" onclick="equiparItem('${i.id}')" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto;">Assimilar Artefacto</button>
-                </div>
-            `).join('');
-            safeSet('lista-bolsa', htmlBolsa, true);
-        }
+        if (meuVampiro.bolsa.length === 0) safeSet('lista-bolsa', "<p style='color:#555;font-size:0.8em;text-align:center;'>A caixa está oca.</p>", true);
+        else safeSet('lista-bolsa', meuVampiro.bolsa.map(i => `<div style="border: 1px solid #333; padding: 10px; margin-bottom: 5px; background: #050505;"><strong style="color:var(--ouro);">${i.nome}</strong> <span style="font-size:0.7em;color:#888;">[${i.raridade}]</span><br><button class="btn-magick" onclick="equiparItem('${i.id}')" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto;">Assimilar Artefacto</button></div>`).join(''), true);
 
-        safeSet('p-drenado', meuVampiro.estatisticas.totalDrenado);
-        safeSet('p-secos', meuVampiro.estatisticas.mortaisSecos);
+        safeSet('p-drenado', numFmt(meuVampiro.estatisticas.totalDrenado)); safeSet('p-secos', numFmt(meuVampiro.estatisticas.mortaisSecos));
+        safeSet('ui-calice-txt', numFmt(meuVampiro.calice)); const caliceFill = document.getElementById('calice-fill'); if(caliceFill) caliceFill.style.height = `${Math.min(100, (meuVampiro.calice / 15000) * 100)}%`;
 
-        safeSet('ui-calice-txt', meuVampiro.calice);
-        const caliceFill = document.getElementById('calice-fill');
-        if(caliceFill) caliceFill.style.height = `${Math.min(100, (meuVampiro.calice / 15000) * 100)}%`;
+        if (meuVampiro.clan === 'Sangue Ralo') { document.getElementById('ui-no-clan').classList.remove('oculto'); document.getElementById('ui-in-clan').classList.add('oculto'); } 
+        else if (meuVampiro.clanData) { document.getElementById('ui-no-clan').classList.add('oculto'); document.getElementById('ui-in-clan').classList.remove('oculto'); safeSet('ui-clan-nome', meuVampiro.clanData.nome); safeSet('ui-clan-lider', meuVampiro.clanData.liderNome || 'Hierofante Oculto'); safeSet('ui-clan-membros', meuVampiro.clanData.membros.length); safeSet('ui-clan-cofre', numFmt(meuVampiro.clanData.cofre)); const btnSacar = document.getElementById('btn-sacar-clan'); if (btnSacar) btnSacar.style.display = (meuVampiro.clanData.lider === meuVampiro.id) ? 'inline-block' : 'none'; } 
 
-        if (meuVampiro.clan === 'Sangue Ralo') {
-            document.getElementById('ui-no-clan').classList.remove('oculto');
-            document.getElementById('ui-in-clan').classList.add('oculto');
-        } else if (meuVampiro.clanData) {
-            document.getElementById('ui-no-clan').classList.add('oculto');
-            document.getElementById('ui-in-clan').classList.remove('oculto');
-            safeSet('ui-clan-nome', meuVampiro.clanData.nome);
-            safeSet('ui-clan-lider', meuVampiro.clanData.liderNome || 'Hierofante Oculto');
-            safeSet('ui-clan-membros', meuVampiro.clanData.membros.length);
-            safeSet('ui-clan-cofre', meuVampiro.clanData.cofre);
-            const btnSacar = document.getElementById('btn-sacar-clan');
-            if (btnSacar) btnSacar.style.display = (meuVampiro.clanData.lider === meuVampiro.id) ? 'inline-block' : 'none';
-        } 
+        const veilWarn = document.getElementById('veil-warning'); const osintCont = document.getElementById('osint-container');
+        if(veilWarn && osintCont) { if (meuVampiro.nivel < 50) { veilWarn.classList.remove('oculto'); osintCont.classList.add('oculto'); } else { veilWarn.classList.add('oculto'); osintCont.classList.remove('oculto'); } }
 
-        // O VÉU DO GRAU 50 (OSINT)
-        const veilWarn = document.getElementById('veil-warning');
-        const osintCont = document.getElementById('osint-container');
-        if(veilWarn && osintCont) {
-            if (meuVampiro.nivel < 50) {
-                veilWarn.classList.remove('oculto');
-                osintCont.classList.add('oculto');
-            } else {
-                veilWarn.classList.add('oculto');
-                osintCont.classList.remove('oculto');
-            }
-        }
-
-        // PACTOS (QUESTS)
         const boxPacto = document.getElementById('box-pacto');
         if(boxPacto) {
-            if (meuVampiro.pactoAtivo) {
-                const p = meuVampiro.pactoAtivo;
-                boxPacto.innerHTML = `
-                    <h4 style="color:var(--ouro); margin:0;">${p.titulo}</h4>
-                    <p style="font-size:0.85em; color:#aaa; margin:5px 0;">${p.descricao}</p>
-                    <p style="font-size:0.85em; font-weight:bold; color:var(--sangue-claro); margin:5px 0;">Alvo: Entregar ${p.qtd}x [${p.req.toUpperCase()}]</p>
-                    <p style="font-size:0.75em; color:var(--xp); margin:5px 0;">Recompensa: ${p.xp} XP | +2 Influência</p>
-                    <button onclick="completarPacto()" style="background:#0a0505; color:#0f5; border-color:#0f5; font-size:0.7em; margin-top:5px;">Concluir e Reclamar Poder</button>
-                `;
-            } else {
-                boxPacto.innerHTML = `<p style="color:#555; font-size:0.8em; text-align:center; margin:0;">O teu destino está livre de ataduras. Nenhuma tarefa ativa.</p>`;
-            }
+            if (meuVampiro.pactoAtivo) { const p = meuVampiro.pactoAtivo; boxPacto.innerHTML = `<h4 style="color:var(--ouro); margin:0;">${p.titulo}</h4><p style="font-size:0.85em; color:#aaa; margin:5px 0;">${p.descricao}</p><p style="font-size:0.85em; font-weight:bold; color:var(--sangue-claro); margin:5px 0;">Alvo: Entregar ${p.qtd}x [${p.req.toUpperCase()}]</p><p style="font-size:0.75em; color:var(--xp); margin:5px 0;">Recompensa: ${p.xp} XP | +2 Influência</p><button onclick="completarPacto()" style="background:#0a0505; color:#0f5; border-color:#0f5; font-size:0.7em; margin-top:5px;">Concluir e Reclamar Poder</button>`; } 
+            else { boxPacto.innerHTML = `<p style="color:#555; font-size:0.8em; text-align:center; margin:0;">O teu destino está livre de ataduras. Nenhuma tarefa ativa.</p>`; }
         }
 
-        const painelAdmin = document.getElementById('painel-primordial');
-        if (painelAdmin) {
-            if (meuVampiro.geracao === 1) painelAdmin.classList.remove('oculto');
-            else painelAdmin.classList.add('oculto');
+        if(meuVampiro.dadosSenhor) {
+            safeSet('tree-senhor', `${meuVampiro.dadosSenhor.nome} (Ger.${meuVampiro.dadosSenhor.geracao})`);
         }
+        if(meuVampiro.dadosCrias) {
+            let htmlCrias = meuVampiro.dadosCrias.map(c => `<div class="tree-node tree-cria">└ ${c.nome} (Grau ${c.nivel}) ${c.estado === 'Banido' ? '<span style="color:red">[PÓ]</span>' : ''}</div>`).join('');
+            if(!htmlCrias) htmlCrias = "<div style='font-style:italic; color:#555; margin-left:20px;'>Nenhuma semente plantada. Sem geração.</div>";
+            safeSet('tree-crias', htmlCrias, true);
+        }
+
+        const painelAdmin = document.getElementById('painel-primordial'); if (painelAdmin) { if (meuVampiro.geracao === 1) painelAdmin.classList.remove('oculto'); else painelAdmin.classList.add('oculto'); }
     } 
 
-    async function uparAtr(nome) {
-        try {
-            const res = await fetch('/api/atributos/distribuir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, atributo: nome }) });
-            const dados = await res.json(); if(dados.erro) alert(dados.erro); else jorrarSangue(); syncStatus();
-        } catch(e) { }
-    }
+    async function syncStatus() { if(!meuVampiro) return; try { const res = await fetch('/api/status/' + meuVampiro.id); meuVampiro = await res.json(); syncUI(); } catch(e){} }
 
-    async function equiparItem(idReliquia) {
-        try {
-            const res = await fetch('/api/inventario/equipar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, reliquiaId: idReliquia }) });
-            const dados = await res.json(); alert(dados.erro || dados.relato); syncStatus();
-        } catch(e) { }
-    }
-
-    async function aprimorarEquipamento(slot) {
-        if(!confirm(`Desejas usar a Bigorna Sombria na tua ${slot.toUpperCase()}? Consumirá Anima e Cinzas conforme o nível da relíquia.`)) return;
-        try {
-            const res = await fetch('/api/inventario/aprimorar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, slot }) });
+    // ==========================================
+    // 5. INVENTÁRIO E ATRIBUTOS
+    // ==========================================
+    async function uparAtr(nome) { try { const res = await fetch('/api/atributos/distribuir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, atributo: nome }) }); const dados = await res.json(); if(dados.erro) ocultoAlert(dados.erro); else jorrarSangue(); syncStatus(); } catch(e) { } }
+    
+    async function equiparItem(idReliquia) { try { const res = await fetch('/api/inventario/equipar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, reliquiaId: idReliquia }) }); const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); syncStatus(); } catch(e) { } }
+    
+    async function desequiparItem(slot) { 
+        try { 
+            const res = await fetch('/api/inventario/desequipar', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ id: meuVampiro.id, slot }) 
+            }); 
             const dados = await res.json(); 
-            if(dados.erro) alert(dados.erro); 
-            else { jorrarSangue(); alert(dados.relato); }
-            syncStatus();
-        } catch(e) { }
+            if(!dados.erro) playSfx('espada'); 
+            ocultoAlert(dados.erro || dados.relato); 
+            syncStatus(); 
+        } catch(e) { } 
     }
-
-    async function mudarTitulo() {
-        const val = document.getElementById('lista-titulos').value;
-        try {
-            await fetch('/api/perfil/titulo', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, titulo: val }) });
-            syncStatus();
-        } catch(e) { }
+    
+    async function aprimorarEquipamento(slot) {
+        if(!(await ocultoConfirm(`Desejas usar a Bigorna Sombria na tua ${slot.toUpperCase()}? Consumirá Anima e Cinzas conforme o nível da relíquia.`))) return;
+        try { const res = await fetch('/api/inventario/aprimorar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, slot }) }); const dados = await res.json(); if(dados.erro) ocultoAlert(dados.erro); else { jorrarSangue(); ocultoAlert(dados.relato); } syncStatus(); } catch(e) { }
     }
-	
-	async function obliterarMembro() {
-        const alvoId = document.getElementById('alvo-obliteracao').value;
-        if (!alvoId) return;
-        if (!confirm("⚠️ ATENÇÃO, ALFA PRIMORDIAL!\nDesejas realmente deletar a conta deste usuário? Ele será apagado para sempre e perderá tudo.")) return;
-        try {
-            const res = await fetch('/api/admin/obliterar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ adminId: meuVampiro.id, alvoId }) });
-            const dados = await res.json();
-            alert(dados.erro || dados.relato);
-            syncStatus();
-        } catch(e) { }
-    }
-
+    
+    async function mudarTitulo() { const val = document.getElementById('lista-titulos').value; try { await fetch('/api/perfil/titulo', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, titulo: val }) }); syncStatus(); } catch(e) { } }
+    
+    // ==========================================
+    // 6. SISTEMAS DE CAÇA E OSINT
+    // ==========================================
     socket.on('aura_atualizada', (hash) => { if(hash === hashAlvoAtual) abrirPresaMercado(hash); });
 
     async function carregarMercado() {
         try {
             const res = await fetch('/api/mercado'); const dados = await res.json();
-            const htmlMercado = dados.mortais.map(m => {
-                let label = m.estado === 'Limbo' ? 'CADÁVER' : (m.estado === 'No Leilao' ? 'SELADO' : `${m.hp} HP`);
+            
+            safeSet('lista-mercado', dados.mortais.map(m => {
+                let label = m.estado === 'Limbo' ? 'CADÁVER' : (m.estado === 'No Leilao' ? 'SELADO' : `${numFmt(m.hp)} HP`);
                 let classEstado = m.estado === 'Vibrante' ? 'estado-vibrante' : (m.estado === 'Limbo' ? 'estado-limbo' : 'estado-leilao');
                 return `<div class="item-mercado ${classEstado}" onclick="abrirPresaMercado('${m.hash}')">
                     <div><strong style="color:var(--ouro);">${m.id}</strong> <br><span style="font-size: 0.75em; color: #888;">[${m.plataforma.toUpperCase()}]</span></div>
                     <div style="text-align: right;"><span class="${m.estado==='Vibrante'?'destaque':''}">${label}</span></div>
                 </div>`;
-            }).join('');
-            safeSet('lista-mercado', htmlMercado, true);
+            }).join(''), true);
             
-            const logsGlobal = dados.logs.global.map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> ${l.relato}</div>`).join('');
-            safeSet('log-global', logsGlobal, true);
+            safeSet('log-global', dados.logs.global.map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> ${l.relato}</div>`).join(''), true);
+            safeSet('log-caca', dados.logs.caca.map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> ${l.relato}</div>`).join(''), true);
+            safeSet('log-guerra', dados.logs.guerra.map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> ${l.relato}</div>`).join(''), true);
             
-            const logsCaca = dados.logs.caca.map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> ${l.relato}</div>`).join('');
-            safeSet('log-caca', logsCaca, true);
-            
-            const logsGuerra = dados.logs.guerra.map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> ${l.relato}</div>`).join('');
-            safeSet('log-guerra', logsGuerra, true);
-
+            if(dados.logs.global.length > 0) {
+                safeSet('world-ticker', `ÚLTIMA REVELAÇÃO DO ÉTER: ${dados.logs.global[0].relato}`);
+            }
         } catch(e){}
     }
 
     function abrirPresaMercado(hash) {
         fetch('/api/mercado').then(r => r.json()).then(dados => {
-            const m = dados.mortais.find(x => x.hash === hash); if(!m) return;
-            hashAlvoAtual = hash;
+            const m = dados.mortais.find(x => x.hash === hash); if(!m) return; hashAlvoAtual = hash;
+            const elDoc = document.getElementById('mortal-doc'); if(elDoc) elDoc.classList.remove('oculto');
             
-            const elDoc = document.getElementById('mortal-doc');
-            if(elDoc) elDoc.classList.remove('oculto');
+            safeSet('doc-hash', `SIGILO: ${hash}`); safeSet('doc-id', m.id); safeSet('doc-rede', m.plataforma); safeSet('doc-hp', numFmt(m.estado === 'Limbo' ? 0 : m.hp)); safeSet('doc-qualidade', m.qualidade); safeSet('doc-aura', m.leituraAura); safeSet('doc-status-extra', m.donoSelo ? `⚠️ ESCRAVO DE: ${m.donoSelo}` : '🔓 ALMA LIVRE');
             
-            safeSet('doc-hash', `SIGILO: ${hash}`);
-            safeSet('doc-id', m.id);
-            safeSet('doc-rede', m.plataforma);
-            safeSet('doc-hp', m.estado === 'Limbo' ? 0 : m.hp);
-            safeSet('doc-qualidade', m.qualidade);
-            safeSet('doc-aura', m.leituraAura);
-            safeSet('doc-status-extra', m.donoSelo ? `⚠️ ESCRAVO DE: ${m.donoSelo}` : '🔓 ALMA LIVRE');
-            
-            const btn = document.getElementById('btn-drenar');
-            if(btn) {
+            const btn = document.getElementById('btn-drenar'); 
+            if(btn) { 
                 if(m.estado === 'Limbo' || m.estado === 'No Leilao') { btn.innerText = "SANGUE INACESSÍVEL"; btn.disabled = true; } 
-                else { btn.innerText = "EXECUTAR ACÇÃO"; btn.disabled = false; }
+                else { btn.innerText = "EXECUTAR ACÇÃO"; btn.disabled = false; } 
             }
-
-            const btnAbsolver = document.getElementById('btn-absolver');
-            if (btnAbsolver) {
-                if (meuVampiro && meuVampiro.geracao === 1) btnAbsolver.classList.remove('oculto');
-                else btnAbsolver.classList.add('oculto');
+            
+            const btnAbsolver = document.getElementById('btn-absolver'); 
+            if (btnAbsolver) { 
+                if (meuVampiro && meuVampiro.geracao === 1) btnAbsolver.classList.remove('oculto'); 
+                else btnAbsolver.classList.add('oculto'); 
             }
-
             if(elDoc) elDoc.scrollIntoView({behavior: "smooth"});
         }).catch(e=>{});
     }
 
     async function mapearNovoAlvo() {
-        const p = document.getElementById('osint-plat').value, i = document.getElementById('osint-target').value;
-        document.getElementById('osint-target').value = "Invocando o Olho Astral...";
-        try {
-            const res = await fetch('/api/caca/mapear', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: meuVampiro.id, plataforma: p, identificador: i }) });
-            const dados = await res.json();
-            document.getElementById('osint-target').value = '';
-            if(dados.erro) { alert(dados.erro); return; }
-            abrirPresaMercado(dados.mortal.hash); syncStatus();
+        const p = document.getElementById('osint-plat').value, i = document.getElementById('osint-target').value; 
+        document.getElementById('osint-target').value = "Invocando o Olho Astral..."; playSfx('magia');
+        try { 
+            const res = await fetch('/api/caca/mapear', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: meuVampiro.id, plataforma: p, identificador: i }) }); 
+            const dados = await res.json(); 
+            document.getElementById('osint-target').value = ''; 
+            if(dados.erro) { ocultoAlert(dados.erro); return; } 
+            abrirPresaMercado(dados.mortal.hash); syncStatus(); 
         } catch(e) { document.getElementById('osint-target').value = ''; }
     }
 
     async function drenarAtual() {
         const local = document.getElementById('local-mordida').value;
         try {
-            const res = await fetch('/api/caca/drenar', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: meuVampiro.id, hash: hashAlvoAtual, local }) });
+            const res = await fetch('/api/caca/drenar', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: meuVampiro.id, hash: hashAlvoAtual, local }) }); 
             const dados = await res.json();
-            if(dados.erro) { alert(dados.erro); syncStatus(); return; }
+            if(dados.erro) { ocultoAlert(dados.erro); syncStatus(); return; }
             
-            const hDiv = document.getElementById('doc-hist');
+            const hDiv = document.getElementById('doc-hist'); 
             if(hDiv) hDiv.innerHTML = `<div>- [${new Date().toLocaleTimeString()}] ${dados.relato}</div>` + hDiv.innerHTML;
             
-            if(dados.roubo > 0) jorrarSangue();
+            if(dados.roubo > 0) jorrarSangue(); 
             syncStatus(); abrirPresaMercado(hashAlvoAtual); 
         } catch(e) { }
     }
 	
-	async function absolverPresa() {
-        if(!hashAlvoAtual) return;
-        if(!confirm("Apenas o Alfa Primordial possui este poder. Desejas libertar e apagar esta presa permanentemente do servidor?")) return;
-        
-        try {
-            const res = await fetch('/api/caca/absolver', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, hash: hashAlvoAtual }) });
+	async function absolverPresa() { 
+        if(!hashAlvoAtual || !(await ocultoConfirm("Apenas o Alfa Primordial possui este poder. Desejas libertar e apagar esta presa permanentemente do servidor?"))) return; 
+        try { 
+            const res = await fetch('/api/caca/absolver', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, hash: hashAlvoAtual }) }); 
             const dados = await res.json(); 
-            alert(dados.erro || dados.relato); 
-            if(!dados.erro) document.getElementById('mortal-doc').classList.add('oculto');
+            ocultoAlert(dados.erro || dados.relato); 
+            if(!dados.erro) document.getElementById('mortal-doc').classList.add('oculto'); syncStatus(); 
+        } catch(e) {} 
+    }
+
+    async function amaldicoarPresa() { 
+        if(!hashAlvoAtual) return; 
+        try { 
+            const res = await fetch('/api/caca/amaldicoar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, hash: hashAlvoAtual }) }); 
+            const dados = await res.json(); 
+            ocultoAlert(dados.erro || dados.relato); syncStatus(); abrirPresaMercado(hashAlvoAtual); 
+        } catch(e) {} 
+    }
+    
+    // ==========================================
+    // 7. PVE, PACTOS E LEILÃO
+    // ==========================================
+    async function patrulharUmbral() { 
+        try { 
+            const res = await fetch('/api/pve/patrulha', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); 
+            const dados = await res.json(); 
+            if (dados.erro) ocultoAlert(dados.erro); 
+            else { jorrarSangue(); ocultoAlert(dados.relato); } 
             syncStatus(); 
-        } catch(e) {}
+        } catch(e) {} 
+    }
+    
+    async function pedirNovoPacto() { 
+        try { 
+            const res = await fetch('/api/chat/pacto/pedir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); 
+            const dados = await res.json(); 
+            ocultoAlert(dados.erro || dados.relato); syncStatus(); 
+        } catch(e) {} 
+    }
+    
+    async function completarPacto() { 
+        try { 
+            const res = await fetch('/api/chat/pacto/completar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); 
+            const dados = await res.json(); 
+            if(dados.erro) ocultoAlert(dados.erro); 
+            else { jorrarSangue(); ocultoAlert(dados.relato); } 
+            syncStatus(); 
+        } catch(e) {} 
     }
 
-    async function amaldicoarPresa() {
-        if(!hashAlvoAtual) return;
-        try {
-            const res = await fetch('/api/caca/amaldicoar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, hash: hashAlvoAtual }) });
-            const dados = await res.json(); alert(dados.erro || dados.relato); syncStatus(); abrirPresaMercado(hashAlvoAtual);
-        } catch(e) {}
+    function attVendaInput() { 
+        const t = document.getElementById('venda-tipo').value; 
+        const q = document.getElementById('venda-quantia'); 
+        if(q) q.placeholder = t === 'mortal' ? "Sigilo da Alma (Hash)" : "Quantidade ou ID do Artefacto"; 
     }
 
-    // PVE: PATRULHAS
-    async function patrulharUmbral() {
-        try {
-            const res = await fetch('/api/pve/patrulha', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) });
-            const dados = await res.json();
-            if (dados.erro) alert(dados.erro);
-            else { jorrarSangue(); alert(dados.relato); }
-            syncStatus();
-        } catch(e) {}
-    }
-
-    // QUESTS PROCEDURAIS
-    async function pedirNovoPacto() {
-        try {
-            const res = await fetch('/api/chat/pacto/pedir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) });
-            const dados = await res.json();
-            alert(dados.erro || dados.relato);
-            syncStatus();
-        } catch(e) {}
-    }
-
-    async function completarPacto() {
-        try {
-            const res = await fetch('/api/chat/pacto/completar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) });
-            const dados = await res.json();
-            alert(dados.erro || dados.relato);
-            if(!dados.erro) jorrarSangue();
-            syncStatus();
-        } catch(e) {}
-    }
-
-    function attVendaInput() {
-        const t = document.getElementById('venda-tipo').value;
-        const q = document.getElementById('venda-quantia');
-        if(q) q.placeholder = t === 'mortal' ? "Sigilo da Alma (Hash)" : "Quantidade Numérica";
-    }
-
-    async function carregarLeilao() {
-        try {
-            const res = await fetch('/api/leilao'); const dados = await res.json();
+    async function carregarLeilao() { 
+        try { 
+            const res = await fetch('/api/leilao'); 
+            const dados = await res.json(); 
             const htmlLeilao = dados.map(a => {
                 let desc = "";
                 if (a.tipo === 'mortal') desc = 'Selo: ' + a.nomeMortal;
                 else if (a.tipo === 'reliquia') desc = 'Artefacto: ' + a.itemObj.nome;
                 else desc = a.quantia + 'x ' + a.tipo.toUpperCase();
-                
-                return `
-                <div class="item-leilao">
+
+                return `<div class="item-leilao">
                     <div>
                         <strong style="color:#fff; font-family: 'Cinzel', serif;">${desc}</strong><br>
                         <span style="font-size:0.75em; color:#888;">Escrito por: ${a.vendedorNome}</span>
                     </div>
                     <div style="text-align: right;">
-                        <span class="destaque" style="font-size:1.2em;">${a.preco} Gts</span><br>
+                        <span class="destaque" style="font-size:1.2em;">${numFmt(a.preco)} Gts</span><br>
                         <button onclick="comprarLeilao(${a.id})" class="btn-magick" style="padding: 5px; font-size:0.7em; margin-top:5px; width:auto;">Sedar Trato</button>
                     </div>
                 </div>`;
             }).join('');
-            safeSet('lista-leilao', htmlLeilao, true);
-        } catch(e){}
-    }
-
-    async function anunciarLeilao() {
-        const t = document.getElementById('venda-tipo').value, q = document.getElementById('venda-quantia').value, p = document.getElementById('venda-preco').value;
-        try {
-            const res = await fetch('/api/leilao/vender', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: meuVampiro.id, tipo: t, quantiaOuHash: q, preco: p }) });
-            const d = await res.json(); alert(d.erro || d.relato); carregarLeilao(); syncStatus();
-        } catch(e){}
-    }
-
-    async function comprarLeilao(idAnuncio) {
-        try {
-            const res = await fetch('/api/leilao/comprar', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: meuVampiro.id, anuncioId: idAnuncio }) });
-            const d = await res.json(); alert(d.erro || d.relato); carregarLeilao(); syncStatus();
-        } catch(e){}
-    }
-
-    async function atacarPvP(postura) {
-        const defId = document.getElementById('lista-alvos-pvp').value;
-        try {
-            const res = await fetch('/api/pvp/tatico', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ atacanteId: meuVampiro.id, defensorId: defId, postura }) });
-            const dados = await res.json(); safeSet('pvp-result', dados.erro || dados.relato); 
-            if(!dados.erro) jorrarSangue();
-            syncStatus();
-        } catch(e){}
-    }
-
-    async function forjarAlquimia() {
-        const m = document.getElementById('lista-alquimia').value;
-        try {
-            const res = await fetch('/api/alquimia/forjar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, receitaId: m }) });
-            const dados = await res.json(); safeSet('craft-result', dados.erro || dados.relato); 
-            if(!dados.erro) jorrarSangue();
-            syncStatus();
-        } catch(e){}
-    }
-
-    async function conjurarMagia() {
-        const m = document.getElementById('lista-magia').value, a = document.getElementById('lista-alvos-magia').value;
-        try {
-            const res = await fetch('/api/magia/conjurar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ atacanteId: meuVampiro.id, ritualId: m, alvoId: a }) });
-            const dados = await res.json(); 
-            document.getElementById('magia-result').innerHTML = dados.erro || dados.relato;
-            if (!dados.erro) jorrarSangue();
-            syncStatus();
-        } catch(e){}
-    }
-
-    async function operarCalice(op) {
-        const q = parseInt(document.getElementById('in-quantia').value); if(!q) return;
-        try {
-            const res = await fetch('/api/banco/calice', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, quantia: q, operacao: op }) });
-            const dados = await res.json(); alert(dados.erro || dados.relato); document.getElementById('in-quantia').value = ''; syncStatus();
-        } catch(e) { }
-    }
-
-    async function fundarClan() {
-        const nome = document.getElementById('in-clan-nome').value; if(!nome) return;
-        try {
-            const res = await fetch('/api/clan/fundar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, nomeClan: nome }) });
-            const dados = await res.json(); alert(dados.erro || dados.relato); syncStatus();
-        } catch(e) {}
+            safeSet('lista-leilao', htmlLeilao, true); 
+        } catch(e){} 
     }
     
-    async function operarCofreClan(op) {
-        const q = parseInt(document.getElementById('in-clan-quantia').value); if(!q) return;
-        try {
-            const res = await fetch('/api/clan/cofre', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, quantia: q, operacao: op }) });
-            const dados = await res.json(); alert(dados.erro || dados.relato); document.getElementById('in-clan-quantia').value = ''; syncStatus();
-        } catch(e) {}
+    async function anunciarLeilao() { 
+        const t = document.getElementById('venda-tipo').value, q = document.getElementById('venda-quantia').value, p = document.getElementById('venda-preco').value; 
+        try { 
+            const res = await fetch('/api/leilao/vender', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: meuVampiro.id, tipo: t, quantiaOuHash: q, preco: p }) }); 
+            const d = await res.json(); ocultoAlert(d.erro || d.relato); carregarLeilao(); syncStatus(); 
+        } catch(e){} 
+    }
+    
+    async function comprarLeilao(idAnuncio) { 
+        try { 
+            const res = await fetch('/api/leilao/comprar', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: meuVampiro.id, anuncioId: idAnuncio }) }); 
+            const d = await res.json(); ocultoAlert(d.erro || d.relato); carregarLeilao(); syncStatus(); 
+        } catch(e){} 
     }
 
-    async function syncStatus() {
-        if(!meuVampiro) return;
+    // ==========================================
+    // 8. COMBATE E MAGIA
+    // ==========================================
+    async function atacarPvP(postura) {
+        const defId = document.getElementById('lista-alvos-pvp').value;
+        document.getElementById('pvp-result').innerText = "O Oráculo está julgando as auras...";
         try {
-            const res = await fetch('/api/status/' + meuVampiro.id); 
-            meuVampiro = await res.json(); syncUI();
+            const res = await fetch('/api/pvp/tatico', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ atacanteId: meuVampiro.id, defensorId: defId, postura }) });
+            const dados = await res.json(); 
+            safeSet('pvp-result', dados.erro || dados.relato); 
+            if(!dados.erro) jorrarSangue(); syncStatus();
         } catch(e){}
     }
 
+    async function forjarAlquimia() { 
+        const m = document.getElementById('lista-alquimia').value; 
+        try { 
+            const res = await fetch('/api/alquimia/forjar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, receitaId: m }) }); 
+            const dados = await res.json(); 
+            safeSet('craft-result', dados.erro || dados.relato); 
+            if(!dados.erro) playSfx('magia'); syncStatus(); 
+        } catch(e){} 
+    }
+    
+    async function conjurarMagia() { 
+        const m = document.getElementById('lista-magia').value, a = document.getElementById('lista-alvos-magia').value; 
+        try { 
+            const res = await fetch('/api/magia/conjurar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ atacanteId: meuVampiro.id, ritualId: m, alvoId: a }) }); 
+            const dados = await res.json(); 
+            safeSet('magia-result', dados.erro || dados.relato); 
+            if (!dados.erro) jorrarSangue(); syncStatus(); 
+        } catch(e){} 
+    }
+    
+    // ==========================================
+    // 9. CLÃ E BANCO
+    // ==========================================
+    async function operarCalice(op) { 
+        const q = parseInt(document.getElementById('in-quantia').value); if(!q) return; 
+        try { 
+            const res = await fetch('/api/banco/calice', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, quantia: q, operacao: op }) }); 
+            const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); document.getElementById('in-quantia').value = ''; syncStatus(); 
+        } catch(e) { } 
+    }
+    
+    async function fundarClan() { 
+        const nome = document.getElementById('in-clan-nome').value; if(!nome) return; 
+        try { 
+            const res = await fetch('/api/clan/fundar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, nomeClan: nome }) }); 
+            const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); syncStatus(); 
+        } catch(e) {} 
+    }
+    
+    async function operarCofreClan(op) { 
+        const q = parseInt(document.getElementById('in-clan-quantia').value); if(!q) return; 
+        try { 
+            const res = await fetch('/api/clan/cofre', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, quantia: q, operacao: op }) }); 
+            const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); document.getElementById('in-clan-quantia').value = ''; syncStatus(); 
+        } catch(e) {} 
+    }
+    
+    async function transferirSangueIrmao() { 
+        const alvo = document.getElementById('doacao-alvo').value; const quantia = parseInt(document.getElementById('doacao-quantia').value); 
+        if (!alvo || !quantia) return; 
+        try { 
+            const res = await fetch('/api/banco/transferir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ remetenteId: meuVampiro.id, alvoId: alvo, quantia }) }); 
+            const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); syncStatus(); 
+        } catch(e) {} 
+    }
+
+    // ==========================================
+    // 10. SOCIAL, CHAT E CONVITES
+    // ==========================================
     async function carregarSocial() {
         try {
             const res = await fetch('/api/social/' + meuVampiro.id); const dados = await res.json();
             const opts = dados.alvos.map(a => `<option value="${a.id}">[${a.titulo || 'Mortal'}] ${a.nome} (Grau ${a.nivel})</option>`).join('');
             safeSet('lista-alvos-pvp', opts, true); 
-			safeSet('alvo-obliteracao', opts, true);
+            safeSet('alvo-obliteracao', opts, true); 
             safeSet('chat-alvo-privado', opts, true); 
-            safeSet('lista-alvos-magia', opts, true);
+            safeSet('lista-alvos-magia', opts, true); 
             safeSet('doacao-alvo', opts, true);
             
-            const htmlMagia = Object.keys(dados.grimorio).map(k => meuVampiro.poderesDesbloqueados.includes(k) 
-                ? `<option value="${k}">${dados.grimorio[k].nome} [Custo: ${dados.grimorio[k].custoSangue} Gts / ${dados.grimorio[k].custoAcao} Fúria]</option>` 
-                : '').join('');
-            safeSet('lista-magia', htmlMagia, true);
+            safeSet('lista-magia', Object.keys(dados.grimorio).map(k => meuVampiro.poderesDesbloqueados.includes(k) ? `<option value="${k}">${dados.grimorio[k].nome} [Custo: ${numFmt(dados.grimorio[k].custoSangue)} Gts / ${dados.grimorio[k].custoAcao} Fúria]</option>` : '').join(''), true);
             
-            const htmlAlquimia = Object.keys(dados.alquimia).map(k => {
-                let req = dados.alquimia[k].custo;
-                let cStr = `${req.gts} Gts`;
-                if(req.anima) cStr += ` | ${req.anima} Anima`;
-                if(req.cinzas) cStr += ` | ${req.cinzas} Cinzas`;
-                if(req.vitae) cStr += ` | ${req.vitae} Vitae`;
-                if(req.memoria) cStr += ` | ${req.memoria} Memória`;
-                if(req.ectoplasma) cStr += ` | ${req.ectoplasma} Ecto`;
-                if(req.pedraAlma) cStr += ` | ${req.pedraAlma} P.Alma`;
-                return `<option value="${k}">${dados.alquimia[k].nome} [Custo: ${cStr}]</option>`;
-            }).join('');
-            safeSet('lista-alquimia', htmlAlquimia, true);
+            safeSet('lista-alquimia', Object.keys(dados.alquimia).map(k => { 
+                let req = dados.alquimia[k].custo; 
+                let cStr = `${numFmt(req.gts)} Gts`; 
+                if(req.anima) cStr += ` | ${req.anima} Anima`; 
+                if(req.cinzas) cStr += ` | ${req.cinzas} Cinzas`; 
+                if(req.vitae) cStr += ` | ${req.vitae} Vitae`; 
+                if(req.memoria) cStr += ` | ${req.memoria} Memória`; 
+                if(req.ectoplasma) cStr += ` | ${req.ectoplasma} Ecto`; 
+                if(req.pedraAlma) cStr += ` | ${req.pedraAlma} P.Alma`; 
+                return `<option value="${k}">${dados.alquimia[k].nome} [Custo: ${cStr}]</option>`; 
+            }).join(''), true);
         } catch(e){}
     }
 
-    document.getElementById('chat-canal')?.addEventListener('change', (e) => {
-        const alvo = document.getElementById('chat-alvo-privado');
-        if (e.target.value === 'privado') { alvo.classList.remove('oculto'); carregarSocial(); } 
-        else { alvo.classList.add('oculto'); }
-    });
+    document.getElementById('chat-canal')?.addEventListener('change', (e) => { const alvo = document.getElementById('chat-alvo-privado'); if (e.target.value === 'privado') { alvo.classList.remove('oculto'); carregarSocial(); } else { alvo.classList.add('oculto'); } });
 
     function enviarChat() {
-        const msg = document.getElementById('chat-input').value, canal = document.getElementById('chat-canal').value, alvoSel = document.getElementById('chat-alvo-privado');
-        if(!msg) return;
+        const msg = document.getElementById('chat-input').value, canal = document.getElementById('chat-canal').value, alvoSel = document.getElementById('chat-alvo-privado'); if(!msg) return;
         socket.emit('mensagem_chat', { remetenteId: meuVampiro.id, remetenteNome: meuVampiro.nome, remetenteTitulo: meuVampiro.tituloAtual, canal: canal, clanNome: meuVampiro.clan, destinoId: alvoSel.value, destinoNome: alvoSel.options[alvoSel.selectedIndex]?.text, texto: msg });
         document.getElementById('chat-input').value = '';
     }
 
-    socket.on('nova_mensagem', (dados) => {
-        const box = document.getElementById('chat-box'); if(!box) return;
-        let cssClass = dados.canal;
-        if(dados.autor.includes('ORÁCULO') || dados.autor.includes('ABISSAL')) cssClass = 'ia';
-        box.innerHTML += `<div class="chat-msg ${cssClass}"><span class="chat-autor">${dados.autor}:</span>${dados.texto} <span class="chat-time">${dados.hora}</span></div>`;
-        box.scrollTop = box.scrollHeight;
-    });
+    socket.on('nova_mensagem', (dados) => { const box = document.getElementById('chat-box'); if(!box) return; let cssClass = dados.canal; if(dados.autor.includes('ORÁCULO') || dados.autor.includes('ABISSAL')) cssClass = 'ia'; box.innerHTML += `<div class="chat-msg ${cssClass}"><span class="chat-autor">${dados.autor}:</span>${dados.texto} <span class="chat-time" style="font-size:0.7em; color:#555;">${dados.hora}</span></div>`; box.scrollTop = box.scrollHeight; });
+    socket.on('historico_chat', (dados) => { const box = document.getElementById('chat-box'); if(!box) return; box.innerHTML = ""; dados.mensagens.forEach(m => { let cssClass = dados.canal; if(m.autor.includes('ABISSAL')) cssClass = 'ia'; box.innerHTML += `<div class="chat-msg ${cssClass}"><span class="chat-autor">${m.autor}:</span>${m.texto} <span class="chat-time" style="font-size:0.7em; color:#555;">${m.hora}</span></div>`; }); box.scrollTop = box.scrollHeight; });
 
-    function gerarConviteUniversal() {
-        const webLink = `${window.location.origin}/?invite=${meuVampiro.id}`;
-        navigator.clipboard.writeText(webLink).then(() => {
-            safeSet('invite-status', `Link Mágico copiado para o ClipBoard:\n${webLink}`);
-        });
-    }
-	
-	async function transferirSangueIrmao() {
-        const alvo = document.getElementById('doacao-alvo').value;
-        const quantia = parseInt(document.getElementById('doacao-quantia').value);
-        if (!alvo || !quantia) return;
-        try {
-            const res = await fetch('/api/banco/transferir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ remetenteId: meuVampiro.id, alvoId: alvo, quantia }) });
-            const dados = await res.json(); alert(dados.erro || dados.relato); syncStatus();
-        } catch(e) {}
+    function gerarConviteUniversal() { const webLink = `${window.location.origin}/?invite=${meuVampiro.id}`; navigator.clipboard.writeText(webLink).then(() => { safeSet('invite-status', `Link Mágico copiado para o ClipBoard:\n${webLink}`); }); }
+    
+    async function gerarConviteBot() { 
+        const tgt = document.getElementById('target-telegram').value; 
+        try { 
+            const res = await fetch('/api/convidar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ vampiroId: meuVampiro.id, tgTargetUsername: tgt }) }); 
+            const dados = await res.json(); 
+            if (dados.msgPronta) {
+                if(tg && tg.openTelegramLink) tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(dados.link)}&text=${encodeURIComponent(dados.msgPronta)}`);
+                else prompt("O teu Convite Sombrio (Copia e envia ao novato):", dados.link);
+            }
+            else ocultoAlert(dados.erro || dados.relato); 
+        } catch(e) {} 
     }
 
-    async function gerarConviteBot() {
-        const tgt = document.getElementById('target-telegram').value;
-        try {
-            const res = await fetch('/api/convidar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ vampiroId: meuVampiro.id, tgTargetUsername: tgt }) });
-            const dados = await res.json();
-            if (dados.msgPronta) tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(dados.link)}&text=${encodeURIComponent(dados.msgPronta)}`);
-            else alert(dados.erro || dados.relato);
-        } catch(e) {}
+    async function obliterarMembro() {
+        const alvoId = document.getElementById('alvo-obliteracao').value; if (!alvoId) return;
+        if (!(await ocultoConfirm("⚠️ ATENÇÃO, ALFA PRIMORDIAL!\nDesejas realmente deletar a conta deste usuário permanentemente? Ele perderá tudo."))) return;
+        try { const res = await fetch('/api/admin/obliterar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ adminId: meuVampiro.id, alvoId }) }); const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); syncStatus(); } catch(e) { }
     }
-	
+
+    // ==========================================
+    // 11. BIBLIOTECA
+    // ==========================================
     let projetoAbertoId = null;
-
-    async function iniciarProjeto() {
-        const titulo = document.getElementById('in-proj-titulo').value;
-        const tema = document.getElementById('in-proj-tema').value;
-        if (!titulo || !tema) return alert("Falta título e tema.");
-        
-        try {
-            const res = await fetch('/api/biblioteca/iniciar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, titulo, tema }) });
+    
+    async function iniciarProjeto() { 
+        const titulo = document.getElementById('in-proj-titulo').value, tema = document.getElementById('in-proj-tema').value; 
+        if (!titulo || !tema) return ocultoAlert("Falta título e tema."); 
+        try { 
+            const res = await fetch('/api/biblioteca/iniciar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, titulo, tema }) }); 
             const dados = await res.json(); 
-            if (dados.erro) { alert(dados.erro); return; }
-            
-            document.getElementById('in-proj-titulo').value = ''; 
-            document.getElementById('in-proj-tema').value = '';
-            syncStatus(); carregarBiblioteca();
-            abrirProjeto(dados.projeto.id); 
-        } catch(e) {}
+            if (dados.erro) { ocultoAlert(dados.erro); return; } 
+            document.getElementById('in-proj-titulo').value = ''; document.getElementById('in-proj-tema').value = ''; syncStatus(); carregarBiblioteca(); abrirProjeto(dados.projeto.id); 
+        } catch(e) {} 
     }
-
-    function abrirProjeto(id) {
-        projetoAbertoId = id;
-        const p = meuVampiro.projetosEstudo.find(x => x.id === id);
-        if (!p) return;
-        document.getElementById('bancada-ativa').classList.remove('oculto');
-        document.getElementById('in-proj-conteudo').value = p.conteudo;
-        safeSet('proj-ativo-titulo', p.titulo);
-        document.getElementById('bancada-ativa').scrollIntoView({behavior: "smooth"});
+    
+    function abrirProjeto(id) { 
+        projetoAbertoId = id; const p = meuVampiro.projetosEstudo.find(x => x.id === id); if (!p) return; 
+        document.getElementById('bancada-ativa').classList.remove('oculto'); 
+        document.getElementById('in-proj-conteudo').value = p.conteudo; 
+        safeSet('proj-ativo-titulo', p.titulo); 
+        document.getElementById('bancada-ativa').scrollIntoView({behavior: "smooth"}); 
     }
-
-    async function salvarProjetoManual() {
-        if (!projetoAbertoId) return;
-        const conteudo = document.getElementById('in-proj-conteudo').value;
-        try {
-            const res = await fetch('/api/biblioteca/salvar_manual', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId, conteudo }) });
-            const dados = await res.json(); 
-            alert(dados.erro || dados.relato); 
-            syncStatus(); carregarBiblioteca();
-        } catch(e) {}
+    
+    async function salvarProjetoManual() { 
+        if (!projetoAbertoId) return; const conteudo = document.getElementById('in-proj-conteudo').value; 
+        try { const res = await fetch('/api/biblioteca/salvar_manual', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId, conteudo }) }); const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); syncStatus(); carregarBiblioteca(); } catch(e) {} 
     }
-
-    async function aprofundarProjeto() {
-        if (!projetoAbertoId) return;
-        const pesquisa = document.getElementById('in-proj-pesquisa').value;
-        if (!pesquisa) return alert("Dita a tua dúvida à Mente Abissal.");
-        
-        const btn = document.getElementById('btn-aprofundar');
-        btn.innerText = "A canalizar Ocultismo Cósmico..."; btn.disabled = true;
+    
+    async function aprofundarProjeto() { 
+        if (!projetoAbertoId) return; const pesquisa = document.getElementById('in-proj-pesquisa').value; if (!pesquisa) return ocultoAlert("Dita a tua dúvida à Mente Abissal."); 
+        const btn = document.getElementById('btn-aprofundar'); btn.innerText = "A canalizar Ocultismo Cósmico..."; btn.disabled = true; jorrarSangue(); 
+        try { 
+            const res = await fetch('/api/biblioteca/aprofundar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId, novaPesquisa: pesquisa }) }); 
+            const dados = await res.json(); btn.innerText = "Sussurrar ao Abismo e Anexar Conhecimento"; btn.disabled = false; 
+            if (dados.erro) { ocultoAlert(dados.erro); return; } 
+            document.getElementById('in-proj-conteudo').value = dados.novoConteudo; document.getElementById('in-proj-pesquisa').value = ''; 
+            const txtArea = document.getElementById('in-proj-conteudo'); txtArea.scrollTop = txtArea.scrollHeight; syncStatus(); carregarBiblioteca(); 
+        } catch(e) { btn.innerText = "Sussurrar ao Abismo e Anexar Conhecimento"; btn.disabled = false; } 
+    }
+    
+    async function arquivarProjeto() { 
+        if (!projetoAbertoId || !(await ocultoConfirm("Selar Livro? Depois de selado, o tomo não pode ser alterado."))) return; 
+        const publico = document.getElementById('in-proj-publico').checked; 
+        try { const res = await fetch('/api/biblioteca/arquivar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId, publico }) }); const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); if (!dados.erro) { document.getElementById('bancada-ativa').classList.add('oculto'); projetoAbertoId = null; } syncStatus(); carregarBiblioteca(); } catch(e) {} 
+    }
+    
+    async function cristalizarRitual() { 
+        if (!projetoAbertoId || !(await ocultoConfirm("CRIAR MAGIA REAL?\nA Mente Abissal consumirá 5000 Gts e o teu manuscrito, injetando este ritual no servidor. Continuar?"))) return; 
         jorrarSangue(); 
-
-        try {
-            const res = await fetch('/api/biblioteca/aprofundar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId, novaPesquisa: pesquisa }) });
-            const dados = await res.json(); 
-            
-            btn.innerText = "Sussurrar ao Abismo e Anexar Conhecimento"; btn.disabled = false;
-            
-            if (dados.erro) { alert(dados.erro); return; }
-            
-            document.getElementById('in-proj-conteudo').value = dados.novoConteudo;
-            document.getElementById('in-proj-pesquisa').value = '';
-            const txtArea = document.getElementById('in-proj-conteudo'); txtArea.scrollTop = txtArea.scrollHeight;
-            syncStatus(); carregarBiblioteca();
-        } catch(e) { btn.innerText = "Sussurrar ao Abismo e Anexar Conhecimento"; btn.disabled = false; }
+        try { const res = await fetch('/api/biblioteca/cristalizar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId }) }); const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); if (!dados.erro) { document.getElementById('bancada-ativa').classList.add('oculto'); projetoAbertoId = null; carregarSocial(); } syncStatus(); carregarBiblioteca(); } catch(e) { alert("A entropia cósmica quebrou a fusão."); } 
     }
-
-    async function arquivarProjeto() {
-        if (!projetoAbertoId) return;
-        const publico = document.getElementById('in-proj-publico').checked;
-        if(!confirm("Tem a certeza? Depois de selado, o tomo não pode ser alterado.")) return;
-
-        try {
-            const res = await fetch('/api/biblioteca/arquivar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId, publico }) });
-            const dados = await res.json(); 
-            alert(dados.erro || dados.relato); 
-            if (!dados.erro) { document.getElementById('bancada-ativa').classList.add('oculto'); projetoAbertoId = null; }
-            syncStatus(); carregarBiblioteca();
-        } catch(e) {}
+    
+    async function cristalizarArma() { 
+        if (!projetoAbertoId || !(await ocultoConfirm("FORJAR ARMA REAL?\nA IA tentará criar uma arma para o Pool Global a partir do teu rascunho (3000 Gts). Continuar?"))) return; 
+        jorrarSangue(); 
+        try { const res = await fetch('/api/biblioteca/cristalizar_arma', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId }) }); const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); if (!dados.erro) { document.getElementById('bancada-ativa').classList.add('oculto'); projetoAbertoId = null; } syncStatus(); carregarBiblioteca(); } catch(e) { alert("A entropia cósmica quebrou a fusão."); } 
     }
-
-    async function cristalizarRitual() {
-        if (!projetoAbertoId) return;
-        if(!confirm("CRIAR MAGIA REAL? \nA Mente Abissal lerá as tuas palavras, consumirá 5000 Gts e o Teu Rascunho, e injetará este ritual no código do jogo para todos. Continuar?")) return;
-
-        jorrarSangue();
-        try {
-            const res = await fetch('/api/biblioteca/cristalizar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId }) });
-            const dados = await res.json(); 
-            alert(dados.erro || dados.relato); 
-            if (!dados.erro) { 
-                document.getElementById('bancada-ativa').classList.add('oculto'); 
-                projetoAbertoId = null; 
-                carregarSocial();
-            }
-            syncStatus(); carregarBiblioteca();
-        } catch(e) { alert("A entropia cósmica quebrou a fusão."); }
-    }
-
-    async function cristalizarArma() {
-        if (!projetoAbertoId) return;
-        if(!confirm("FORJAR ARMA REAL? \nA IA tentará criar uma nova arma para o Pool Global a partir do teu rascunho (3000 Gts). Continuar?")) return;
-
-        jorrarSangue();
-        try {
-            const res = await fetch('/api/biblioteca/cristalizar_arma', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId }) });
-            const dados = await res.json(); 
-            alert(dados.erro || dados.relato); 
-            if (!dados.erro) { 
-                document.getElementById('bancada-ativa').classList.add('oculto'); 
-                projetoAbertoId = null; 
-            }
-            syncStatus(); carregarBiblioteca();
-        } catch(e) { alert("A entropia cósmica quebrou a fusão."); }
-    }
-
-    async function explorarReino(reinoId) {
-        try {
-            const res = await fetch('/api/incursoes/explorar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, reinoId }) });
-            const dados = await res.json(); 
-            
-            if (!dados.sucesso) { alert(dados.erro); } 
-            else { jorrarSangue(); alert(dados.relato); }
-            
-            syncStatus();
-        } catch(e) { alert("Perdido no vórtice astral."); }
+    
+    async function apagarProjetoBtn(id) { 
+        if(!(await ocultoConfirm("Queimar este rascunho? O conhecimento perder-se-á."))) return; 
+        try { const res = await fetch('/api/biblioteca/apagar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: id }) }); const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); if (projetoAbertoId === id) document.getElementById('bancada-ativa').classList.add('oculto'); syncStatus(); carregarBiblioteca(); } catch(e) {} 
     }
 
     async function carregarBiblioteca() {
@@ -1387,116 +1293,61 @@
         } catch(e) {}
     }
 
-    async function apagarProjetoBtn(id) {
-        if(!confirm("Queimar este rascunho? O conhecimento perder-se-á.")) return;
-        try {
-            const res = await fetch('/api/biblioteca/apagar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: id }) });
-            const dados = await res.json(); alert(dados.erro || dados.relato); 
-            if (projetoAbertoId === id) document.getElementById('bancada-ativa').classList.add('oculto');
-            syncStatus(); carregarBiblioteca();
-        } catch(e) {}
+    // ==========================================
+    // 12. CONCLAVE E GOÉCIA
+    // ==========================================
+    async function explorarReino(reinoId) { 
+        try { const res = await fetch('/api/incursoes/explorar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, reinoId }) }); const dados = await res.json(); if (!dados.sucesso) { ocultoAlert(dados.erro); } else { jorrarSangue(); ocultoAlert(dados.relato); } syncStatus(); } catch(e) {} 
     }
-	
-    // --- FUNÇÕES DA GOÉCIA E CONCLAVE (FRONTEND) ---
+
     async function atualizarConclave() {
         try {
             const res = await fetch('/api/conclave/status'); const dados = await res.json();
             
-            // A Balança
-            let total = dados.balanca.tiamat + dados.balanca.seth;
-            if (total === 0) total = 1; // Prevenir NaN
-            let percTiamat = (dados.balanca.tiamat / total) * 100;
-            let percSeth = (dados.balanca.seth / total) * 100;
-            
-            document.getElementById('bar-tiamat').style.width = `${percTiamat}%`;
-            document.getElementById('bar-seth').style.width = `${percSeth}%`;
+            let total = dados.balanca.tiamat + dados.balanca.seth; if (total === 0) total = 1; 
+            document.getElementById('bar-tiamat').style.width = `${(dados.balanca.tiamat / total) * 100}%`; 
+            document.getElementById('bar-seth').style.width = `${(dados.balanca.seth / total) * 100}%`; 
             safeSet('lbl-regente', dados.balanca.regente);
-
-            // GvG Clãs
+            
             if (dados.clansData && meuVampiro) {
-                let htmlClans = dados.clansData.filter(c => c.nome !== meuVampiro.clan && c.nome !== 'Sangue Ralo').map(c => 
-                    `<option value="${c.nome}">[Egrégora Nv.${c.egregoraNv}] ${c.nome} - Riqueza: ${c.cofre}</option>`
-                ).join('');
-                safeSet('alvo-gvg', htmlClans || '<option disabled>Nenhum Inimigo Digno Encontrado</option>', true);
+                let clanHtml = dados.clansData.filter(c => c.nome !== meuVampiro.clan && c.nome !== 'Sangue Ralo').map(c => `<option value="${c.nome}">[Egrégora Nv.${c.egregoraNv}] ${c.nome} - Riqueza: ${numFmt(c.cofre)}</option>`).join('');
+                safeSet('alvo-gvg', clanHtml || '<option disabled>Nenhum Inimigo Digno Encontrado</option>', true);
             }
-
-            // O Raid Boss Goético
-            if (dados.evocacao) {
-                document.getElementById('box-no-boss').classList.add('oculto');
-                document.getElementById('box-has-boss').classList.remove('oculto');
-                safeSet('boss-name', dados.evocacao.nome);
-                safeSet('boss-desc', dados.evocacao.desc);
-                safeSet('boss-hp-text', dados.evocacao.hpAtual);
-                safeSet('boss-hp-max', dados.evocacao.hpMax);
-                document.getElementById('boss-hp-bar').style.width = `${(dados.evocacao.hpAtual / dados.evocacao.hpMax) * 100}%`;
-            } else {
-                document.getElementById('box-no-boss').classList.remove('oculto');
-                document.getElementById('box-has-boss').classList.add('oculto');
+            
+            if (dados.evocacao) { 
+                document.getElementById('box-no-boss').classList.add('oculto'); 
+                document.getElementById('box-has-boss').classList.remove('oculto'); 
+                safeSet('boss-name', dados.evocacao.nome); 
+                safeSet('boss-desc', dados.evocacao.desc); 
+                safeSet('boss-hp-text', numFmt(dados.evocacao.hpAtual)); 
+                safeSet('boss-hp-max', numFmt(dados.evocacao.hpMax)); 
+                document.getElementById('boss-hp-bar').style.width = `${(dados.evocacao.hpAtual / dados.evocacao.hpMax) * 100}%`; 
+            } else { 
+                document.getElementById('box-no-boss').classList.remove('oculto'); 
+                document.getElementById('box-has-boss').classList.add('oculto'); 
             }
-
-            // A FENDA ASTRAL (IA)
-            const boxFenda = document.getElementById('box-fenda');
-            const fendas = Object.values(dados.fendas || {});
-            if(fendas.length > 0) {
-                const f = fendas[0]; // Mostra a primeira ativa
-                fendaAtualId = f.id;
-                boxFenda.classList.remove('oculto');
-                safeSet('fenda-nome', f.nome);
-                safeSet('fenda-hp', f.hpAtual);
-            } else {
-                boxFenda.classList.add('oculto');
-                fendaAtualId = null;
+            
+            const fendas = Object.values(dados.fendas || {}); 
+            if(fendas.length > 0) { 
+                const f = fendas[0]; fendaAtualId = f.id; 
+                document.getElementById('box-fenda').classList.remove('oculto'); 
+                safeSet('fenda-nome', f.nome); 
+                safeSet('fenda-hp', numFmt(f.hpAtual)); 
+            } else { 
+                document.getElementById('box-fenda').classList.add('oculto'); fendaAtualId = null; 
             }
-
         } catch(e) {}
     }
 
-    async function evocarGoetia() {
-        if(!confirm("Tem a certeza? Isso consumirá 3000 Gts e trará uma Entidade ao Mundo!")) return;
-        abismoVoid();
-        try {
-            const res = await fetch('/api/goecia/evocar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) });
-            const dados = await res.json(); 
-            if(dados.erro) alert(dados.erro);
-            atualizarConclave(); syncStatus();
-        } catch(e){}
-    }
-
-    async function enfrentarGoetia() {
-        abismoVoid();
-        try {
-            const res = await fetch('/api/goecia/enfrentar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) });
-            const dados = await res.json(); 
-            if(dados.erro && !dados.sucesso) alert(dados.erro); // Foi atacado pelo demónio e errou
-            else alert(dados.relato); // Causou Dano
-            atualizarConclave(); syncStatus();
-        } catch(e){}
-    }
-
-    async function atacarFenda() {
-        if (!fendaAtualId) return;
-        abismoVoid();
-        try {
-            const res = await fetch('/api/conclave/fenda/atacar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, fendaId: fendaAtualId }) });
-            const dados = await res.json(); 
-            if(dados.erro && !dados.sucesso) alert(dados.erro);
-            else alert(dados.relato);
-            atualizarConclave(); syncStatus();
-        } catch(e){}
-    }
-
+    async function evocarGoetia() { if(!(await ocultoConfirm("Tem a certeza? Isso consumirá 3000 Gts e trará uma Entidade ao Mundo!"))) return; abismoVoid(); try { const res = await fetch('/api/goecia/evocar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); const dados = await res.json(); if(dados.erro) ocultoAlert(dados.erro); atualizarConclave(); syncStatus(); } catch(e){} }
+    async function enfrentarGoetia() { abismoVoid(); try { const res = await fetch('/api/goecia/enfrentar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); const dados = await res.json(); if(dados.erro && !dados.sucesso) ocultoAlert(dados.erro); else ocultoAlert(dados.relato); atualizarConclave(); syncStatus(); } catch(e){} }
+    async function atacarFenda() { if (!fendaAtualId) return; abismoVoid(); try { const res = await fetch('/api/conclave/fenda/atacar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, fendaId: fendaAtualId }) }); const dados = await res.json(); if(dados.erro && !dados.sucesso) ocultoAlert(dados.erro); else ocultoAlert(dados.relato); atualizarConclave(); syncStatus(); } catch(e){} }
     async function invadirSantuarioAlvo() {
-        const clanInimigo = document.getElementById('alvo-gvg').value;
-        if (!clanInimigo) return;
-        jorrarSangue();
-        try {
-            const res = await fetch('/api/conclave/invadir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, clanAlvo: clanInimigo }) });
-            const dados = await res.json(); 
-            alert(dados.erro || dados.relato);
-            atualizarConclave(); syncStatus();
-        } catch(e){}
+        const clanInimigo = document.getElementById('alvo-gvg').value; if (!clanInimigo) return; jorrarSangue();
+        try { const res = await fetch('/api/conclave/invadir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, clanAlvo: clanInimigo }) }); const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); atualizarConclave(); syncStatus(); } catch(e){}
     }
 
+    // WEBSOCKET LISTENERS GLOBAIS
     socket.on('sync_geral', () => { carregarMercado(); carregarLeilao(); carregarBiblioteca(); atualizarConclave(); if(meuVampiro) syncStatus(); });
     socket.on('tick', () => { if(meuVampiro) syncStatus(); });
 </script>

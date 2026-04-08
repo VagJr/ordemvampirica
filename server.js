@@ -10,7 +10,6 @@ const { ShadowCore, AstrolabioLunar } = require('./ShadowCore.js');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
-
 global.io = io; 
 
 // ==========================================
@@ -28,7 +27,7 @@ if(BOT_TOKEN && BOT_TOKEN.length > 10) {
 const enviarDMSombria = async (tgId, mensagem) => {
     if (bot && tgId && tgId.toString().length > 5) {
         try { await bot.sendMessage(tgId, `🦇 *SUSSURRO DA CORTE:*\n\n${mensagem}`, { parse_mode: "Markdown" }); } 
-        catch(e) { /* Bloqueado pelo usuário */ }
+        catch(e) { }
     }
 };
 
@@ -44,62 +43,33 @@ async function inicializarServidor() {
     console.log("A conectar ao Monólito do MongoDB Atlas...");
     if (MONGO_URI) {
         try {
-            const client = new MongoClient(MONGO_URI);
-            await client.connect();
-            const db = client.db('sanguinis_db');
-            core.collection = db.collection('registos_akashicos');
-            
+            const client = new MongoClient(MONGO_URI); await client.connect();
+            const db = client.db('sanguinis_db'); core.collection = db.collection('registos_akashicos');
             const doc = await core.collection.findOne({ _id: 'MATRIZ_PRINCIPAL' });
+            
             if (doc) {
-                core.vampiros = doc.vampiros || {};
-                core.rebanho = doc.rebanho || {};
-                core.clans = doc.clans || {};
-                core.leilaoP2P = doc.leilaoP2P || [];
-                core.leilaoIdCounter = doc.leilaoIdCounter || 1;
+                core.vampiros = doc.vampiros || {}; core.rebanho = doc.rebanho || {}; core.clans = doc.clans || {};
+                core.leilaoP2P = doc.leilaoP2P || []; core.leilaoIdCounter = doc.leilaoIdCounter || 1;
                 core.logs = doc.logs || { global: [], caca: [], guerra: [] };
-                
-                // CARREGANDO NOVAS VARIÁVEIS EXPANDIDAS
-                core.manuscritos = doc.manuscritos || [];
-                core.grimorioCustomizado = doc.grimorioCustomizado || {};
+                core.manuscritos = doc.manuscritos || []; core.grimorioCustomizado = doc.grimorioCustomizado || {};
                 core.balancaCosmica = doc.balancaCosmica || { tiamat: 0, seth: 0, regente: 'Equilíbrio' };
-                core.evocacaoAtiva = doc.evocacaoAtiva || null;
-                core.fendaAtiva = doc.fendaAtiva || {};
-                core.pactosAtivos = doc.pactosAtivos || {};
-                core.reliquiasCustomizadas = doc.reliquiasCustomizadas || [];
-
-                // Recria as funções mágicas injetadas pelos jogadores
+                core.evocacaoAtiva = doc.evocacaoAtiva || null; core.fendaAtiva = doc.fendaAtiva || {};
+                core.pactosAtivos = doc.pactosAtivos || {}; core.reliquiasCustomizadas = doc.reliquiasCustomizadas || [];
+                core.historicoChat = doc.historicoChat || { global: [], clan: {}, privado: {} };
                 Object.assign(core.grimorio, core._construirFuncoesCustomizadas(core.grimorioCustomizado));
+                console.log("🦇 Almas carregadas da escuridão do Atlas.");
+            } else { console.log("🌑 O Abismo está vazio."); }
 
-                console.log("🦇 Almas e Relíquias carregadas da escuridão do Atlas.");
-            } else {
-                console.log("🌑 O Abismo está vazio. Aguardando o Primeiro Ser.");
-            }
-
-            // Sobrescreve o salvamento síncrono frágil com o salvamento Atlas asíncrono
-            // AGORA SALVA TUDO (Fendas, Pactos, Magias Novas)
             core._salvarBancoDeDados = () => {
-                const data = {
-                    vampiros: core.vampiros, rebanho: core.rebanho, clans: core.clans,
-                    leilaoP2P: core.leilaoP2P, leilaoIdCounter: core.leilaoIdCounter, logs: core.logs,
-                    manuscritos: core.manuscritos, grimorioCustomizado: core.grimorioCustomizado,
-                    balancaCosmica: core.balancaCosmica, evocacaoAtiva: core.evocacaoAtiva,
-                    fendaAtiva: core.fendaAtiva, pactosAtivos: core.pactosAtivos, reliquiasCustomizadas: core.reliquiasCustomizadas
-                };
+                const data = { vampiros: core.vampiros, rebanho: core.rebanho, clans: core.clans, leilaoP2P: core.leilaoP2P, leilaoIdCounter: core.leilaoIdCounter, logs: core.logs, manuscritos: core.manuscritos, grimorioCustomizado: core.grimorioCustomizado, balancaCosmica: core.balancaCosmica, evocacaoAtiva: core.evocacaoAtiva, fendaAtiva: core.fendaAtiva, pactosAtivos: core.pactosAtivos, reliquiasCustomizadas: core.reliquiasCustomizadas, historicoChat: core.historicoChat };
                 core.collection.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: data }, { upsert: true }).catch(console.error);
             };
 
-        } catch (error) {
-            console.error("\n❌ CRÍTICO: Falha na conexão MongoDB Atlas! Erro de IP/Firewall.");
-            console.error("👉 VÁ NO SEU MONGODB ATLAS -> NETWORK ACCESS -> ADICIONE O IP: 0.0.0.0/0");
-            console.error("Caso contrário o jogo não salvará. Erro técnico: ", error.message, "\n");
-        }
-    } else {
-        console.warn("⚠️ MONGO_URI não definida. A usar memória volátil local.");
-    }
+        } catch (error) { console.error("❌ CRÍTICO: Falha na conexão MongoDB Atlas! ", error.message); }
+    } else { console.warn("⚠️ MONGO_URI não definida. Memória volátil."); }
 
     server.listen(3000, () => console.log('🩸 O Portão abriu-se na porta 3000.'));
 }
-
 inicializarServidor();
 
 // ==========================================
@@ -111,230 +81,108 @@ app.post('/api/auth', (req, res) => {
     try {
         const { tgId, tgUsername, nomeSombrio, senha, inviteCode, raca } = req.body;
         const isFirstVampire = Object.keys(core.vampiros).length === 0;
-
-        if (!tgId) return res.status(400).json({erro: "O Selo Astral (ID) é exigido para transmutação."});
-        
-        const result = core.despertarViaTelegram(
-            tgId || Date.now(),
-            tgUsername || 'Sem_Rosto', 
-            nomeSombrio, 
-            senha || "LILITH", 
-            inviteCode,
-            raca
-        );
+        if (!tgId) return res.status(400).json({erro: "Selo Astral exigido."});
+        const result = core.despertarViaTelegram(tgId || Date.now(), tgUsername || 'Sem_Rosto', nomeSombrio, senha || "LILITH", inviteCode, raca);
 
         if (result.recusado) return res.status(403).json({erro: result.erro});
+        if (result.vampiro.geracao === 1 && isFirstVampire) { result.vampiro.sangue = 10000; result.vampiro.pontosAcao = 100; result.vampiro.maxAcao = 100; core._salvarBancoDeDados(); }
 
-        // Benefício para o Primordial
-        if (result.vampiro.geracao === 1 && isFirstVampire) {
-            result.vampiro.sangue = 10000;
-            result.vampiro.pontosAcao = 100;
-            result.vampiro.maxAcao = 100;
-            core._salvarBancoDeDados();
-        }
-
-        io.emit('sync_geral'); 
-        res.json(result.vampiro);
-    } catch(err) {
-        console.error("ERRO NO RITUAL DE AUTENTICAÇÃO:", err);
-        res.status(500).json({erro: "A Geometria Sagrada falhou no Rito de Passagem."}); 
-    }
+        io.emit('sync_geral'); res.json(result.vampiro);
+    } catch(err) { res.status(500).json({erro: "A Geometria Sagrada falhou."}); }
 });
 
 app.post('/api/convidar', async (req, res) => {
     try {
-        const { vampiroId, tgTargetUsername } = req.body;
-        const vampiro = core.vampiros[vampiroId];
-        if (!vampiro) return res.status(400).json({ erro: "Evocador falso." });
-        if (!tgTargetUsername) return res.status(400).json({ erro: "Falta a alma do alvo." });
-        
-        let limpo = tgTargetUsername.replace('@', '').toLowerCase();
-        const hashAlvo = core._forjarSigilo('telegram', '@' + limpo);
-        const dadosAlvo = core.rebanho[hashAlvo];
-        const hpMortal = dadosAlvo ? dadosAlvo.sangueAtual : "Oculto pelas Brumas";
-        
-        const conviteLink = `https://t.me/SEU_BOT_AQUI?startapp=${vampiroId}`;
-        const mensagemDM = 
-            `🩸 *O VÉU CAIU. A CORTE DA NOITE OBSERVA-O.*\n\n` +
-            `Nós escaneamos a sua aura. Nível Vital: *${hpMortal} HP*.\n\n` +
-            `O Imortal [${vampiro.tituloAtual}] *${vampiro.nome}* convida-o a beber do nosso Cálice e tornar-se o Predador...\n` +
-            `Ou ignorar e ser Comida Humana para a Ordem.\n\n` +
-            `A Escolha e a Morte aguardam.`;
-
-        res.json({ sucesso: true, msgPronta: mensagemDM, link: conviteLink });
-    } catch(err) { 
-        console.error("ERRO NO CONVITE:", err);
-        res.status(500).json({erro: "O Corvo Negro falhou."}); 
-    }
+        const { vampiroId, tgTargetUsername } = req.body; const vampiro = core.vampiros[vampiroId];
+        if (!vampiro || !tgTargetUsername) return res.status(400).json({ erro: "Dados inválidos." });
+        let limpo = tgTargetUsername.replace('@', '').toLowerCase(); const hpMortal = core.rebanho[core._forjarSigilo('telegram', '@' + limpo)]?.sangueAtual || "Oculto";
+        const msg = `🩸 *O VÉU CAIU.*\n\nO Imortal [${vampiro.tituloAtual}] *${vampiro.nome}* convida-o a beber do nosso Cálice...`;
+        res.json({ sucesso: true, msgPronta: msg, link: `https://t.me/SEU_BOT_AQUI?startapp=${vampiroId}` });
+    } catch(err) { res.status(500).json({erro: "Falha."}); }
 });
 
-app.post('/api/caca/absolver', (req, res) => { 
-    try { 
-        res.json(core.absolverMortal(req.body.id, req.body.hash)); 
-        io.emit('sync_geral'); 
-    } catch(e){ 
-        res.status(500).json({erro:"O tribunal cármico falhou."}); 
-    } 
-});
+app.post('/api/caca/absolver', (req, res) => { try { res.json(core.absolverMortal(req.body.id, req.body.hash)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/admin/obliterar', (req, res) => { try { res.json(core.obliterarHerege(req.body.adminId, req.body.alvoId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
+// STATUS E MERCADOS
 app.get('/api/mercado', (req, res) => {
     try {
-        const mortais = Object.values(core.rebanho).map(m => ({
-            hash: m.hash, id: m.identificadorVisivel, hp: m.sangueAtual,
-            estado: m.estado, qualidade: m.qualidade, leituraAura: m.leituraAura,
-            plataforma: m.plataforma, maldicao: m.maldicaoArcana ? true : false,
-            donoSelo: m.maldicaoArcana ? m.maldicaoArcana.donoNome : null
-        }));
+        const mortais = Object.values(core.rebanho).map(m => ({ hash: m.hash, id: m.identificadorVisivel, hp: m.sangueAtual, estado: m.estado, qualidade: m.qualidade, leituraAura: m.leituraAura, plataforma: m.plataforma, maldicao: !!m.maldicaoArcana, donoSelo: m.maldicaoArcana ? m.maldicaoArcana.donoNome : null }));
         res.json({ mortais, logs: core.logs });
-    } catch(err) { res.status(500).json({erro: "O Vidro Negro estilhaçou-se."}); }
+    } catch(err) { res.status(500).json({erro: "Falha."}); }
 });
 
-// ADMIN - OBLITERAÇÃO
-app.post('/api/admin/obliterar', (req, res) => { 
-    try { 
-        res.json(core.obliterarHerege(req.body.adminId, req.body.alvoId)); 
-        io.emit('sync_geral'); 
-    } catch(e){ 
-        res.status(500).json({erro:"A lâmina do carrasco falhou."}); 
-    } 
-});
+// PERSONAGEM & ITENS
+app.post('/api/atributos/distribuir', (req, res) => { try { res.json(core.distribuirAtributos(req.body.id, req.body.atributo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/inventario/equipar', (req, res) => { try { res.json(core.equiparReliquia(req.body.id, req.body.reliquiaId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/inventario/desequipar', (req, res) => { try { res.json(core.desequiparReliquia(req.body.id, req.body.slot)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/inventario/aprimorar', (req, res) => { try { res.json(core.aprimorarEquipamento(req.body.id, req.body.slot)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/perfil/titulo', (req, res) => { try { res.json(core.mudarTitulo(req.body.id, req.body.titulo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
-// SISTEMAS DE PERSONAGEM
-app.post('/api/atributos/distribuir', (req, res) => { try { res.json(core.distribuirAtributos(req.body.id, req.body.atributo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha no Rito."}); } });
-app.post('/api/inventario/equipar', (req, res) => { try { res.json(core.equiparReliquia(req.body.id, req.body.reliquiaId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha no Rito."}); } });
-app.post('/api/inventario/aprimorar', (req, res) => { try { res.json(core.aprimorarEquipamento(req.body.id, req.body.slot)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha na Bigorna."}); } });
-app.post('/api/perfil/titulo', (req, res) => { try { res.json(core.mudarTitulo(req.body.id, req.body.titulo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha no Rito."}); } });
+// PVE, CACA, LEILÃO E PACTOS
+app.post('/api/pve/patrulha', (req, res) => { try { res.json(core.patrulharUmbral(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/chat/pacto/pedir', async (req, res) => { try { res.json(await core.pedirPactoIA(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/chat/pacto/completar', (req, res) => { try { res.json(core.completarPacto(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
-// PVE E PACTOS PROCEDURAIS
-app.post('/api/pve/patrulha', (req, res) => { try { res.json(core.patrulharUmbral(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Erro na patrulha."}); } });
-app.post('/api/chat/pacto/pedir', async (req, res) => { try { res.json(await core.pedirPactoIA(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"O Abismo não responde."}); } });
-app.post('/api/chat/pacto/completar', (req, res) => { try { res.json(core.completarPacto(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Erro ao selar pacto."}); } });
-
-// SISTEMAS DE CLÃ E LEILÃO
 app.post('/api/clan/fundar', (req, res) => { try { res.json(core.fundarClan(req.body.id, req.body.nomeClan)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.post('/api/clan/cofre', (req, res) => { try { res.json(core.operarCofreClan(req.body.id, req.body.quantia, req.body.operacao)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.get('/api/leilao', (req, res) => { try { res.json(core.leilaoP2P); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.post('/api/leilao/vender', (req, res) => { try { res.json(core.anunciarNoLeilao(req.body.id, req.body.tipo, req.body.quantiaOuHash, parseInt(req.body.preco))); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.post('/api/leilao/comprar', (req, res) => { try { res.json(core.comprarDoLeilao(req.body.id, parseInt(req.body.anuncioId))); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
-// SISTEMAS DE CAÇA E OSINT
-app.post('/api/caca/mapear', async (req, res) => { 
-    try { const r = await core.mapearMortal(req.body.id, req.body.plataforma, req.body.identificador); res.json(r); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"A Visão Astral falhou."}); }
-});
+app.post('/api/caca/mapear', async (req, res) => { try { res.json(await core.mapearMortal(req.body.id, req.body.plataforma, req.body.identificador)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.post('/api/caca/drenar', (req, res) => { 
     try { 
         const result = core.drenarMortal(req.body.id, req.body.hash, req.body.local);
-        if (result && result.alertaDono && result.donoId) {
-            const dono = core.vampiros[result.donoId];
-            if (dono) enviarDMSombria(dono.tgId, result.alertaDono); 
-        }
+        if (result && result.alertaDono && result.donoId) { const dono = core.vampiros[result.donoId]; if (dono) enviarDMSombria(dono.tgId, result.alertaDono); }
         res.json(result); io.emit('sync_geral'); 
-    } catch(e){ res.status(500).json({erro:"Erro ao Sorver."}); } 
+    } catch(e){ res.status(500).json({erro:"Falha."}); } 
 });
-app.post('/api/caca/amaldicoar', (req, res) => { try { res.json(core.comprometerMortal(req.body.id, req.body.hash)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Erro no Selo."}); } });
+app.post('/api/caca/amaldicoar', (req, res) => { try { res.json(core.comprometerMortal(req.body.id, req.body.hash)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
-// ROTAS DA BIBLIOTECA AKÁSHICA
-app.post('/api/biblioteca/iniciar', (req, res) => { 
-    try { res.json(core.iniciarProjetoEstudo(req.body.id, req.body.titulo, req.body.tema)); io.emit('sync_geral'); } 
-    catch(e){ console.error(e); res.status(500).json({erro:"O pergaminho rasgou-se."}); } 
-});
-app.post('/api/biblioteca/aprofundar', async (req, res) => { 
-    try { res.json(await core.aprofundarProjeto(req.body.id, req.body.projetoId, req.body.novaPesquisa)); io.emit('sync_geral'); } 
-    catch(e){ console.error(e); res.status(500).json({erro:"A entidade calou-se. O Abismo recusou a conexão."}); } 
-});
-app.post('/api/biblioteca/salvar_manual', (req, res) => { 
-    try { res.json(core.salvarProjetoManual(req.body.id, req.body.projetoId, req.body.conteudo)); io.emit('sync_geral'); } 
-    catch(e){ console.error(e); res.status(500).json({erro:"A tinta secou antes de tocar no papel."}); } 
-});
-app.post('/api/biblioteca/apagar', (req, res) => { 
-    try { res.json(core.apagarProjeto(req.body.id, req.body.projetoId)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"O fogo mágico falhou."}); } 
-});
-app.post('/api/biblioteca/arquivar', (req, res) => { 
-    try { res.json(core.arquivarProjetoComoManuscrito(req.body.id, req.body.projetoId, req.body.publico)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"O selo de sangue não fixou."}); } 
-});
-app.get('/api/biblioteca', (req, res) => {
-    try { res.json({ manuscritos: core.manuscritos || [] }); } 
-    catch(e) { res.status(500).json({erro:"Erro ao abrir a estante."}); }
-});
-app.post('/api/biblioteca/cristalizar', async (req, res) => { 
-    try { res.json(await core.cristalizarRitualMagico(req.body.id, req.body.projetoId)); io.emit('sync_geral'); } 
-    catch(e){ console.error(e); res.status(500).json({erro:"A Forja da Realidade colapsou."}); } 
-});
-app.post('/api/biblioteca/cristalizar_arma', async (req, res) => { 
-    try { res.json(await core.cristalizarArmaAkashica(req.body.id, req.body.projetoId)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"A Forja Draconiana colapsou."}); } 
-});
+// BIBLIOTECA
+app.post('/api/biblioteca/iniciar', (req, res) => { try { res.json(core.iniciarProjetoEstudo(req.body.id, req.body.titulo, req.body.tema)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/biblioteca/aprofundar', async (req, res) => { try { res.json(await core.aprofundarProjeto(req.body.id, req.body.projetoId, req.body.novaPesquisa)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/biblioteca/salvar_manual', (req, res) => { try { res.json(core.salvarProjetoManual(req.body.id, req.body.projetoId, req.body.conteudo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/biblioteca/apagar', (req, res) => { try { res.json(core.apagarProjeto(req.body.id, req.body.projetoId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/biblioteca/arquivar', (req, res) => { try { res.json(core.arquivarProjetoComoManuscrito(req.body.id, req.body.projetoId, req.body.publico)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.get('/api/biblioteca', (req, res) => { try { res.json({ manuscritos: core.manuscritos || [] }); } catch(e) { res.status(500).json({erro:"Falha."}); } });
+app.post('/api/biblioteca/cristalizar', async (req, res) => { try { res.json(await core.cristalizarRitualMagico(req.body.id, req.body.projetoId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/biblioteca/cristalizar_arma', async (req, res) => { try { res.json(await core.cristalizarArmaAkashica(req.body.id, req.body.projetoId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
-// INCURSÕES E COMBATE GERAL
-app.post('/api/incursoes/explorar', (req, res) => { 
-    try { res.json(core.explorarUmbral(req.body.id, req.body.reinoId)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"Foste perdido no vácuo do Umbral."}); } 
-});
-app.post('/api/magia/conjurar', (req, res) => { try { res.json(core.conjurarRitual(req.body.atacanteId, req.body.ritualId, req.body.alvoId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Erro na Magia."}); } });
-app.post('/api/alquimia/forjar', (req, res) => { try { res.json(core.fabricarAlquimia(req.body.id, req.body.receitaId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Erro na Forja."}); } });
+// COMBATE E MAGIA
+app.post('/api/incursoes/explorar', (req, res) => { try { res.json(core.explorarUmbral(req.body.id, req.body.reinoId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/magia/conjurar', (req, res) => { try { res.json(core.conjurarRitual(req.body.atacanteId, req.body.ritualId, req.body.alvoId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/alquimia/forjar', (req, res) => { try { res.json(core.fabricarAlquimia(req.body.id, req.body.receitaId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
-app.post('/api/pvp/tatico', (req, res) => { 
+app.post('/api/pvp/tatico', async (req, res) => { 
     try { 
-        const result = core.atacarVampiro(req.body.atacanteId, req.body.defensorId, parseInt(req.body.postura)); 
-        if (result && result.alertaDono && result.donoId) {
-            const defensor = core.vampiros[result.donoId];
-            if(defensor) enviarDMSombria(defensor.tgId, result.alertaDono); 
-        }
+        const result = await core.atacarVampiro(req.body.atacanteId, req.body.defensorId, parseInt(req.body.postura)); 
+        if (result && result.alertaDono && result.donoId) { const defensor = core.vampiros[result.donoId]; if(defensor) enviarDMSombria(defensor.tgId, result.alertaDono); }
         res.json(result); io.emit('sync_geral'); 
-    } catch(e){ res.status(500).json({erro:"Erro de Colisão Astral."}); }
+    } catch(e){ res.status(500).json({erro:"Falha no Coliseu."}); }
 });
 
-// BANCO / CÁLICE
-app.post('/api/banco/calice', (req, res) => { try { res.json(core.operarCalice(req.body.id, req.body.quantia, req.body.operacao)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Erro no Cálice."}); } });
-app.post('/api/banco/transferir', (req, res) => { 
-    try { res.json(core.transferirSangue(req.body.remetenteId, req.body.alvoId, req.body.quantia)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"Erro na Ligação Cármica."}); } 
-});
+app.post('/api/banco/calice', (req, res) => { try { res.json(core.operarCalice(req.body.id, req.body.quantia, req.body.operacao)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/banco/transferir', (req, res) => { try { res.json(core.transferirSangue(req.body.remetenteId, req.body.alvoId, req.body.quantia)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
-// ALTA MAGIA, CONCLAVE (GvG) E GOÉCIA
-app.post('/api/conclave/egregora', (req, res) => { 
-    try { res.json(core.nutrirEgregoraClã(req.body.id, req.body.material)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"O Altar recusou o teu tributo."}); } 
-});
-app.post('/api/conclave/invadir', (req, res) => { 
-    try { res.json(core.invadirCriptaInimiga(req.body.id, req.body.clanAlvo)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"As brumas da guerra cegaram-te."}); } 
-});
-app.post('/api/conclave/fenda/atacar', (req, res) => { 
-    try { res.json(core.atacarFenda(req.body.id, req.body.fendaId)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"Erro ao atacar fenda."}); } 
-});
-app.post('/api/goecia/evocar', (req, res) => { 
-    try { res.json(core.abrirSeloGoetico(req.body.id)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"As linhas do pentagrama quebraram."}); } 
-});
-app.post('/api/goecia/enfrentar', async (req, res) => { 
-    try { res.json(await core.testarVontadeDemonio(req.body.id)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"O demónio distorceu a tua mente."}); } 
-});
+app.post('/api/conclave/egregora', (req, res) => { try { res.json(core.nutrirEgregoraClã(req.body.id, req.body.material)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/conclave/invadir', (req, res) => { try { res.json(core.invadirCriptaInimiga(req.body.id, req.body.clanAlvo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/conclave/fenda/atacar', (req, res) => { try { res.json(core.atacarFenda(req.body.id, req.body.fendaId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/goecia/evocar', (req, res) => { try { res.json(core.abrirSeloGoetico(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/goecia/enfrentar', async (req, res) => { try { res.json(await core.testarVontadeDemonio(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.get('/api/conclave/status', (req, res) => {
-    try { 
-        res.json({ 
-            balanca: core.balancaCosmica, 
-            evocacao: core.evocacaoAtiva,
-            fendas: core.fendaAtiva,
-            clansData: Object.values(core.clans).map(c => ({nome: c.nome, egregoraNv: c.egregora ? c.egregora.nivel : 0, cofre: c.cofre})) 
-        }); 
-    } 
-    catch(e){ res.status(500).json({erro:"Falha ao ler o cosmos."}); }
+    try { res.json({ balanca: core.balancaCosmica, evocacao: core.evocacaoAtiva, fendas: core.fendaAtiva, clansData: Object.values(core.clans).map(c => ({nome: c.nome, egregoraNv: c.egregora ? c.egregora.nivel : 0, cofre: c.cofre})) }); } 
+    catch(e){ res.status(500).json({erro:"Falha."}); }
 });
 
-// STATUS GERAIS
+// OBTER INFORMAÇÕES PESSOAIS (LINEAGE INCLUDED)
 app.get('/api/social/:id', (req, res) => {
     try {
-        const v = core.vampiros[req.params.id];
-        if(!v) return res.status(404).json({erro: "Fantasma."});
+        const v = core.vampiros[req.params.id]; if(!v) return res.status(404).json({erro: "Fantasma."});
         const alvos = Object.values(core.vampiros).filter(x => x.id !== v.id && x.estado !== 'Banido').map(x => ({id: x.id, nome: x.nome, geracao: x.geracao, nivel: x.nivel, titulo: x.tituloAtual}));
         res.json({ alvos, grimorio: core.grimorio, alquimia: core.alquimia });
-    } catch(e){ res.status(500).json({erro:"Erro nos Ecos Sociais."}); }
+    } catch(e){ res.status(500).json({erro:"Falha."}); }
 });
 
 app.get('/api/status/:id', (req, res) => {
@@ -344,16 +192,20 @@ app.get('/api/status/:id', (req, res) => {
             let dados = {...v, atributosTotais: core._obterAtributosTotais(v)};
             if (v.clan !== 'Sangue Ralo' && core.clans[v.clan]) dados.clanData = core.clans[v.clan];
             dados.faseLua = AstrolabioLunar.obterFaseAtual();
-            // Injeta o Pacto Ativo, caso exista
             dados.pactoAtivo = core.pactosAtivos[v.id] || null;
+            
+            // Dados da Linhagem Genealógica
+            const senhor = v.senhor === 'O_PRIMORDIAL' ? null : core.vampiros[v.senhor];
+            dados.dadosSenhor = senhor ? { nome: senhor.nome, titulo: senhor.tituloAtual, geracao: senhor.geracao } : { nome: "A Própria Noite", titulo: "Vazio Cósmico", geracao: 0 };
+            dados.dadosCrias = v.linhagem.map(cId => { const c = core.vampiros[cId]; return c ? { nome: c.nome, nivel: c.nivel, estado: c.estado } : null; }).filter(Boolean);
+
             res.json(dados);
-        }
-        else res.status(404).json({erro: "Sombra Desvanecida."});
+        } else res.status(404).json({erro: "Sombra Desvanecida."});
     } catch(e){ res.status(500).json({erro:"A Aura falhou."}); }
 });
 
 // ==========================================
-// SOCKET.IO (CHAT E IA)
+// SOCKET.IO (CHAT PERSISTENTE E IA)
 // ==========================================
 io.on('connection', (socket) => {
     socket.on('entrar_chat', (dados) => {
@@ -361,47 +213,50 @@ io.on('connection', (socket) => {
         socket.join('global'); 
         if(clan && clan !== 'Sem Clã' && clan !== 'Sangue Ralo') socket.join(`clan_${clan}`);
         socket.join(`priv_${idVampiro}`); 
+        
+        // Envia histórico para o jogador
+        socket.emit('historico_chat', { canal: 'global', mensagens: core.historicoChat.global });
     });
+
+    const registrarEEnviarChat = (canal, payload, emitTarget) => {
+        if (canal === 'global') { core.historicoChat.global.push(payload); if(core.historicoChat.global.length > 50) core.historicoChat.global.shift(); }
+        io.to(emitTarget).emit('nova_mensagem', { canal, ...payload });
+        core._salvarBancoDeDados();
+    };
 
     socket.on('mensagem_chat', async (dados) => {
         const payload = { autor: `[${dados.remetenteTitulo}] ${dados.remetenteNome}`, texto: dados.texto, hora: new Date().toLocaleTimeString() };
         
-        if (dados.canal === 'global') io.to('global').emit('nova_mensagem', { canal: 'global', ...payload });
-        else if (dados.canal === 'clan') io.to(`clan_${dados.clanNome}`).emit('nova_mensagem', { canal: 'clan', ...payload });
+        if (dados.canal === 'global') registrarEEnviarChat('global', payload, 'global');
+        else if (dados.canal === 'clan') io.to(`clan_${dados.clanNome}`).emit('nova_mensagem', { canal: 'clan', ...payload }); // Clã/Privado n salva hist agora
         else if (dados.canal === 'privado') {
             io.to(`priv_${dados.destinoId}`).emit('nova_mensagem', { canal: 'privado', autor: `[Telepatia de ${dados.remetenteNome}]`, texto: dados.texto, hora: payload.hora });
-            socket.emit('nova_mensagem', { canal: 'privado', autor: `[Sussurro na Mente de ${dados.destinoNome}]`, texto: dados.texto, hora: payload.hora });
+            socket.emit('nova_mensagem', { canal: 'privado', autor: `[Sussurro para ${dados.destinoNome}]`, texto: dados.texto, hora: payload.hora });
         }
 
-        // ====== INTEGRAÇÃO DA IA (MENTE ABISSAL) COM O CHAT E FENDAS ======
         const txt = dados.texto.toLowerCase();
         if (txt.includes('oráculo') || txt.includes('abismo') || txt.includes('mestre') || txt.includes('trevas') || txt.includes('ia')) {
-            
-            // Usamos a função Wrapper que deteta a injeção da Fenda
             try {
                 const respostaIA = await core.conversarComOraculo(dados.remetenteId, dados.texto);
                 if (respostaIA) {
                     const payloadIA = { autor: `👁️ MENTE ABISSAL`, texto: respostaIA, hora: new Date().toLocaleTimeString() };
                     setTimeout(() => { 
-                        if (dados.canal === 'global') io.to('global').emit('nova_mensagem', { canal: 'global', ...payloadIA });
+                        if (dados.canal === 'global') registrarEEnviarChat('global', payloadIA, 'global');
                         else if (dados.canal === 'clan') io.to(`clan_${dados.clanNome}`).emit('nova_mensagem', { canal: 'clan', ...payloadIA });
-                        
-                        // Sincroniza geral caso a IA tenha injetado um monstro numa fenda secretamente!
                         io.emit('sync_geral'); 
                     }, 1500);
                 }
-            } catch(e) { console.error("Falha ao comunicar com o Oráculo:", e); }
+            } catch(e) { }
         }
     });
 });
 
-// TICK TEMPORAL GERAL DO SERVIDOR
 setInterval(async () => {
-    core.tickTemporal();
-    io.emit('tick');
+    core.tickTemporal(); io.emit('tick');
     if (core.logs.global.length > 0 && Math.random() > 0.8) {
-        const eventoRecente = core.logs.global[0];
-        const falaIa = await core.oraculo.gerarLore(eventoRecente.tipo, eventoRecente.relato);
-        io.to('global').emit('nova_mensagem', { canal: 'global', autor: '💀 A MENTE ABISSAL', texto: falaIa, hora: new Date().toLocaleTimeString() });
+        const eventoRecente = core.logs.global[0]; const falaIa = await core.oraculo.gerarLore(eventoRecente.tipo, eventoRecente.relato);
+        const payloadIA = { autor: '💀 A MENTE ABISSAL', texto: falaIa, hora: new Date().toLocaleTimeString() };
+        core.historicoChat.global.push(payloadIA); if(core.historicoChat.global.length > 50) core.historicoChat.global.shift();
+        io.to('global').emit('nova_mensagem', { canal: 'global', ...payloadIA });
     }
 }, 60000);
