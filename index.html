@@ -1454,9 +1454,44 @@
         try {
             const res = await fetch('/api/conclave/status'); const dados = await res.json();
             
-            // ... (Balanca, e Fendas mantêm-se) ...
-            // COLA ISTO ANTES DO CATCH:
+            // 1. Atualiza a Balança Cósmica
+            let total = dados.balanca.tiamat + dados.balanca.seth; if (total === 0) total = 1; 
+            document.getElementById('bar-tiamat').style.width = `${(dados.balanca.tiamat / total) * 100}%`; 
+            document.getElementById('bar-seth').style.width = `${(dados.balanca.seth / total) * 100}%`; 
+            safeSet('lbl-regente', dados.balanca.regente);
+            
+            // 2. Atualiza Inimigos de Clã (GvG)
+            if (dados.clansData && meuVampiro) {
+                let clanHtml = dados.clansData.filter(c => c.nome !== meuVampiro.clan && c.nome !== 'Sangue Ralo').map(c => `<option value="${c.nome}">[Egrégora Nv.${c.egregoraNv}] ${c.nome} - Riqueza: ${numFmt(c.cofre)}</option>`).join('');
+                safeSet('alvo-gvg', clanHtml || '<option disabled>Nenhum Inimigo Digno Encontrado</option>', true);
+            }
+            
+            // 3. Atualiza Evocação Goética (World Boss) - RESTAURADO!
+            if (dados.evocacao) { 
+                document.getElementById('box-no-boss').classList.add('oculto'); 
+                document.getElementById('box-has-boss').classList.remove('oculto'); 
+                safeSet('boss-name', dados.evocacao.nome); 
+                safeSet('boss-desc', dados.evocacao.desc); 
+                safeSet('boss-hp-text', numFmt(dados.evocacao.hpAtual)); 
+                safeSet('boss-hp-max', numFmt(dados.evocacao.hpMax)); 
+                document.getElementById('boss-hp-bar').style.width = `${(dados.evocacao.hpAtual / dados.evocacao.hpMax) * 100}%`; 
+            } else { 
+                document.getElementById('box-no-boss').classList.remove('oculto'); 
+                document.getElementById('box-has-boss').classList.add('oculto'); 
+            }
+            
+            // 4. Atualiza Fendas Astrais - RESTAURADO!
+            const fendas = Object.values(dados.fendas || {}); 
+            if(fendas.length > 0) { 
+                const f = fendas[0]; fendaAtualId = f.id; 
+                document.getElementById('box-fenda').classList.remove('oculto'); 
+                safeSet('fenda-nome', f.nome); 
+                safeSet('fenda-hp', numFmt(f.hpAtual)); 
+            } else { 
+                document.getElementById('box-fenda').classList.add('oculto'); fendaAtualId = null; 
+            }
 
+            // 5. Atualiza os Cercos Demoníacos (Motins)
             const cercos = Object.values(dados.cercos || {});
             if (cercos.length > 0) {
                 const c = cercos[0]; cercoAtualId = c.id;
@@ -1467,6 +1502,7 @@
             } else {
                 document.getElementById('box-cerco').classList.add('oculto'); cercoAtualId = null;
             }
+
         } catch(e) {}
     }
 
@@ -1474,10 +1510,9 @@
         if (!cercoAtualId) return; 
         if(!meuVampiro || meuVampiro.pontosAcao < 2) return ocultoAlert("Exige 2 Fúrias para quebrar as linhas.");
         const bossName = "Hostes de " + document.getElementById('cerco-demonio').innerText;
-        // Inicia o mini-jogo visceral para o cerco! O backend resolverá enviando os resultados para '/api/conclave/cerco/atacar'
-        iniciarCombateVisceral(bossName, cercoAtualId, 'fenda', 8000, true); // Usa o sistema da Fenda para aproveitar o fluxo
+        iniciarCombateVisceral(bossName, cercoAtualId, 'fenda', 8000, true); 
     }
-
+	
     async function evocarGoetia() { if(!(await ocultoConfirm("Tem a certeza? Isso consumirá 3000 Gts e trará uma Entidade ao Mundo!"))) return; abismoVoid(); try { const res = await fetch('/api/goecia/evocar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); const dados = await res.json(); if(dados.erro) ocultoAlert(dados.erro); atualizarConclave(); syncStatus(); } catch(e){} }
     
     // AS NOVAS INTEGRAÇÕES DE COMBATE (LIGANDO OS BOTÕES À ARENA VISCERAL)

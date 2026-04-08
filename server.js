@@ -242,11 +242,17 @@ app.post('/api/conclave/fenda/atacar', (req, res) => { try { res.json(core.ataca
 app.post('/api/goecia/evocar', (req, res) => { try { res.json(core.abrirSeloGoetico(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.post('/api/goecia/enfrentar', async (req, res) => { try { res.json(await core.testarVontadeDemonio(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.get('/api/conclave/status', (req, res) => {
-    try { res.json({ balanca: core.balancaCosmica, evocacao: core.evocacaoAtiva, fendas: core.fendaAtiva, clansData: Object.values(core.clans).map(c => ({nome: c.nome, egregoraNv: c.egregora ? c.egregora.nivel : 0, cofre: c.cofre})) }); } 
-    catch(e){ res.status(500).json({erro:"Falha."}); }
+    try { 
+        res.json({ 
+            balanca: core.balancaCosmica, 
+            evocacao: core.evocacaoAtiva, 
+            fendas: core.fendaAtiva, 
+            cercos: core.cercosAtivos, // Manda os motins para o mapa global
+            clansData: Object.values(core.clans).map(c => ({nome: c.nome, egregoraNv: c.egregora ? c.egregora.nivel : 0, cofre: c.cofre})) 
+        }); 
+    } catch(e){ res.status(500).json({erro:"Falha."}); }
 });
 
-// OBTER INFORMAÇÕES PESSOAIS (LINEAGE INCLUDED)
 // OBTER INFORMAÇÕES PESSOAIS (LINEAGE INCLUDED) E AVALIAÇÃO DE PODER
 app.get('/api/social/:id', (req, res) => {
     try {
@@ -257,13 +263,13 @@ app.get('/api/social/:id', (req, res) => {
             geracao: x.geracao, 
             nivel: x.nivel, 
             titulo: x.tituloAtual,
-            poderGeral: core.calcularPoderGeral(x) // <-- O OLHO DO ABISMO AVALIA O ALVO
+            poderGeral: core.calcularPoderGeral(x) // O OLHO DO ABISMO AVALIA O ALVO
         }));
         res.json({ alvos, grimorio: core.grimorio, alquimia: core.alquimia });
     } catch(e){ res.status(500).json({erro:"Falha."}); }
 });
 
-// --- ROTAS NOVAS DE CURA E CERCOS ---
+// --- ROTAS DE CURA E CERCOS ---
 app.post('/api/perfil/curar', (req, res) => {
     try { res.json(core.curarCarne(req.body.id)); io.emit('sync_geral'); } 
     catch(e){ res.status(500).json({erro:"A feitiçaria sanguínea falhou."}); }
@@ -274,18 +280,6 @@ app.post('/api/conclave/cerco/atacar', (req, res) => {
     catch(e){ res.status(500).json({erro:"O caos venceu."}); } 
 });
 
-// A rota de Status agora devolve os Cercos para o Conclave ler:
-app.get('/api/conclave/status', (req, res) => {
-    try { res.json({ 
-        balanca: core.balancaCosmica, 
-        evocacao: core.evocacaoAtiva, 
-        fendas: core.fendaAtiva, 
-        cercos: core.cercosAtivos, // Manda os motins para o mapa global
-        clansData: Object.values(core.clans).map(c => ({nome: c.nome, egregoraNv: c.egregora ? c.egregora.nivel : 0, cofre: c.cofre})) 
-    }); } 
-    catch(e){ res.status(500).json({erro:"Falha."}); }
-});
-
 app.get('/api/status/:id', (req, res) => {
     try {
         if(core.vampiros[req.params.id]) {
@@ -294,7 +288,7 @@ app.get('/api/status/:id', (req, res) => {
             if (v.clan !== 'Sangue Ralo' && core.clans[v.clan]) dados.clanData = core.clans[v.clan];
             dados.faseLua = AstrolabioLunar.obterFaseAtual();
             dados.pactoAtivo = core.pactosAtivos[v.id] || null;
-            dados.poderGeral = core.calcularPoderGeral(v); // <-- INJEÇÃO DO PODER CALCULADO
+            dados.poderGeral = core.calcularPoderGeral(v); // INJEÇÃO DO PODER CALCULADO
             
             // Dados da Linhagem Genealógica
             const senhor = v.senhor === 'O_PRIMORDIAL' ? null : core.vampiros[v.senhor];
@@ -305,6 +299,10 @@ app.get('/api/status/:id', (req, res) => {
         } else res.status(404).json({erro: "Sombra Desvanecida."});
     } catch(e){ res.status(500).json({erro:"A Aura falhou."}); }
 });
+
+// ==========================================
+// SOCKET.IO (CHAT PERSISTENTE E IA)
+// ==========================================
 
 // ==========================================
 // SOCKET.IO (CHAT PERSISTENTE E IA)
