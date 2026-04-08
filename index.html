@@ -34,6 +34,7 @@
 
         .disclaimer-box { background: #1a0000; border: 1px solid #f00; color: #ffcccc; padding: 15px; font-size: 0.85em; margin-bottom: 20px; font-family: sans-serif; box-shadow: 0 0 15px rgba(255,0,0,0.3);}
         .disclaimer-box strong { font-family: 'Cinzel', serif; font-size: 1.2em; display:block; margin-bottom: 5px; color: #ff3333;}
+        .veu-box { background: #050511; border: 1px solid #55a; color: #ccf; box-shadow: 0 0 15px rgba(0,0,255,0.2);}
 
         h1, h2, h3, h4 { font-family: 'Cinzel', serif; color: var(--sangue); margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 3px #500;}
         .oculto { display: none !important; }
@@ -49,6 +50,7 @@
         button:hover { background: var(--sangue); box-shadow: 0 0 15px var(--sangue); text-shadow: 0 0 5px #fff;}
         button:disabled { filter: grayscale(1); opacity: 0.4; cursor: not-allowed; }
         button.btn-magick { border-color: var(--ouro); color: var(--ouro); background: #050505;}
+        button.btn-fenda { border-color: #0ff; color: #0ff; background: #001111; animation: pulseCyan 2s infinite;}
 
         .tabs { display: flex; gap: 5px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; border-bottom: 1px solid #222; scrollbar-width: none;}
         .tabs button { font-size: 0.8rem; padding: 10px; border:none; background: transparent; color: #555; border-bottom: 2px solid transparent; min-width: 110px;}
@@ -74,10 +76,13 @@
         @keyframes flow { 0% { transform: scaleY(0.8) translateY(5px); } 100% { transform: scaleY(1.2) translateY(-5px); } }
         @keyframes move-left { from { transform: translateX(-10%); } to { transform: translateX(-50%); } }
         @keyframes move-right { from { transform: translateX(-50%); } to { transform: translateX(10%); } }
-/* THE JUICE: Demonic & War UI */
+        
+        /* THE JUICE: Demonic & War UI */
         .void-flash { position: fixed; top: 0; left: 0; pointer-events: none; width: 100vw; height: 100vh; background: rgba(128, 0, 128, 0.4); z-index: 9999; animation: flashFade 1s forwards; filter: invert(1); }
         .shake-screen { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-8px, 0, 0); } 40%, 60% { transform: translate3d(8px, 0, 0); } }
+        @keyframes pulseCyan { 0% { box-shadow: 0 0 5px #0ff; } 50% { box-shadow: 0 0 20px #0ff; } 100% { box-shadow: 0 0 5px #0ff; } }
+        @keyframes pulseRed { 0% { box-shadow: 0 0 5px #f0f; } 50% { box-shadow: 0 0 20px #f0f; } 100% { box-shadow: 0 0 5px #f0f; } }
         
         .balanca-bar { width: 100%; height: 25px; background: #222; border: 2px solid var(--ouro); position: relative; overflow: hidden; display: flex; margin-bottom:10px; }
         .balanca-tiamat { height: 100%; background: linear-gradient(90deg, var(--sangue) 0%, var(--sangue-claro) 100%); transition: width 1s ease-in-out; }
@@ -147,10 +152,8 @@
         <button onclick="auth()" id="btn-auth">Fundir a Aura (Assinar Pacto)</button>
     </div>
 
-    <!-- O ESPELHO NEGRO (HUD Principal) -->
     <div id="ui-main" class="oculto">
         
-        <!-- BARRA DE STATUS GLOBAL -->
         <div class="card" style="padding: 10px 15px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                 <div>
@@ -167,7 +170,6 @@
             <div class="progress-bg"><div class="progress-bar" id="bar-xp"></div></div>
         </div>
 
-        <!-- NAVEGAÇÃO -->
         <div class="tabs" id="nav-tabs">
             <button onclick="nav('astrolabio', this)">O Céu (Lua)</button>
             <button onclick="nav('caca', this)" class="active">A Teia (Caça)</button>
@@ -183,9 +185,6 @@
             <button onclick="nav('banco', this)">Cálice</button>
         </div>
 
-        <!-- ============================== -->
-        <!-- ABA 1: ASTROLÁBIO LUNAR        -->
-        <!-- ============================== -->
         <div id="aba-astrolabio" class="aba oculto">
             <div class="card">
                 <h3 style="text-align: center;">O Firmamento Hermético</h3>
@@ -205,9 +204,6 @@
             </div>
         </div>
 
-        <!-- ============================== -->
-        <!-- ABA 2: PERFIL & IDENTIDADE     -->
-        <!-- ============================== -->
         <div id="aba-perfil" class="aba oculto">
             <div class="card">
                 <h3>A Identidade</h3>
@@ -248,7 +244,6 @@
                 <input type="text" id="target-telegram" placeholder="@username do Telegram a Convidar">
                 <button class="btn-magick" onclick="gerarConviteBot()">Sussurrar O Abraço via Bot</button>
                 
-                <!-- PAINEL PRIMORDIAL ALINHADO CORRETAMENTE -->
                 <div class="card oculto" id="painel-primordial" style="border-color: #f00; background: #110000; margin-top: 20px;">
                     <h3 style="color: #f00; text-align: center; text-transform: uppercase;">O Trono Primordial (Admin)</h3>
                     <p style="text-align: center; font-size: 0.85em; color: #ff8888;">Tens o poder absoluto sobre a vida, a morte e o código. Seleciona a alma para deletar.</p>
@@ -260,23 +255,29 @@
             </div>
         </div>
 
-        <!-- ============================== -->
-        <!-- ABA 3: A TEIA (CAÇA)           -->
-        <!-- ============================== -->
         <div id="aba-caca" class="aba">
             <div class="card">
                 <h3>A Gematria (Invocação do Mortal)</h3>
-                <div class="grid-2">
-                    <select id="osint-plat">
-                        <option value="whatsapp">WhatsApp (Nº Completo)</option>
-                        <option value="instagram">Instagram (@utilizador)</option>
-                        <option value="discord">Discord (ID ou Nome)</option>
-                        <option value="telegram">Telegram (@utilizador)</option>
-                        <option value="tiktok">TikTok (@utilizador)</option>
-                    </select>
-                    <input type="text" id="osint-target" placeholder="@Identidade / Nº">
+                
+                <div id="veil-warning" class="disclaimer-box veu-box oculto">
+                    <strong>👁️ O VÉU ESTÁ INTACTO</strong>
+                    A tua aura é demasiado fraca para ver o Fio Prateado que liga este mundo ao físico. Somente no <b>Grau 50</b> o Véu rasgar-se-á, libertando a Visão Astral (OSINT). Até lá, treina e caça nas Patrulhas do Umbral.
                 </div>
-                <button class="btn-magick" onclick="mapearNovoAlvo()">Conjurar o Rosto (1 Fúria)</button>
+
+                <div id="osint-container">
+                    <p style="font-size: 0.8em; color: #888; font-style: italic;">O Véu caiu. Podes inserir identidades reais para drenar do plano físico.</p>
+                    <div class="grid-2">
+                        <select id="osint-plat">
+                            <option value="whatsapp">WhatsApp (Nº Completo)</option>
+                            <option value="instagram">Instagram (@utilizador)</option>
+                            <option value="discord">Discord (ID ou Nome)</option>
+                            <option value="telegram">Telegram (@utilizador)</option>
+                            <option value="tiktok">TikTok (@utilizador)</option>
+                        </select>
+                        <input type="text" id="osint-target" placeholder="@Identidade / Nº">
+                    </div>
+                    <button class="btn-magick" onclick="mapearNovoAlvo()">Conjurar o Rosto (1 Fúria)</button>
+                </div>
             </div>
 
             <div id="mortal-doc" class="card oculto" style="border-color: var(--ouro); background: #0a0000;">
@@ -314,9 +315,6 @@
             </div>
         </div>
 
-        <!-- ============================== -->
-        <!-- ABA 4: PVP E DUELOS            -->
-        <!-- ============================== -->
         <div id="aba-pvp" class="aba oculto">
             <div class="card">
                 <h3>O Duelo de Sombras (PvP)</h3>
@@ -335,9 +333,6 @@
             </div>
         </div>
 
-        <!-- ============================== -->
-        <!-- ABA 5: LEILÃO DE ALMAS         -->
-        <!-- ============================== -->
         <div id="aba-leilao" class="aba oculto">
             <div class="card">
                 <h3>A Feira das Almas</h3>
@@ -358,9 +353,6 @@
             </div>
         </div>
 
-        <!-- ============================== -->
-        <!-- ABA 6: CHAT & ORÁCULO          -->
-        <!-- ============================== -->
         <div id="aba-chat" class="aba oculto">
             <div class="card">
                 <h3 style="margin-bottom: 10px;">Salão da Meia-Noite</h3>
@@ -376,15 +368,21 @@
                     <button class="btn-magick" onclick="enviarChat()" style="width: 90px; margin:0;">Falar</button>
                 </div>
             </div>
+
+            <div class="card">
+                <h3>Pactos Sombrios (Quests)</h3>
+                <p style="font-size: 0.8em; color: #888; font-style: italic;">A Mente Abissal concederá tarefas em troca de Poder.</p>
+                <div id="box-pacto" style="background: #110000; border: 1px dashed var(--ouro); padding: 10px; margin-top: 10px;">
+                    </div>
+                <button onclick="pedirNovoPacto()" class="btn-magick" style="margin-top: 10px; font-size: 0.8em;">Suplicar por uma Tarefa</button>
+            </div>
+
             <div class="card">
                 <h3>Profecias Globais (O Mundo Oculto)</h3>
                 <div id="log-global" class="log-box" style="height: 120px;"></div>
             </div>
         </div>
 
-        <!-- ============================== -->
-        <!-- ABA 7: MAGIA & ALQUIMIA        -->
-        <!-- ============================== -->
         <div id="aba-magia" class="aba oculto">
             <div class="card">
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; text-align: center; margin-bottom: 10px;">
@@ -402,6 +400,17 @@
                 <button class="btn-magick" onclick="forjarAlquimia()">Sintetizar no Caldeirão</button>
                 <div id="craft-result" style="margin-top: 10px; color: var(--ouro); font-style: italic;"></div>
             </div>
+
+            <div class="card">
+                <h3>A Bigorna Sombria (Aprimorar)</h3>
+                <p style="font-size: 0.8em; color: #888;">Consome Anima e Cinzas para melhorar os atributos base das relíquias já equipadas.</p>
+                <div class="grid-3" style="margin-top: 10px;">
+                    <button onclick="aprimorarEquipamento('arma')" style="font-size:0.7em; padding: 10px 5px; border-color: red;" title="Melhorar Arma Equipado">+ Arma</button>
+                    <button onclick="aprimorarEquipamento('armadura')" style="font-size:0.7em; padding: 10px 5px; border-color: gray;" title="Melhorar Armadura Equipada">+ Armadura</button>
+                    <button onclick="aprimorarEquipamento('amuleto')" style="font-size:0.7em; padding: 10px 5px; border-color: purple;" title="Melhorar Amuleto Equipado">+ Amuleto</button>
+                </div>
+            </div>
+
             <div class="card">
                 <h3>Magia Alta (Rituais)</h3>
                 <p style="font-size: 0.8em; color: #888; margin-bottom: 10px;">Exige Fúria e Gts de Sangue. A Lua Minguante redobra os efeitos.</p>
@@ -412,9 +421,6 @@
             </div>
         </div>
 
-        <!-- ============================== -->
-        <!-- ABA 8: BIBLIOTECA AKÁSHICA     -->
-        <!-- ============================== -->
         <div id="aba-biblioteca" class="aba oculto">
             <div class="card">
                 <h3 style="text-align: center;">Bancada de Estudos (Rascunhos)</h3>
@@ -443,11 +449,14 @@
                     <h4 style="color:var(--sangue-claro); margin-bottom:5px;">Conclusão do Estudo</h4>
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom:10px;">
                         <input type="checkbox" id="in-proj-publico" style="width:auto; margin:0;">
-                        <label for="in-proj-publico" style="color:var(--ouro); font-size: 0.9em; font-family: 'Cinzel', serif;">Publicar na Estante Global (Exige Grau 5+)</label>
+                        <label for="in-proj-publico" style="color:var(--ouro); font-size: 0.9em; font-family: 'Cinzel', serif;">Publicar na Estante Global (Grau 5+)</label>
                     </div>
+                    
+                    <button onclick="arquivarProjeto()" style="background:#200; border-color:red; margin-bottom:5px;">Selar como Livro (200 Gts)</button>
+                    
                     <div class="grid-2">
-                        <button onclick="arquivarProjeto()" style="background:#200; border-color:red; font-size:0.7em;">Selar como Livro (200 Gts)</button>
-                        <button onclick="cristalizarRitual()" style="background:purple; color:#fff; border-color:#f0f; font-size:0.7em;" title="A IA lerá o texto e criará uma magia jogável!">Cristalizar Magia Real (Grau 10+ | 5000 Gts)</button>
+                        <button onclick="cristalizarRitual()" style="background:purple; color:#fff; border-color:#f0f; font-size:0.7em;" title="Cria magia nova jogável no servidor!">Cristalizar Magia Real (Grau 10+ | 5000 Gts)</button>
+                        <button onclick="cristalizarArma()" style="background:#440000; color:var(--ouro); border-color:var(--ouro); font-size:0.7em;" title="Cria arma para o Drop global">Cristalizar Arma (Grau 15+ | 3000 Gts)</button>
                     </div>
                 </div>
             </div>
@@ -463,10 +472,14 @@
             </div>
         </div>
 
-        <!-- ============================== -->
-        <!-- ABA 9: O UMBRAL (PVE SOLO)     -->
-        <!-- ============================== -->
         <div id="aba-umbral" class="aba oculto">
+            
+            <div class="card" style="border-color: var(--xp);">
+                <h3 style="text-align: center; color:var(--xp);">A Patrulha Noturna (PvE Base)</h3>
+                <p style="text-align: center; font-size: 0.85em; color: #888;">Antes do Grau 50, a tua caça restringe-se a entidades fracas no Umbral (Inquisidores, Ghouls). Consome 2 Fúrias por batalha.</p>
+                <button onclick="patrulharUmbral()" style="background: #001122; border-color: var(--xp); color: #fff;">Avançar na Escuridão (Caçar)</button>
+            </div>
+
             <div class="card">
                 <h3 style="text-align: center; color:#ff5050;">Expedições Qliphóticas</h3>
                 <p style="text-align: center; font-size: 0.85em; color: #888;">Lança o teu corpo astral contra dimensões habitadas por demónios para colher ingredientes exóticos exigidos na Alquimia Oculta.</p>
@@ -491,10 +504,18 @@
             </div>
         </div>
         
-        <!-- ============================== -->
-        <!-- ABA 10: O CONCLAVE (GvG & RAID)-->
-        <!-- ============================== -->
         <div id="aba-conclave" class="aba oculto">
+            
+            <div class="card oculto" id="box-fenda" style="border-color: #0ff; background: #001111;">
+                <h3 style="color:#0ff; text-align:center;">A Fenda Astral Abriu-se!</h3>
+                <p style="text-align: center; font-size:0.8em; color:#aaa;">Uma anomalia injetada pela IA invadiu o plano. Destrói-a!</p>
+                <div style="text-align: center; margin: 10px 0;">
+                    <h2 id="fenda-nome" style="color: #fff; margin:0;">???</h2>
+                    <h3 style="color: #0ff; margin-top:0;"><span id="fenda-hp">0</span> HP</h3>
+                </div>
+                <button class="btn-fenda" onclick="atacarFenda()">Disparar Magia Bruta (Custa 3 Fúrias)</button>
+            </div>
+
             <div class="card">
                 <h3 style="text-align: center; font-size:1.8em; color:var(--ouro);">A Balança Cósmica</h3>
                 <p style="text-align: center; font-size:0.85em; color:#888;">As ações da tua raça ditam o destino do mundo.</p>
@@ -537,9 +558,6 @@
             </div>
         </div>
 
-        <!-- ============================== -->
-        <!-- ABA 11: SANTUÁRIO / CLÃ        -->
-        <!-- ============================== -->
         <div id="aba-clan" class="aba oculto">
             <div class="card" id="ui-no-clan">
                 <h3 style="text-align: center;">Fundar um Santuário (Clã)</h3>
@@ -578,9 +596,6 @@
             </div>
         </div>
 
-        <!-- ============================== -->
-        <!-- ABA 12: BANCO E CÁLICE         -->
-        <!-- ============================== -->
         <div id="aba-banco" class="aba oculto">
             <div class="card">
                 <h3 style="text-align: center;">O Cálice de Cristal Negro</h3>
@@ -620,15 +635,13 @@
             </div>
         </div>
 
-    </div> <!-- FIM DA UI MAIN (O ESPELHO NEGRO) -->
-
-
-<script>
+    </div> <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
     const socket = io();
     let meuVampiro = null;
     let hashAlvoAtual = null;
+    let fendaAtualId = null;
 
     let storedTgId = localStorage.getItem('tgId');
     const tgUser = tg.initDataUnsafe?.user;
@@ -659,6 +672,14 @@
         splash.className = 'claw-splash';
         document.body.appendChild(splash);
         setTimeout(() => splash.remove(), 1000);
+    }
+
+    function abismoVoid() {
+        const splash = document.createElement('div');
+        splash.className = 'void-flash';
+        document.body.appendChild(splash);
+        document.body.classList.add('shake-screen');
+        setTimeout(() => { splash.remove(); document.body.classList.remove('shake-screen'); }, 1000);
     }
 
     function nav(abaId, btn) {
@@ -726,14 +747,13 @@
         safeSet('ui-acao', meuVampiro.pontosAcao);
         safeSet('ui-max-acao', meuVampiro.maxAcao);
         safeSet('ui-nivel', meuVampiro.nivel);
-        safeSet('ui-xpprox', meuVampiro.xpProx);
         safeSet('ui-influencia', meuVampiro.influencia);
         safeSet('inv-memoria', meuVampiro.inventario.memoria || 0);
         safeSet('inv-ecto', meuVampiro.inventario.ectoplasma || 0);
         safeSet('inv-pedra', meuVampiro.inventario.pedraAlma || 0);
         
         const barXp = document.getElementById('bar-xp');
-        if(barXp) barXp.style.width = `${(meuVampiro.xp / meuVampiro.xpProx) * 100}%`;
+        if(barXp && meuVampiro.xpProx) barXp.style.width = `${(meuVampiro.xp / meuVampiro.xpProx) * 100}%`;
         
         safeSet('inv-anima', meuVampiro.inventario.anima);
         safeSet('inv-cinzas', meuVampiro.inventario.cinzas);
@@ -794,15 +814,44 @@
             safeSet('ui-clan-cofre', meuVampiro.clanData.cofre);
             const btnSacar = document.getElementById('btn-sacar-clan');
             if (btnSacar) btnSacar.style.display = (meuVampiro.clanData.lider === meuVampiro.id) ? 'inline-block' : 'none';
-        } // <-- A CHAVE DO CLÃ QUE FALTAVA FOI SELADA AQUI
+        } 
 
-        // Revelar o Painel do Lorde Dracônico apenas se for Geração 1
+        // O VÉU DO GRAU 50 (OSINT)
+        const veilWarn = document.getElementById('veil-warning');
+        const osintCont = document.getElementById('osint-container');
+        if(veilWarn && osintCont) {
+            if (meuVampiro.nivel < 50) {
+                veilWarn.classList.remove('oculto');
+                osintCont.classList.add('oculto');
+            } else {
+                veilWarn.classList.add('oculto');
+                osintCont.classList.remove('oculto');
+            }
+        }
+
+        // PACTOS (QUESTS)
+        const boxPacto = document.getElementById('box-pacto');
+        if(boxPacto) {
+            if (meuVampiro.pactoAtivo) {
+                const p = meuVampiro.pactoAtivo;
+                boxPacto.innerHTML = `
+                    <h4 style="color:var(--ouro); margin:0;">${p.titulo}</h4>
+                    <p style="font-size:0.85em; color:#aaa; margin:5px 0;">${p.descricao}</p>
+                    <p style="font-size:0.85em; font-weight:bold; color:var(--sangue-claro); margin:5px 0;">Alvo: Entregar ${p.qtd}x [${p.req.toUpperCase()}]</p>
+                    <p style="font-size:0.75em; color:var(--xp); margin:5px 0;">Recompensa: ${p.xp} XP | +2 Influência</p>
+                    <button onclick="completarPacto()" style="background:#0a0505; color:#0f5; border-color:#0f5; font-size:0.7em; margin-top:5px;">Concluir e Reclamar Poder</button>
+                `;
+            } else {
+                boxPacto.innerHTML = `<p style="color:#555; font-size:0.8em; text-align:center; margin:0;">O teu destino está livre de ataduras. Nenhuma tarefa ativa.</p>`;
+            }
+        }
+
         const painelAdmin = document.getElementById('painel-primordial');
         if (painelAdmin) {
             if (meuVampiro.geracao === 1) painelAdmin.classList.remove('oculto');
             else painelAdmin.classList.add('oculto');
         }
-    } // <-- A FUNÇÃO syncUI() AGORA FECHA CORRETAMENTE AQUI
+    } 
 
     async function uparAtr(nome) {
         try {
@@ -818,6 +867,17 @@
         } catch(e) { }
     }
 
+    async function aprimorarEquipamento(slot) {
+        if(!confirm(`Desejas usar a Bigorna Sombria na tua ${slot.toUpperCase()}? Consumirá Anima e Cinzas conforme o nível da relíquia.`)) return;
+        try {
+            const res = await fetch('/api/inventario/aprimorar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, slot }) });
+            const dados = await res.json(); 
+            if(dados.erro) alert(dados.erro); 
+            else { jorrarSangue(); alert(dados.relato); }
+            syncStatus();
+        } catch(e) { }
+    }
+
     async function mudarTitulo() {
         const val = document.getElementById('lista-titulos').value;
         try {
@@ -829,15 +889,9 @@
 	async function obliterarMembro() {
         const alvoId = document.getElementById('alvo-obliteracao').value;
         if (!alvoId) return;
-        
         if (!confirm("⚠️ ATENÇÃO, ALFA PRIMORDIAL!\nDesejas realmente deletar a conta deste usuário? Ele será apagado para sempre e perderá tudo.")) return;
-        
         try {
-            const res = await fetch('/api/admin/obliterar', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ adminId: meuVampiro.id, alvoId }) 
-            });
+            const res = await fetch('/api/admin/obliterar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ adminId: meuVampiro.id, alvoId }) });
             const dados = await res.json();
             alert(dados.erro || dados.relato);
             syncStatus();
@@ -893,13 +947,11 @@
                 else { btn.innerText = "EXECUTAR ACÇÃO"; btn.disabled = false; }
             }
 
-            // --- REVELA O BOTÃO APENAS PARA O PRIMORDIAL ---
             const btnAbsolver = document.getElementById('btn-absolver');
             if (btnAbsolver) {
                 if (meuVampiro && meuVampiro.geracao === 1) btnAbsolver.classList.remove('oculto');
                 else btnAbsolver.classList.add('oculto');
             }
-            // ------------------------------------------------
 
             if(elDoc) elDoc.scrollIntoView({behavior: "smooth"});
         }).catch(e=>{});
@@ -937,18 +989,10 @@
         if(!confirm("Apenas o Alfa Primordial possui este poder. Desejas libertar e apagar esta presa permanentemente do servidor?")) return;
         
         try {
-            const res = await fetch('/api/caca/absolver', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ id: meuVampiro.id, hash: hashAlvoAtual }) 
-            });
+            const res = await fetch('/api/caca/absolver', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, hash: hashAlvoAtual }) });
             const dados = await res.json(); 
-            
             alert(dados.erro || dados.relato); 
-            
-            if(!dados.erro) {
-                document.getElementById('mortal-doc').classList.add('oculto');
-            }
+            if(!dados.erro) document.getElementById('mortal-doc').classList.add('oculto');
             syncStatus(); 
         } catch(e) {}
     }
@@ -958,6 +1002,37 @@
         try {
             const res = await fetch('/api/caca/amaldicoar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, hash: hashAlvoAtual }) });
             const dados = await res.json(); alert(dados.erro || dados.relato); syncStatus(); abrirPresaMercado(hashAlvoAtual);
+        } catch(e) {}
+    }
+
+    // PVE: PATRULHAS
+    async function patrulharUmbral() {
+        try {
+            const res = await fetch('/api/pve/patrulha', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) });
+            const dados = await res.json();
+            if (dados.erro) alert(dados.erro);
+            else { jorrarSangue(); alert(dados.relato); }
+            syncStatus();
+        } catch(e) {}
+    }
+
+    // QUESTS PROCEDURAIS
+    async function pedirNovoPacto() {
+        try {
+            const res = await fetch('/api/chat/pacto/pedir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) });
+            const dados = await res.json();
+            alert(dados.erro || dados.relato);
+            syncStatus();
+        } catch(e) {}
+    }
+
+    async function completarPacto() {
+        try {
+            const res = await fetch('/api/chat/pacto/completar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) });
+            const dados = await res.json();
+            alert(dados.erro || dados.relato);
+            if(!dados.erro) jorrarSangue();
+            syncStatus();
         } catch(e) {}
     }
 
@@ -1238,7 +1313,24 @@
             if (!dados.erro) { 
                 document.getElementById('bancada-ativa').classList.add('oculto'); 
                 projetoAbertoId = null; 
-                carregarSocial(); // Atualiza a lista de rituais no Altar!
+                carregarSocial();
+            }
+            syncStatus(); carregarBiblioteca();
+        } catch(e) { alert("A entropia cósmica quebrou a fusão."); }
+    }
+
+    async function cristalizarArma() {
+        if (!projetoAbertoId) return;
+        if(!confirm("FORJAR ARMA REAL? \nA IA tentará criar uma nova arma para o Pool Global a partir do teu rascunho (3000 Gts). Continuar?")) return;
+
+        jorrarSangue();
+        try {
+            const res = await fetch('/api/biblioteca/cristalizar_arma', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, projetoId: projetoAbertoId }) });
+            const dados = await res.json(); 
+            alert(dados.erro || dados.relato); 
+            if (!dados.erro) { 
+                document.getElementById('bancada-ativa').classList.add('oculto'); 
+                projetoAbertoId = null; 
             }
             syncStatus(); carregarBiblioteca();
         } catch(e) { alert("A entropia cósmica quebrou a fusão."); }
@@ -1305,17 +1397,7 @@
         } catch(e) {}
     }
 	
-	// --- FUNÇÕES DA GOÉCIA E CONCLAVE (FRONTEND) ---
-
-    // Efeito para Batalhas Demoníacas
-    function abismoVoid() {
-        const splash = document.createElement('div');
-        splash.className = 'void-flash';
-        document.body.appendChild(splash);
-        document.body.classList.add('shake-screen');
-        setTimeout(() => { splash.remove(); document.body.classList.remove('shake-screen'); }, 1000);
-    }
-
+    // --- FUNÇÕES DA GOÉCIA E CONCLAVE (FRONTEND) ---
     async function atualizarConclave() {
         try {
             const res = await fetch('/api/conclave/status'); const dados = await res.json();
@@ -1351,6 +1433,21 @@
                 document.getElementById('box-no-boss').classList.remove('oculto');
                 document.getElementById('box-has-boss').classList.add('oculto');
             }
+
+            // A FENDA ASTRAL (IA)
+            const boxFenda = document.getElementById('box-fenda');
+            const fendas = Object.values(dados.fendas || {});
+            if(fendas.length > 0) {
+                const f = fendas[0]; // Mostra a primeira ativa
+                fendaAtualId = f.id;
+                boxFenda.classList.remove('oculto');
+                safeSet('fenda-nome', f.nome);
+                safeSet('fenda-hp', f.hpAtual);
+            } else {
+                boxFenda.classList.add('oculto');
+                fendaAtualId = null;
+            }
+
         } catch(e) {}
     }
 
@@ -1366,12 +1463,24 @@
     }
 
     async function enfrentarGoetia() {
-        abismoVoid(); // Faz a tela tremer sempre que atacas um demónio
+        abismoVoid();
         try {
             const res = await fetch('/api/goecia/enfrentar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) });
             const dados = await res.json(); 
             if(dados.erro && !dados.sucesso) alert(dados.erro); // Foi atacado pelo demónio e errou
             else alert(dados.relato); // Causou Dano
+            atualizarConclave(); syncStatus();
+        } catch(e){}
+    }
+
+    async function atacarFenda() {
+        if (!fendaAtualId) return;
+        abismoVoid();
+        try {
+            const res = await fetch('/api/conclave/fenda/atacar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, fendaId: fendaAtualId }) });
+            const dados = await res.json(); 
+            if(dados.erro && !dados.sucesso) alert(dados.erro);
+            else alert(dados.relato);
             atualizarConclave(); syncStatus();
         } catch(e){}
     }
