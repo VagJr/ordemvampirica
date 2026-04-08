@@ -444,6 +444,24 @@ class ShadowCore {
             }
             this._salvarBancoDeDados(); return { sucesso: true, relato, hpRestante: fenda ? fenda.hpAtual : 0, hpMax: fenda ? fenda.hpMax : 1 };
         }
+		
+		if (tipoCombate === 'cerco') {
+            const cerco = this.cercosAtivos[alvoId];
+            if(!cerco) return { erro: "O Cerco já ruiu ou foi dissolvido pelas brumas." };
+            
+            cerco.hpAtual -= danoFinal;
+            let relato = `[Combo ${desempenhoRitmo.multiplicadorGeral.toFixed(1)}x] Afastaste os demónios de ${cerco.alvoNome} com ${danoFinal} de Impacto! Sofreste ${danoSofrido} de revide.`;
+            
+            if (cerco.hpAtual <= 0) {
+                relato = `SALVASTE [${cerco.alvoNome}] DO MOTIM DE ${cerco.demonio.toUpperCase()}!`; 
+                v.influencia += 50; 
+                this.ganharXP(v.id, Math.floor(1000 * desempenhoRitmo.multiplicadorGeral)); 
+                delete this.cercosAtivos[alvoId];
+                this._registrarEventoEspecial('global', 'SÍTIO QUEBRADO', `${v.nome} libertou ${cerco.alvoNome} das garras de ${cerco.demonio}!`, true);
+            }
+            this._salvarBancoDeDados(); 
+            return { sucesso: true, relato, hpRestante: cerco ? cerco.hpAtual : 0, hpMax: cerco ? cerco.hpMax : 1 };
+        }
 
         if (tipoCombate === 'goetia') {
             const demonio = this.evocacaoAtiva;

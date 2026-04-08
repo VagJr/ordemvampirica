@@ -1509,8 +1509,13 @@
     function atacarCercoBtn() {
         if (!cercoAtualId) return; 
         if(!meuVampiro || meuVampiro.pontosAcao < 2) return ocultoAlert("Exige 2 Fúrias para quebrar as linhas.");
+        
         const bossName = "Hostes de " + document.getElementById('cerco-demonio').innerText;
-        iniciarCombateVisceral(bossName, cercoAtualId, 'fenda', 8000, true); 
+        // Extrai o HP real da interface para iniciar a arena corretamente
+        let hpAtual = parseInt(document.getElementById('cerco-hp').innerText.replace(/\D/g, '')) || 5000;
+        
+        // CORREÇÃO: Passar 'cerco' como tipo de combate
+        iniciarCombateVisceral(bossName, cercoAtualId, 'cerco', hpAtual, true); 
     }
 	
     async function evocarGoetia() { if(!(await ocultoConfirm("Tem a certeza? Isso consumirá 3000 Gts e trará uma Entidade ao Mundo!"))) return; abismoVoid(); try { const res = await fetch('/api/goecia/evocar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); const dados = await res.json(); if(dados.erro) ocultoAlert(dados.erro); atualizarConclave(); syncStatus(); } catch(e){} }
