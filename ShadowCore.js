@@ -705,14 +705,26 @@ class ShadowCore {
     }
 	
 	// A MENTE ABISSAL INSPECIONA O PODER
+    // A MENTE ABISSAL INSPECIONA O PODER
     calcularPoderGeral(vampiro) {
         if (!vampiro) return 0;
         const atr = this._obterAtributosTotais(vampiro);
-        let poderAtributos = (atr.vontade + atr.gnose + atr.magnetismo + atr.densidade) * 10;
-        let poderTalentos = (vampiro.talentosAtivos ? vampiro.talentosAtivos.length * 500 : 0);
-        let poderInfluencia = vampiro.influencia * 5;
-        let poderNivel = vampiro.nivel * 50;
-        return poderAtributos + poderTalentos + poderInfluencia + poderNivel;
+        
+        let poderAtributos = (atr.vontade + atr.gnose + atr.magnetismo + atr.densidade) * 15;
+        let poderTalentos = (vampiro.talentosAtivos ? vampiro.talentosAtivos.length * 1000 : 0);
+        let poderInfluencia = (vampiro.influencia || 0) * 10;
+        let poderNivel = (vampiro.nivel || 1) * 100;
+        let poderConquistas = (vampiro.conquistas ? vampiro.conquistas.length * 500 : 0);
+        
+        // Avaliação de Equipamentos e Aprimoramentos pela Forja
+        let poderEquips = 0;
+        ['arma', 'armadura', 'amuleto'].forEach(slot => {
+            if (vampiro.equipamentos && vampiro.equipamentos[slot]) {
+                poderEquips += 200 + ((vampiro.equipamentos[slot].aprimoramento || 0) * 150);
+            }
+        });
+
+        return Math.floor(poderAtributos + poderTalentos + poderInfluencia + poderNivel + poderConquistas + poderEquips);
     }
 
     // DESCONTO DE SANGUE PELO CONHECIMENTO AKÁSHICO (Substitui o teu conjurarRitual)

@@ -246,6 +246,7 @@
         </div>
         <button class="btn-flee" onclick="abortarCombateManual()">Recuar das Brumas (Fugir)</button>
     </div>
+	
 
     <div id="ui-login" class="card" style="margin-top: 5vh;">
         <h2 style="text-align: center; font-size: 2.2rem;">A Ordem do Abismo</h2>
@@ -272,15 +273,15 @@
         <input type="password" id="in-senha" placeholder="A Tua Palavra-Passe Sagrada">
         <button onclick="auth()" id="btn-auth">Fundir a Aura (Assinar Pacto)</button>
     </div>
-
-    <div id="ui-main" class="oculto">
-        
-        <div class="card" style="padding: 10px 15px;">
+     <div id="ui-main" class="oculto"> 
+    <div class="card" style="padding: 10px 15px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                 <div>
                     <h3 id="ui-meu-nome" style="margin:0; font-size: 1.5rem; text-shadow: 0 0 5px #000;"></h3>
                     <div style="font-size: 0.85em; color:var(--ouro); margin-bottom: 5px;">[<span id="ui-titulo">Sangue Frio</span>]</div>
                     <div style="font-size: 0.9em; color:#888;">Grau <span id="ui-nivel" class="xp-text"></span> | Sangue de Ger. <span id="ui-geracao" class="ouro"></span></div>
+                    <!-- NOVO: EXIBIÇÃO DO PODER GERAL COM TOOLTIP DA MENTE ABISSAL -->
+                    <div style="font-size: 0.9em; color:#d080ff; font-weight:bold; margin-top: 5px; cursor: help;" onmousedown="IniciarInspecao(event, 'perfil', meuVampiro ? meuVampiro.nome : 'Alma Oculta')" onmouseup="PararInspecao()" onmouseleave="PararInspecao()">👁️ Poder Avaliado: <span id="ui-poder-geral">0</span></div>
                 </div>
                 <div style="text-align: right;">
                     <h2 style="margin:0;"><span id="ui-sangue" class="destaque"></span><span style="font-size:0.5em; color:#666;"> Gts</span></h2>
@@ -910,6 +911,14 @@
         safeSet('ui-sangue', numFmt(meuVampiro.sangue)); safeSet('ui-acao', meuVampiro.pontosAcao); safeSet('ui-max-acao', meuVampiro.maxAcao);
         safeSet('ui-nivel', meuVampiro.nivel); safeSet('ui-influencia', numFmt(meuVampiro.influencia));
         
+        // --- NOVA LINHA DE ATUALIZAÇÃO DO PODER ---
+        safeSet('ui-poder-geral', numFmt(meuVampiro.poderGeral || 0));
+        
+        safeSet('inv-anima', meuVampiro.inventario.anima); safeSet('inv-cinzas', meuVampiro.inventario.cinzas); safeSet('inv-vitae', meuVampiro.inventario.vitae);
+        safeSet('inv-memoria', meuVampiro.inventario.memoria || 0); safeSet('inv-ecto', meuVampiro.inventario.ectoplasma || 0); safeSet('inv-pedra', meuVampiro.inventario.pedraAlma || 0);
+        
+        // ... (O restante da função syncUI() permanece igual) ...
+        
         safeSet('inv-anima', meuVampiro.inventario.anima); safeSet('inv-cinzas', meuVampiro.inventario.cinzas); safeSet('inv-vitae', meuVampiro.inventario.vitae);
         safeSet('inv-memoria', meuVampiro.inventario.memoria || 0); safeSet('inv-ecto', meuVampiro.inventario.ectoplasma || 0); safeSet('inv-pedra', meuVampiro.inventario.pedraAlma || 0);
         
@@ -1227,7 +1236,10 @@
     async function carregarSocial() {
         try {
             const res = await fetch('/api/social/' + meuVampiro.id); const dados = await res.json();
-            const opts = dados.alvos.map(a => `<option value="${a.id}">[${a.titulo || 'Mortal'}] ${a.nome} (Grau ${a.nivel})</option>`).join('');
+            
+            // EXIBE O PODER AVALIADO NA LISTA DE ALVOS!
+            const opts = dados.alvos.map(a => `<option value="${a.id}">[Poder: ${numFmt(a.poderGeral)}] [${a.titulo || 'Mortal'}] ${a.nome} (Grau ${a.nivel})</option>`).join('');
+            
             safeSet('lista-alvos-pvp', opts, true); 
             safeSet('alvo-obliteracao', opts, true); 
             safeSet('chat-alvo-privado', opts, true); 
@@ -1763,6 +1775,7 @@
     });
 
     // SISTEMA DE HOLD CLICK (Inspeção Oculta)
+    // SISTEMA DE HOLD CLICK (Inspeção Oculta)
     let pressTimer;
     function IniciarInspecao(evt, tipo, id) {
         evt.preventDefault();
@@ -1773,7 +1786,13 @@
             // Busca dados locais baseados no que o jogador está tocando
             if(tipo === 'alquimia') { t = "Receita Alquímica"; d = "Uma fórmula ancestral para transmutar matéria caída."; e = "Uso: Requer recursos do Umbral."; }
             if(tipo === 'ritual') { t = "Alta Magia"; d = "Cânticos antigos para manipular as leis do plano físico e astral."; e = "Atenção: A tua Gnose reduz o custo de sangue."; }
-            if(tipo === 'perfil') { t = `Poder de Aura`; d = `A força cósmica calculada de ${id}`; e = `Poder Geral: Estimado através da Mente Abissal.`; }
+            
+            // ATUALIZAÇÃO DA INSPEÇÃO DE PERFIL:
+            if(tipo === 'perfil') { 
+                t = `Aura Radiante`; 
+                d = `A força cósmica absoluta da identidade [${id}].`; 
+                e = `Poder Geral: A Mente Abissal baseou-se nos teus Atributos, Conquistas, Talentos Despertos e Relíquias Forjadas para calcular este valor divino.`; 
+            }
 
             document.getElementById('insp-title').innerText = t;
             document.getElementById('insp-desc').innerText = d;

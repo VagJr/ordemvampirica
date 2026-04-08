@@ -247,10 +247,18 @@ app.get('/api/conclave/status', (req, res) => {
 });
 
 // OBTER INFORMAÇÕES PESSOAIS (LINEAGE INCLUDED)
+// OBTER INFORMAÇÕES PESSOAIS (LINEAGE INCLUDED) E AVALIAÇÃO DE PODER
 app.get('/api/social/:id', (req, res) => {
     try {
         const v = core.vampiros[req.params.id]; if(!v) return res.status(404).json({erro: "Fantasma."});
-        const alvos = Object.values(core.vampiros).filter(x => x.id !== v.id && x.estado !== 'Banido').map(x => ({id: x.id, nome: x.nome, geracao: x.geracao, nivel: x.nivel, titulo: x.tituloAtual}));
+        const alvos = Object.values(core.vampiros).filter(x => x.id !== v.id && x.estado !== 'Banido').map(x => ({
+            id: x.id, 
+            nome: x.nome, 
+            geracao: x.geracao, 
+            nivel: x.nivel, 
+            titulo: x.tituloAtual,
+            poderGeral: core.calcularPoderGeral(x) // <-- O OLHO DO ABISMO AVALIA O ALVO
+        }));
         res.json({ alvos, grimorio: core.grimorio, alquimia: core.alquimia });
     } catch(e){ res.status(500).json({erro:"Falha."}); }
 });
@@ -263,6 +271,7 @@ app.get('/api/status/:id', (req, res) => {
             if (v.clan !== 'Sangue Ralo' && core.clans[v.clan]) dados.clanData = core.clans[v.clan];
             dados.faseLua = AstrolabioLunar.obterFaseAtual();
             dados.pactoAtivo = core.pactosAtivos[v.id] || null;
+            dados.poderGeral = core.calcularPoderGeral(v); // <-- INJEÇÃO DO PODER CALCULADO
             
             // Dados da Linhagem Genealógica
             const senhor = v.senhor === 'O_PRIMORDIAL' ? null : core.vampiros[v.senhor];
