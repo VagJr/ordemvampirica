@@ -676,6 +676,7 @@
     </div> 
 
 <script>
+const socket = io();
     // ==========================================
     // 1. INICIALIZAÇÃO SEGURA (TELEGRAM & GLOBAIS)
     // ==========================================
@@ -689,7 +690,6 @@
         console.warn("Aviso: Rodando fora do Telegram ou falha na API.");
     }
 
-    const socket = io();
     let meuVampiro = null; 
     let hashAlvoAtual = null; 
     let fendaAtualId = null;
@@ -705,6 +705,11 @@
 
     if(tgUser) document.getElementById('tg-name').innerText = `Lendo o Fio do Destino: @${tgUser.username || tgUser.first_name}`;
     else document.getElementById('tg-name').innerText = `Identidade Astral: ${idAcesso}`;
+
+    // ==========================================
+    // 2. FUNÇÕES AUXILIARES E ÁUDIO
+    // ==========================================
+    // ... O resto do seu código continua daqui para baixo intacto!
 
     // ==========================================
     // 2. FUNÇÕES AUXILIARES E ÁUDIO

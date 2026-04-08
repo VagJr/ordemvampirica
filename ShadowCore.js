@@ -277,6 +277,7 @@ class ShadowCore {
             'lorde_supremo': { id: 'lorde_supremo', titulo: 'Senhor do Véu Rasgado', requisito: v => v.nivel >= 50 }
         };
     }
+	
 
     async conectarDatabase() {
         const uri = process.env.MONGO_URI;
@@ -1020,7 +1021,47 @@ class ShadowCore {
         if (alvo.clan !== 'Sangue Ralo' && this.clans[alvo.clan]) this.clans[alvo.clan].membros = this.clans[alvo.clan].membros.filter(id => id !== alvoId);
         const nomeMorto = alvo.nome; delete this.vampiros[alvoId];
         this._registrarEventoEspecial('global', 'OBLITERAÇÃO DIVINA', `O Primordial deletou [${nomeMorto}].`, true); this._salvarBancoDeDados(); return { sucesso: true, relato: `Obliterado.` };
-    }
-}	
+    }	
 
+// COLE O TRECHO AQUI DENTRO DA CLASSE
+    registrarVampiro(dados) {
+        const { nome, senha, raca, tgId, convidadoPor } = dados;
+        
+        let geracao = 13; 
+        let linhagem = "Nenhuma";
+        let status = "Sangue Ralo";
+
+        if (convidadoPor && this.vampiros[convidadoPor]) {
+            const pai = this.vampiros[convidadoPor];
+            geracao = pai.geracao + 1;
+            linhagem = pai.linhagem !== "Nenhuma" ? pai.linhagem : pai.nome;
+            status = "Descendente";
+        } else {
+            geracao = 10; 
+            linhagem = nome; 
+            status = "Fundador Errante";
+        }
+
+        const novoVampiro = {
+            id: crypto.randomUUID(),
+            nome,
+            senha, 
+            raca,
+            tgId,
+            geracao,
+            linhagem,
+            status,
+            xp: 0,
+            lvl: 1,
+            // Importante: Garanta que os atributos básicos de combate/status estejam aqui
+            hp: 100,
+            energia: 100,
+            inventario: []
+        };
+
+        this.vampiros[novoVampiro.id] = novoVampiro;
+        this._salvarBancoDeDados();
+        return novoVampiro;
+    }
+}
 module.exports = { ShadowCore, AstrolabioLunar };

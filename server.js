@@ -76,7 +76,17 @@ inicializarServidor();
 // ROTAS DA APLICAÇÃO
 // ==========================================
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-
+// No server.js, altere a rota de registrar:
+app.post('/api/registrar', (req, res) => {
+    try {
+        // Altere de core.registrar para core.registrarVampiro
+        const resultado = core.registrarVampiro(req.body); 
+        res.json(resultado);
+    } catch (e) {
+        console.error(e);
+        res.status(400).json({ erro: "Erro ao criar ser das trevas." });
+    }
+});
 app.post('/api/auth', (req, res) => {
     try {
         const { tgId, tgUsername, nomeSombrio, senha, inviteCode, raca } = req.body;
