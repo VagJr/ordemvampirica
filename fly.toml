@@ -1,0 +1,19 @@
+app = "ordem"
+primary_region = "gru"
+
+[http_service]
+auto_start_machines = true
+auto_stop_machines = false
+force_https = true
+internal_port = 8_080
+min_machines_running = 1
+
+[[services]]
+[[services.tcp_checks]]
+grace_period = "30s"
+interval = "15s"
+timeout = "2s"
+
+[[vm]]
+memory_mb = 512
+size = "shared-cpu-1x"
