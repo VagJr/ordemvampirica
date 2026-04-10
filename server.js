@@ -9,7 +9,17 @@ const { ShadowCore, AstrolabioLunar } = require('./ShadowCore.js');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+// ==========================================
+// CONFIGURAÇÃO BLINDADA DO SERVIDOR (FLY.IO)
+// ==========================================
+// Adiciona Keep-Alive (ping) e força compatibilidade de rede
+const io = new Server(server, { 
+    cors: { origin: "*" },
+    pingInterval: 25000,   // O servidor manda um "sinal de vida" a cada 25s
+    pingTimeout: 60000,    // Só considera que o jogador caiu após 60s sem resposta
+    transports: ['websocket', 'polling'] // Garante que se o websocket falhar, ele usa polling
+});
+global.io = io;
 global.io = io; 
 
 // ==========================================
@@ -30,6 +40,48 @@ const enviarDMSombria = async (tgId, mensagem) => {
         catch(e) { }
     }
 };
+
+// ==========================================
+// MOTOR PROFISSIONAL DE SINCRONIZAÇÃO PRIVADA
+// ==========================================
+function forcarSyncJogador(id) {
+    try {
+        if(core.vampiros[id]) {
+            const v = core.vampiros[id];
+            let dados = {...v, atributosTotais: core._obterAtributosTotais(v)};
+            
+            if (v.clan !== 'Sangue Ralo' && core.clans[v.clan]) {
+                let clanInfo = JSON.parse(JSON.stringify(core.clans[v.clan]));
+                clanInfo.membrosObjetos = clanInfo.membros.map(mid => {
+                    return { id: mid, nome: core.vampiros[mid] ? core.vampiros[mid].nome : "Sombra Fragmentada" };
+                });
+                dados.clanData = clanInfo;
+            }
+            
+            dados.faseLua = AstrolabioLunar.obterFaseAtual();
+            dados.pactoAtivo = core.pactosAtivos[v.id] || null;
+            dados.poderGeral = core.calcularPoderGeral(v); 
+            dados.patente = core._calcularPatente(v); 
+            
+            const senhor = v.senhor === 'O_PRIMORDIAL' ? null : core.vampiros[v.senhor];
+            dados.dadosSenhor = senhor ? { nome: senhor.nome, titulo: senhor.tituloAtual, geracao: senhor.geracao } : { nome: "A Própria Noite", titulo: "Vazio Cósmico", geracao: 0 };
+            dados.dadosCrias = v.linhagem.map(cId => { const c = core.vampiros[cId]; return c ? { nome: c.nome, nivel: c.nivel, estado: c.estado } : null; }).filter(Boolean);
+
+            // CORREÇÃO: Puxar o cache do servidor atualizado
+            const dadosCacheServidor = {
+                clans: core.clans, leilaoP2P: core.leilaoP2P, logs: core.logs,
+                balancaCosmica: core.balancaCosmica, evocacaoAtiva: core.evocacaoAtiva,
+                fendaAtiva: core.fendaAtiva, caravanaAtiva: core.caravanaAtiva,
+                heregeMarcado: core.heregeMarcado, altarEclipse: core.altarEclipse,
+                reinos: core.reinos, climaAstral: core.oraculo.climaAstral,
+                faseLua: dados.faseLua
+            };
+
+            // Envia o pacote completo (Vampiro + Servidor)
+            global.io.to(`priv_${id}`).emit('sync_imediato', { vampiro: dados, servidor: dadosCacheServidor });
+        }
+    } catch(e) { console.error("Falha no Sync Privado:", e); }
+}
 
 app.use(express.json());
 app.use(express.static(__dirname));
@@ -73,10 +125,158 @@ async function inicializarServidor() {
 // ==========================================
 // ROTAS DA APLICAÇÃO
 // ==========================================
+
+// --- CORRIGINDO PACTOS, ALQUIMIA, LEILÃO E MUNDO ABERTO (Adiciona no server.js) ---
+// --- REGISTO DO TUTORIAL ---
+app.post('/api/tutorial/concluido', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if (v) {
+            v.tutorialConcluido = true;
+            core._salvarBancoDeDados();
+            res.json({sucesso: true});
+        } else res.status(404).json({erro: "Fantasma."});
+    } catch(e) { res.status(500).json({erro: "Falha ao gravar memória."}); }
+});
+// Quests Procedurais da IA
+app.post('/api/chat/pacto/pedir', async (req, res) => {
+    try { res.json(await core.pedirPactoIA(req.body.id)); io.emit('sync_geral'); }
+    catch(e) { res.status(500).json({erro: "O Oráculo calou-se no Abismo."}); }
+});
+app.post('/api/dungeon/entrar', (req, res) => {
+    try { res.json(core.entrarAventura(req.body.id, req.body.dungeonId, req.body.partyId)); } 
+    catch(e) { res.status(500).json({erro: "A fenda falhou."}); }
+});
+app.post('/api/chat/pacto/completar', (req, res) => {
+    try { res.json(core.completarPacto(req.body.id)); io.emit('sync_geral'); }
+    catch(e) { res.status(500).json({erro: "Falha ao ofertar o sacrifício."}); }
+});
+
+// A Alquimia Ausente
+// A Alquimia Ausente (Corrigido para Sync Imediato)
+app.post('/api/alquimia/forjar', (req, res) => {
+    try { 
+        const result = core.fabricarAlquimia(req.body.id, req.body.receitaId); 
+        if (result.sucesso) forcarSyncJogador(req.body.id);
+        res.json(result); 
+    } 
+    catch(e){ res.status(500).json({erro:"O Caldeirão explodiu."}); }
+});
+
+// =====================================
+// ROTA DA MAGIA QUE ESTAVA DESAPARECIDA
+// =====================================
+// --- RITUAIS PRÁTICOS ---
+// =====================================
+// ROTA DA MAGIA (CORRIGIDA)
+// =====================================
+app.post('/api/magia/preparar', async (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id]; 
+        if(!v) return res.status(404).json({erro: "Alma inexistente."});
+        
+        const rKey = req.body.ritualId;
+        
+        // CORREÇÃO CRÍTICA: Agora o servidor lê o VERDADEIRO grimório da Matriz,
+        // incluindo todos os rituais base e as magias customizadas feitas na biblioteca!
+        const r = core.grimorio[rKey];
+        
+        if (!r) return res.status(404).json({erro: "Rito desconhecido na Matriz. O feitiço não existe."});
+
+        // DINÂMICA DE GAMEPLAY (Ajusta o minigame conforme o tipo de feitiço)
+        let gameplayType = "ressonancia"; // Padrão
+        
+        if (r.tipo === 'pvp' || rKey.includes('coagula')) {
+            gameplayType = "pressao"; // Magias de Ataque: Derramar Sangue
+        } else if (r.tipo === 'buff' || rKey.includes('banimento')) {
+            gameplayType = "trilhagem"; // Magias de Buff/Fúria: Ligar os Nós do Pentagrama
+        } else if (r.tipo === 'cura' || rKey.includes('salomao')) {
+            gameplayType = "ritmo"; // Magias de Cura/Escudo: Bater o Ritmo
+        }
+
+        // A IA autoriza e gera o modelo do ritual
+        const projeto = await core.oraculo.gerarArteRitual(rKey, r.nome, gameplayType);
+        
+        // Passamos os dados do ritual real para o Front-end
+        projeto.ritual = { key: rKey, nome: r.nome, custoAcao: r.custoAcao };
+        
+        res.json(projeto);
+    } catch(e) { 
+        console.error("[ERRO RITUAL PREPARAR]", e);
+        res.status(500).json({erro: "A Mente Abissal colapsou ao projetar a estética geométrica."}); 
+    }
+});
+
+// --- EXECUÇÃO FINAL DO RITUAL ---
+app.post('/api/magia/executar', async (req, res) => {
+    try {
+        const { id, alvoId, ritualId } = req.body;
+        
+        // Chama a função blindada do ShadowCore
+        const resultado = await core.processarMagia(id, alvoId, ritualId);
+        
+        // Força a atualização do ecrã de quem fez o ritual
+        io.to(`priv_${id}`).emit('tick'); 
+        
+        res.json(resultado);
+    } catch(e) {
+        console.error(e);
+        res.status(500).json({ erro: "O Juiz Abissal rejeitou o feitiço." });
+    }
+});
+
+app.post('/api/magia/conjurar', (req, res) => {
+    try {
+        const { atacanteId, ritualId, alvoId } = req.body;
+        const result = core.conjurarRitual(atacanteId, ritualId, alvoId);
+        
+        if (result.sucesso) {
+            forcarSyncJogador(atacanteId);
+            // Se foi lançado num aliado, atualiza a Fúria dele em tempo real também!
+            if (alvoId && alvoId !== atacanteId) forcarSyncJogador(alvoId);
+        }
+        res.json(result);
+    } catch(e) {
+        res.status(500).json({erro: "A Entropia quebrou a conjuração."});
+    }
+});
+
+// O Mercado Negro (Leilão)
+app.get('/api/leilao', (req, res) => {
+    try { res.json(core.leilaoP2P || []); } 
+    catch(e) { res.status(500).json({erro:"Falha ao ler o mercado."}); }
+});
+
+app.post('/api/leilao/vender', (req, res) => {
+    try { res.json(core.anunciarLeilao(req.body.id, req.body.tipo, req.body.quantiaOuHash, req.body.preco)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"Falha na venda."}); }
+});
+
+app.post('/api/leilao/comprar', (req, res) => {
+    try { res.json(core.comprarLeilao(req.body.id, req.body.anuncioId)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"Falha na compra."}); }
+});
+
+// Resgate do Mundo Aberto (Caça Bot Humanos)
+app.get('/api/pve/aldeia', (req, res) => { 
+    try { res.json({ aldeias: core.aldeiasAtivas || [] }); } 
+    catch(e) { res.status(500).json({erro: "Falha na patrulha."}); } 
+});
+
+app.post('/api/pve/cacar_aldeia', (req, res) => { 
+    try { res.json(core.massacrarAldeiaHumana(req.body.vampiroId, req.body.aldeiaId)); io.emit('sync_geral'); } 
+    catch(e) { res.status(500).json({erro: "Falha no massacre."}); } 
+});
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
-app.post('/api/auth', (req, res) => {
+app.post('/api/auth', async (req, res) => {
     try {
+        // [FUSÃO DE MEMÓRIA]: Sincroniza a RAM com a DB para evitar o bug de morte fantasma em servidores Fly.io
+        if (core.collection) {
+            const doc = await core.collection.findOne({ _id: 'MATRIZ_PRINCIPAL' });
+            if (doc && doc.vampiros) core.vampiros = doc.vampiros;
+        }
+
         const { tgId, tgUsername, nomeSombrio, senha, inviteCode, raca } = req.body;
         const isFirstVampire = Object.keys(core.vampiros).length === 0;
         if (!tgId) return res.status(400).json({erro: "Selo Astral exigido."});
@@ -89,11 +289,31 @@ app.post('/api/auth', (req, res) => {
     } catch(err) { res.status(500).json({erro: "A Geometria Sagrada falhou."}); }
 });
 
+// --- ROTAS DA AVENTURA (DUNGEON CRAWLER) ---
+app.post('/api/dungeon/iniciar', async (req, res) => {
+    try {
+        const { id, tipo, convidados } = req.body;
+        const result = await core.iniciarAventura(id, tipo, convidados || []);
+        res.json(result);
+    } catch(e) { res.status(500).json({erro: "A fenda para o Abismo falhou em abrir."}); }
+});
+
+app.post('/api/dungeon/vitoria', (req, res) => {
+    try {
+        core.resolverCombateDungeon(req.body.dungeonId, true);
+        res.json({sucesso:true});
+    } catch(e) { res.status(500).json({erro: "Falha na resolução."}); }
+});
+
 // --- SISTEMA DE REINOS ---
 app.post('/api/reino/fundar', (req, res) => {
     try { res.json(core.fundarReino(req.body.id, req.body.nomeReino)); io.emit('sync_geral'); } 
     catch(e){ res.status(500).json({erro:"Falha na fundação."}); }
 });
+// --- RITUAIS PRAÍTICOS ---
+// Prepara o ritual, gerando a arte procedural e definindo o minigame
+// --- RITUAIS PRÁTICOS ---
+// Prepara o ritual, gerando a arte procedural e definindo o minigame
 
 app.get('/api/reinos', (req, res) => {
     try { res.json(Object.values(core.reinos)); } 
@@ -103,12 +323,14 @@ app.get('/api/reinos', (req, res) => {
 // --- COMBATE E PVE CONTÍNUO ---
 app.post('/api/combate/iniciar', async (req, res) => {
     try {
-        const { id, isPvpAoVivo, alvoId } = req.body;
+        const { id, isPvpAoVivo, alvoId, isExpedicao, reinoId } = req.body;
         let result;
         if (isPvpAoVivo) result = core.desafiarPvPAoVivo(id, alvoId);
-        else result = await core.iniciarCombateUmbral(id);
+        else if (isExpedicao) result = core.explorarUmbral(id, reinoId);
+        else result = core.gerarMonstroUmbral(id);
+        
         res.json(result);
-    } catch (e) { res.status(500).json({erro:"Falha"}); }
+    } catch (e) { res.status(500).json({erro:"Falha ao invocar a criatura."}); }
 });
 
 app.post('/api/combate/turno', (req, res) => {
@@ -121,6 +343,24 @@ app.post('/api/combate/turno', (req, res) => {
 app.post('/api/combate/action', async (req, res) => { 
     try { 
         const result = await core.processarCombateAcao(req.body); 
+        
+        // NOVO: Broadcast em tempo real para combates Co-op (INCLUINDO A MASMORRA)
+        const { tipoCombate, alvoId } = req.body;
+        
+        // Agora 'dungeon' também envia o dano em tempo real para as telas dos aliados!
+        if (['goetia', 'cerco', 'fenda', 'herege', 'dungeon'].includes(tipoCombate) && result.hpRestante !== undefined) {
+            const atacanteNome = core.vampiros[req.body.id] ? core.vampiros[req.body.id].nome : "Um Imortal";
+            const danoCausado = req.body.desempenhoRitmo ? req.body.desempenhoRitmo.danoRealCausado : 0;
+            
+            io.emit('boss_coop_update', { 
+                bossId: alvoId, 
+                hpRestante: result.hpRestante, 
+                hpMax: result.hpMax || result.hpRestante, 
+                atacante: atacanteNome, 
+                dano: danoCausado 
+            });
+        }
+        
         if (result && result.alertaDono && result.donoId) { 
             const defensor = core.vampiros[result.donoId]; 
             if(defensor) enviarDMSombria(defensor.tgId, result.alertaDono); 
@@ -130,31 +370,39 @@ app.post('/api/combate/action', async (req, res) => {
 });
 
 // --- INVENTÁRIO, MAGIA E AVALIAÇÃO ---
-app.post('/api/atributos/distribuir', (req, res) => { try { res.json(core.distribuirAtributos(req.body.id, req.body.atributo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
-app.post('/api/inventario/equipar', (req, res) => { try { res.json(core.equiparReliquia(req.body.id, req.body.reliquiaId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
-app.post('/api/inventario/desequipar', (req, res) => { try { res.json(core.desequiparReliquia(req.body.id, req.body.slot)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
-app.post('/api/inventario/aprimorar', (req, res) => { try { res.json(core.aprimorarEquipamento(req.body.id, req.body.slot)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+// --- INVENTÁRIO, MAGIA E AVALIAÇÃO ---
+app.post('/api/atributos/distribuir', (req, res) => { try { const r = core.distribuirAtributos(req.body.id, req.body.atributo); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/inventario/equipar', (req, res) => { try { const r = core.equiparReliquia(req.body.id, req.body.reliquiaId); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/inventario/desequipar', (req, res) => { try { const r = core.desequiparReliquia(req.body.id, req.body.slot); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/inventario/aprimorar', (req, res) => { try { const r = core.aprimorarEquipamento(req.body.id, req.body.slot); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
-app.post('/api/magia/conjurar', (req, res) => { try { res.json(core.conjurarRitual(req.body.atacanteId, req.body.ritualId, req.body.alvoId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
-app.post('/api/alquimia/forjar', (req, res) => { try { res.json(core.fabricarAlquimia(req.body.id, req.body.receitaId)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/perfil/despertar', async (req, res) => { try { const r = await core.despertarTalento(req.body.id); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"A Mente falhou."}); } });
+app.post('/api/perfil/curar', (req, res) => { try { const r = core.curarCarne(req.body.id); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"A feitiçaria falhou."}); }});
+app.post('/api/perfil/titulo', (req, res) => { try { const r = core.mudarTitulo(req.body.id, req.body.titulo); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
-app.post('/api/perfil/despertar', async (req, res) => { try { res.json(await core.despertarTalento(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"A Mente falhou."}); } });
-app.post('/api/perfil/curar', (req, res) => { try { res.json(core.curarCarne(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"A feitiçaria falhou."}); }});
-app.post('/api/perfil/titulo', (req, res) => { try { res.json(core.mudarTitulo(req.body.id, req.body.titulo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+// --- ECONOMIA DE SANGUE E CÁLICE ---
+app.post('/api/banco/calice', (req, res) => { 
+    try { 
+        const result = core.operarCalice(req.body.id, req.body.quantia, req.body.operacao); 
+        if (result.sucesso) forcarSyncJogador(req.body.id); // Sincroniza em Tempo real!
+        res.json(result); 
+    } catch(e) { res.status(500).json({ erro: "A conexão etérea com o Banco foi quebrada." }); } 
+});
 
+app.post('/api/banco/transferir', (req, res) => { 
+    try { 
+        const result = core.transferirSangue(req.body.remetenteId, req.body.alvoId, req.body.quantia);
+        if (result.sucesso) {
+            forcarSyncJogador(req.body.remetenteId);
+            forcarSyncJogador(req.body.alvoId); // Atualiza também o alvo em tempo real!
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "O elo de doação falhou." }); } 
+});
 // --- CLÃS, BANCOS E MERCADO ---
 app.post('/api/clan/fundar', (req, res) => { try { res.json(core.fundarClan(req.body.id, req.body.nomeClan)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.post('/api/clan/cofre', (req, res) => { try { res.json(core.operarCofreClan(req.body.id, req.body.quantia, req.body.operacao)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.post('/api/clan/egregora', (req, res) => { try { res.json(core.nutrirEgregoraClã(req.body.id, req.body.material)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
-
-app.post('/api/banco/calice', (req, res) => { 
-    try { 
-        const result = core.operarCalice(req.body.id, req.body.quantia, req.body.operacao); 
-        io.emit('sync_geral'); // Força a actualização global a todos
-        io.emit('tick'); // Força a UI a recalcular o status na hora
-        res.json(result); 
-    } catch(e){ res.status(500).json({erro:"Falha."}); } 
-});
 
 app.post('/api/banco/transferir', (req, res) => { 
     try { 
@@ -230,7 +478,14 @@ app.post('/api/biblioteca/cristalizar_arma', async (req, res) => { try { res.jso
 
 // --- CONCLAVE & GOÉTIA ---
 app.post('/api/conclave/invadir', (req, res) => { try { res.json(core.invadirCriptaInimiga(req.body.id, req.body.clanAlvo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
-app.post('/api/goecia/evocar', (req, res) => { try { res.json(core.abrirSeloGoetico(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/goecia/evocar', async (req, res) => { 
+    try { 
+        res.json(await core.evocarGoetia(req.body.id)); 
+        io.emit('sync_geral'); 
+    } catch(e) { 
+        res.status(500).json({erro:"Falha na Invocação."}); 
+    } 
+});
 app.get('/api/conclave/status', (req, res) => {
     try { 
         res.json({ 
@@ -257,24 +512,74 @@ app.get('/api/social/:id', (req, res) => {
     } catch(e){ res.status(500).json({erro:"Falha."}); }
 });
 
-app.get('/api/status/:id', (req, res) => {
-    try {
-        if(core.vampiros[req.params.id]) {
-            const v = core.vampiros[req.params.id];
-            let dados = {...v, atributosTotais: core._obterAtributosTotais(v)};
-            if (v.clan !== 'Sangue Ralo' && core.clans[v.clan]) dados.clanData = core.clans[v.clan];
-            dados.faseLua = AstrolabioLunar.obterFaseAtual();
-            dados.pactoAtivo = core.pactosAtivos[v.id] || null;
-            dados.poderGeral = core.calcularPoderGeral(v); 
-            dados.patente = core._calcularPatente(v); 
-            
-            const senhor = v.senhor === 'O_PRIMORDIAL' ? null : core.vampiros[v.senhor];
-            dados.dadosSenhor = senhor ? { nome: senhor.nome, titulo: senhor.tituloAtual, geracao: senhor.geracao } : { nome: "A Própria Noite", titulo: "Vazio Cósmico", geracao: 0 };
-            dados.dadosCrias = v.linhagem.map(cId => { const c = core.vampiros[cId]; return c ? { nome: c.nome, nivel: c.nivel, estado: c.estado } : null; }).filter(Boolean);
 
-            res.json(dados);
-        } else res.status(404).json({erro: "Sombra Desvanecida."});
-    } catch(e){ res.status(500).json({erro:"A Aura falhou."}); }
+app.post('/api/clan/cofre', (req, res) => { 
+    try { 
+        const result = core.operarCofreClan(req.body.id, req.body.quantia, req.body.operacao);
+        io.emit('sync_geral'); 
+        res.json(result); 
+    } catch(e) { 
+        console.error("[ERRO ABISSAL] Falha no Cofre do Clã:", e);
+        res.status(500).json({ erro: "O tesouro do Santuário está inacessível." }); 
+    } 
+});
+// Substitui a rota GET /api/status/:id atual por esta:
+// ==========================================
+// ROTA DE SINCRONIZAÇÃO VITAL (O CORAÇÃO DO JOGO)
+// ==========================================
+// ==========================================
+// ROTA DE SINCRONIZAÇÃO VITAL (O CORAÇÃO DO JOGO)
+// ==========================================
+// ==========================================
+// ROTA DE SINCRONIZAÇÃO VITAL (O CORAÇÃO DO JOGO)
+// ==========================================
+app.get('/api/status', (req, res) => {
+    try {
+        const vampiroId = req.query.id;
+        const v = core.vampiros[vampiroId];
+        
+        if (!v) return res.status(404).json({ erro: "Alma não encontrada na Matriz." });
+
+        // [CORREÇÃO CRÍTICA]: Calcula o Poder e Patente para não haver atrasos na UI
+        v.poderGeral = core.calcularPoderGeral(v);
+        v.patente = core._calcularPatente(v);
+        core._obterAtributosTotais(v); // Força atualização de HP e Fúria Máxima
+
+        const dadosCacheServidor = {
+            clans: core.clans, leilaoP2P: core.leilaoP2P, logs: core.logs,
+            balancaCosmica: core.balancaCosmica, evocacaoAtiva: core.evocacaoAtiva,
+            fendaAtiva: core.fendaAtiva, caravanaAtiva: core.caravanaAtiva,
+            heregeMarcado: core.heregeMarcado, altarEclipse: core.altarEclipse,
+            reinos: core.reinos, climaAstral: core.oraculo.climaAstral,
+            faseLua: AstrolabioLunar.obterFaseAtual()
+        };
+
+        // Injeta os dados formatados diretamente no vampiro
+        v.faseLua = dadosCacheServidor.faseLua;
+        v.pactoAtivo = core.pactosAtivos[v.id] || null;
+
+        if (v.clan !== 'Sangue Ralo' && core.clans[v.clan]) {
+            v.clanData = core.clans[v.clan];
+            v.clanData.membrosObjetos = v.clanData.membros.map(mid => {
+                let m = core.vampiros[mid];
+                return m ? { id: mid, nome: m.nome } : null;
+            }).filter(m => m);
+        }
+
+        if (v.senhor && core.vampiros[v.senhor]) {
+            v.dadosSenhor = { nome: core.vampiros[v.senhor].nome, geracao: core.vampiros[v.senhor].geracao };
+        }
+        
+        v.dadosCrias = (v.linhagem || []).map(cid => {
+            let c = core.vampiros[cid];
+            return c ? { nome: c.nome, nivel: c.nivel, estado: c.estado } : null;
+        }).filter(c => c);
+
+        res.json({ vampiro: v, servidor: dadosCacheServidor });
+    } catch (e) {
+        console.error("[ERRO STATUS]", e);
+        res.status(500).json({ erro: "Ocorreu um colapso na sincronização da Matriz." });
+    }
 });
 
 // ==========================================
@@ -287,6 +592,85 @@ io.on('connection', (socket) => {
         if(clan && clan !== 'Sem Clã' && clan !== 'Sangue Ralo') socket.join(`clan_${clan}`);
         socket.join(`priv_${idVampiro}`); 
         socket.emit('historico_chat', { canal: 'global', mensagens: core.historicoChat.global });
+    });
+	
+	// --- EVENTOS DA MASMORRA EM TEMPO REAL ---
+    socket.on('dungeon_join', (data) => {
+        socket.join(data.dungeonId); // Coloca o socket do jogador na sala daquela dungeon
+    });
+	
+	// ==========================================
+    // CORTAR VÍNCULO CO-OP (SAÍDA DA MASMORRA)
+    // ==========================================
+    socket.on('abandonar_dungeon', (dados) => {
+        if (!dados.dungeonId || !dados.vampiroId) return;
+        socket.leave(dados.dungeonId); // Sai da sala de transmissões da masmorra
+        
+        // Remove o fantasma da Party para ele não receber mais Convites ou Danos
+        if (core.dungeons && core.dungeons[dados.dungeonId]) {
+            const d = core.dungeons[dados.dungeonId];
+            if (d.players && d.players[dados.vampiroId]) {
+                delete d.players[dados.vampiroId]; 
+                
+                // Atualiza a tela do aliado que continuou lá dentro
+                io.to(dados.dungeonId).emit('dungeon_update', d);
+                io.to(dados.dungeonId).emit('dungeon_msg', { msg: `Um Imortal cortou o Elo e abandonou o Abismo.`, cor: '#888' });
+            }
+        }
+    });
+	
+    // --- SISTEMA UNIVERSAL DE CONVITES CO-OP ---
+    socket.on('enviar_convite', (dados) => {
+        const remetente = core.vampiros[dados.de];
+        if (!remetente) return;
+        
+        const payloadConvite = { 
+            deId: remetente.id, 
+            deNome: remetente.nome, 
+            tipo: dados.tipo, 
+            extra: dados.extra 
+        };
+
+        // Envio para TODO O SERVIDOR (Grita para todos exceto quem enviou)
+        if (dados.para === 'todos') {
+            socket.broadcast.emit('receber_convite', payloadConvite);
+        } 
+        // Envio apenas para O CLÃ
+        else if (dados.para === 'clan' && remetente.clan !== 'Sangue Ralo') {
+            socket.broadcast.to(`clan_${remetente.clan}`).emit('receber_convite', payloadConvite);
+        } 
+        // Envio PRIVADO (1 para 1 - Força a emissão direta para a sala privada do alvo)
+        else {
+            io.to(`priv_${dados.para}`).emit('receber_convite', payloadConvite);
+        }
+    });
+
+    socket.on('dungeon_move', (data) => {
+        const { dungeonId, vampiroId, dx, dy } = data;
+        const result = core.moverMasmorra(dungeonId, vampiroId, dx, dy);
+        
+        if (result.estado) {
+            // Emite para a sala (Co-op)
+            io.to(dungeonId).emit('dungeon_update', result.estado);
+            
+            // BLINDAGEM FLY.IO: Emite DIRETAMENTE de volta para o jogador que andou. 
+            // Garante que o movimento atualiza na tua tela mesmo que as Salas Cloud falhem!
+            socket.emit('dungeon_update', result.estado);
+        }
+        if (result.iniciarCombate) {
+            io.to(dungeonId).emit('dungeon_combat_start', { 
+                nome: result.entidade.nome, hpMax: result.entidade.hpMax, isBoss: result.entidade.tipo === 'boss', entidadeId: result.entidade.id 
+            });
+            // O mesmo para o combate: garante a transição direta
+            socket.emit('dungeon_combat_start', { 
+                nome: result.entidade.nome, hpMax: result.entidade.hpMax, isBoss: result.entidade.tipo === 'boss', entidadeId: result.entidade.id 
+            });
+        }
+        if (result.erro) {
+            // Se o servidor for reiniciado na nuvem e apagar a masmorra da RAM, expulsa o jogador em vez de o deixar congelado
+            socket.emit('dungeon_msg', { msg: `[ERRO DO VAZIO]: ${result.erro}`, cor: '#f00' });
+            socket.emit('dungeon_combat_end', { vitoria: false, msg: result.erro });
+        }
     });
 	
 	// BLINDAGEM DO CHAT NO SERVER.JS
@@ -410,3 +794,8 @@ setInterval(async () => {
         io.to('global').emit('nova_mensagem', { canal: 'global', ...payloadIA });
     }
 }, 60000);
+
+// Loop para movimentação dos monstros na Dungeon (a cada 3 segundos)
+setInterval(() => {
+    if (core.tickDungeons) core.tickDungeons();
+}, 3000);
