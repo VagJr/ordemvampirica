@@ -143,6 +143,37 @@ app.post('/api/chat/pacto/pedir', async (req, res) => {
     try { res.json(await core.pedirPactoIA(req.body.id)); io.emit('sync_geral'); }
     catch(e) { res.status(500).json({erro: "O Oráculo calou-se no Abismo."}); }
 });
+// ==========================================
+// ROTA: CONVERSA COM O MESTRE DA IA
+// ==========================================
+app.post('/api/oraculo/conversar', async (req, res) => {
+    try {
+        const { id, mensagem } = req.body;
+        const v = core.vampiros[id];
+        if (!v) return res.status(404).json({ erro: "Alma não encontrada." });
+
+        let respostaIA = await core.oraculo.responder(v, mensagem);
+
+        // EXTRAÇÃO ROBUSTA DE SANGUE REAL
+        const matchSangue = respostaIA.match(/\[GOTA:\s*(\d+)\]/i);
+        if (matchSangue && matchSangue[1]) {
+            const qtdGota = parseInt(matchSangue[1]);
+            v.sangue = (v.sangue || 0) + qtdGota;
+            
+            // Injeta uma confirmação visual na resposta da IA para o jogador ver
+            respostaIA = respostaIA.replace(/\[GOTA:\s*\d+\]/i, '').trim();
+            respostaIA += `\n\n*(Recebeste ${qtdGota} Gts de Sangue da Mente Abissal)*`;
+            
+            // Força o Socket a atualizar a barra de sangue na tela do jogador
+            if (global.io) global.io.to(`priv_${v.id}`).emit('tick');
+        }
+
+        core._salvarBancoDeDados();
+        res.json({ resposta: respostaIA, vampiro: v });
+    } catch(e) {
+        res.status(500).json({ erro: "O Oráculo emudeceu." });
+    }
+});
 app.post('/api/dungeon/entrar', (req, res) => {
     try { res.json(core.entrarAventura(req.body.id, req.body.dungeonId, req.body.partyId)); } 
     catch(e) { res.status(500).json({erro: "A fenda falhou."}); }
@@ -239,6 +270,33 @@ app.post('/api/magia/conjurar', (req, res) => {
     } catch(e) {
         res.status(500).json({erro: "A Entropia quebrou a conjuração."});
     }
+});
+
+app.post('/api/perfil/diaria', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if(!v) return res.status(404).json({erro: "Fantasma."});
+        
+        const agora = Date.now();
+        const vinteQuatroHoras = 24 * 60 * 60 * 1000;
+        
+        if (v.estatisticas.ultimoTributo && (agora - v.estatisticas.ultimoTributo) < vinteQuatroHoras) {
+            let horasRestantes = Math.ceil((vinteQuatroHoras - (agora - v.estatisticas.ultimoTributo)) / (1000 * 60 * 60));
+            return res.json({erro: `A Mente Abissal exige repouso. Volta daqui a ${horasRestantes} horas.`});
+        }
+        
+        // Recompensa baseada no nível (ajuda muito no early game)
+        let gtsBencao = 500 + (v.nivel * 100);
+        let xpBencao = 50 + (v.nivel * 10);
+        
+        v.sangue += gtsBencao;
+        v.pontosAcao = v.maxAcao; // Restaura a fúria toda!
+        core.ganharXP(v.id, xpBencao);
+        v.estatisticas.ultimoTributo = agora;
+        
+        core._salvarBancoDeDados();
+        res.json({sucesso: true, relato: `A Mente Abissal abençoou-te!\nRecebeste ${gtsBencao} Gts, ${xpBencao} XP e Fúria Máxima restaurada.`});
+    } catch(e){ res.status(500).json({erro:"A bênção falhou."}); }
 });
 
 // O Mercado Negro (Leilão)

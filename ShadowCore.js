@@ -116,6 +116,51 @@ async interagirChat(mensagem, iniciado) {
     return await this.conversarNoChat(iniciado, mensagem);
 }
 
+// ==========================================
+    // IA: MENTE ABISSAL (ORÁCULO E BIBLIOTECA)
+    // ==========================================
+    async responder(vampiro, mensagem) {
+        try {
+            const chatCompletion = await this.groq.chat.completions.create({
+                messages: [
+                    { 
+                        role: 'system', 
+                        content: `És a 'Mente Abissal', um deus sombrio e o mestre de jogo deste MMORPG de texto. O jogador chama-se ${vampiro.nome} (Nível ${vampiro.nivel}, Raça: ${vampiro.raca}). Age como um mestre ocultista.
+                        - Se ele pedir uma tarefa/missão, cria um pacto no formato exato: PACTO: [Titulo] | [Descricao] | [Recurso exigido (vitae, anima ou cinzas)] | [Quantidade] | [Recompensa de XP].                        
+    - REGRAS DE SANGUE: Se decidires dar sangue, escreve OBRIGATORIAMENTE a tag [GOTA: valor] no final da tua fala.
+    - REGRAS DE PACTO: Se criares missões, usa o formato PACTO: Titulo | Descricao | Recurso | Qtd | XP.
+    - PERSONALIDADE: Sombria, antiga e absoluta.
+						- NOVO PODER: Se ele pedir sangue e tu o julgares digno, podes doar. Para doar sangue REAL ao jogador, obrigatoriamente inclui na tua resposta a tag secreta [GOTA: quantidade] (exemplo: [GOTA: 500]). O sistema extrairá essa tag e dará o sangue a ele.` 
+                    },
+                    { role: 'user', content: mensagem }
+                ],
+                model: 'llama-3.3-70b-versatile',
+                temperature: 0.8,
+            });
+            return chatCompletion.choices[0].message.content;
+        } catch (e) { return "As trevas recusam-se a sussurrar agora."; }
+    }
+
+    async expandirEstudo(textoAtual, novoPedido) {
+        try {
+            const contextoCurto = textoAtual.length > 2000 ? textoAtual.slice(-2000) : textoAtual;
+            const chatCompletion = await this.groq.chat.completions.create({
+                messages: [
+                    { 
+                        role: 'system', 
+                        content: `És o Curador da Biblioteca. O jogador está a escrever um tomo sombrio. NUNCA REPITAS o texto que ele já enviou. Escreve APENAS a continuação inédita, fluindo diretamente a partir da última frase dele."						
+                        - NUNCA REPITAS o texto que o utilizador já escreveu. 
+    - Escreve APENAS a continuação direta e inédita dos parágrafos anteriores.`
+                    },
+                    { role: 'user', content: `O final do texto atual é: "...${contextoCurto}".\n\nInstrução para a continuação: ${novoPedido}` }
+                ],
+                model: 'llama-3.3-70b-versatile',
+                temperature: 0.7,
+            });
+            return chatCompletion.choices[0].message.content;
+        } catch(e) { return "As páginas rasgaram-se na escuridão."; }
+    }
+
     async conversarNoChat(iniciado, mensagemHumana) {
         if (!this.apiKey) return `Minhas correntes estão seladas hoje, Arauto.`;
         try {
@@ -665,10 +710,19 @@ class ShadowCore {
             const mapa = this._gerarGridMasmorra(35, 35, andar);
             let entidades = [];
             entidades.push({ id: 'exit', tipo: 'exit', x: mapa.salas[mapa.salas.length - 1].x, y: mapa.salas[mapa.salas.length - 1].y });
+            // GERADOR DE ENTIDADES (CURVA EXPONENCIAL DE DIFICULDADE)
             for (let i = 1; i < mapa.salas.length - 1; i++) {
-                if (Math.random() > 0.3) entidades.push({ id: 'mob_'+i, tipo: 'mob', x: mapa.salas[i].x, y: mapa.salas[i].y, hpMax: 1000 * andar, hpAtual: 1000 * andar, nome: `Aberraçao Nv.${andar}` });
+                if (Math.random() > 0.3) {
+                    // Andar 1: ~300 HP. Andar 10: ~1200 HP. Andar 20: ~5000 HP.
+                    let hpMob = Math.floor(300 * Math.pow(1.15, andar - 1));
+                    entidades.push({ id: 'mob_'+i, tipo: 'mob', x: mapa.salas[i].x, y: mapa.salas[i].y, hpMax: hpMob, hpAtual: hpMob, nome: `Aberraçao Nv.${andar}` });
+                }
                 if (Math.random() > 0.6) entidades.push({ id: 'loot_'+i, tipo: 'loot', x: mapa.salas[i].x + 1, y: mapa.salas[i].y, recompensa: Math.random() > 0.5 ? 'anima' : 'cinzas' });
             }
+            
+            // Andar 1: ~1000 HP. Andar 10: ~7400 HP. Andar 20: ~69000 HP. (Escala Brutal)
+            let hpBoss = Math.floor(1000 * Math.pow(1.25, andar - 1));
+            entidades.push({ id: 'boss_'+andar, tipo: 'boss', x: mapa.salas[mapa.salas.length - 1].x - 1, y: mapa.salas[mapa.salas.length - 1].y, hpMax: hpBoss, hpAtual: hpBoss, nome: `Senhor do Andar ${andar}` });
             entidades.push({ id: 'boss_'+andar, tipo: 'boss', x: mapa.salas[mapa.salas.length - 1].x - 1, y: mapa.salas[mapa.salas.length - 1].y, hpMax: 5000 * andar, hpAtual: 5000 * andar, nome: `Senhor do Andar ${andar}` });
 
             this.dungeons[dId] = {
@@ -710,7 +764,7 @@ class ShadowCore {
         
         return { sucesso: true, estado: d };
     }
-    moverMasmorra(dungeonId, playerId, dx, dy) {
+   moverMasmorra(dungeonId, playerId, dx, dy) {
         if (!this.dungeons) this.dungeons = {}; // Trava de segurança
         const d = this.dungeons[dungeonId]; 
         if (!d || d.status === 'combate') return { erro: "Masmorra trancada." };
@@ -735,7 +789,7 @@ class ShadowCore {
             return { estado: d, bloqueado: true };
         }
 
-        // 2. VERIFICA COLISÃO COM ENTIDADES PVE (Loot e Monstros)
+        // 2. VERIFICA COLISÃO COM ENTIDADES PVE (Loot, Monstros e Saída)
         let ent = d.entidades.find(e => e.x === nx && e.y === ny);
         if (ent) {
             if (ent.tipo === 'loot') {
@@ -763,6 +817,47 @@ class ShadowCore {
                 });
 
                 return { estado: d, iniciarCombate: true, entidade: ent };
+            }
+            // ==========================================
+            // GATILHO DE PROGRESSÃO: DESCER NÍVEL
+            // ==========================================
+            else if (ent.tipo === 'exit') {
+                // Opcional: Bloquear saída se ainda houver mobs vivos
+                const mobsVivos = d.entidades.filter(e => e.tipo === 'mob' || e.tipo === 'boss');
+                if (mobsVivos.length > 0) {
+                    return { estado: d, erro: "O selo do andar só rompe quando o último inimigo cair." };
+                }
+
+                d.andar += 1;
+                // REGERAÇÃO PROCEDURAL PARA O PRÓXIMO ANDAR
+                const novoMapa = this._gerarGridMasmorra(35, 35, d.andar);
+                d.grid = novoMapa.grid;
+                d.entidades = []; // Limpa o andar antigo
+
+                // Repovoar entidades (Escala exponencial de HP que ajustamos antes)
+                d.entidades.push({ id: 'exit', tipo: 'exit', x: novoMapa.salas[novoMapa.salas.length - 1].x, y: novoMapa.salas[novoMapa.salas.length - 1].y });
+                for (let i = 1; i < novoMapa.salas.length - 1; i++) {
+                    if (Math.random() > 0.3) {
+                        let hpMob = Math.floor(300 * Math.pow(1.15, d.andar - 1));
+                        d.entidades.push({ id: `mob_${d.andar}_${i}`, tipo: 'mob', x: novoMapa.salas[i].x, y: novoMapa.salas[i].y, hpMax: hpMob, hpAtual: hpMob, nome: `Aberraçao Nv.${d.andar}` });
+                    }
+                }
+                
+                let hpBoss = Math.floor(1000 * Math.pow(1.25, d.andar - 1));
+                d.entidades.push({ id: `boss_${d.andar}`, tipo: 'boss', x: novoMapa.salas[novoMapa.salas.length - 1].x - 1, y: novoMapa.salas[novoMapa.salas.length - 1].y, hpMax: hpBoss, hpAtual: hpBoss, nome: `Senhor do Andar ${d.andar}` });
+
+                // Reposiciona todos os jogadores no spawn do novo mapa
+                let spawn = { x: 2, y: 2 };
+                for (let y = 1; y < d.altura; y++) { for (let x = 1; x < d.largura; x++) { if (d.grid[y][x] === 1) { spawn = { x, y }; break; } } }
+                
+                Object.keys(d.players).forEach(pId => {
+                    d.players[pId].x = spawn.x;
+                    d.players[pId].y = spawn.y;
+                });
+
+                if(global.io) global.io.to(dungeonId).emit('dungeon_msg', { msg: `--- DESCERAM AO ANDAR ${d.andar} ---`, cor: '#0f5' });
+                this._salvarBancoDeDados();
+                return { estado: d, msg: `Avançaste para o Andar ${d.andar}!` };
             }
         }
         return { estado: d };
@@ -1419,27 +1514,38 @@ async processarCombateAcao(dadosAction) {
             this._salvarBancoDeDados(); return { finalizado: false, hpRestante: cerco.hpAtual, hpMax: cerco.hpMax };
         }
         // ===================================
-        // VERIFICAÇÃO DE MORTE DO JOGADOR
+        // VERIFICAÇÃO DE MORTE DO JOGADOR (COM SALVAÇÃO DE ANKH)
         // ===================================
         if (v.hpAtual <= 0) {
-            let msgMorte = "O teu corpo cedeu. A escuridão abraçou-te.";
+            if (v.inventario && v.inventario.ankh_sangue > 0) {
+                v.inventario.ankh_sangue -= 1;
+                v.hpAtual = Math.floor(v.hpMax * 0.5); // Revive com 50% da vida
+                v.pontosAcao = Math.max(0, v.pontosAcao - 2); // Penalidade de fúria
+                
+                let msgSalvacao = `O golpe foi fatal... mas o teu [Ankh de Sangue] quebrou-se, protegendo a tua alma da destruição absoluta! Foste expulso do combate vivo. Restam-te ${v.inventario.ankh_sangue} Vidas.`;
+                this._registrarEventoEspecial('global', 'ENGANOU A MORTE', `A Morte tentou ceifar ${v.nome}, mas um Ankh estilhaçou-se em seu lugar!`, false);
+                this._salvarBancoDeDados();
+                return { finalizado: true, relato: msgSalvacao };
+            }
+
+            // MORTE VERDADEIRA (SEM ANKHS)
+            let msgMorte = "O teu corpo cedeu. A escuridão abraçou-te. A tua conta virou cinzas.";
             if (tipoCombate === 'pve') delete this.batalhasPvE[id];
             else if (tipoCombate === 'herege' && this.heregeMarcado) this.heregeMarcado.assassinosMortos = (this.heregeMarcado.assassinosMortos || 0) + 1;
             else if (tipoCombate === 'fenda') delete this.fendaAtiva[alvoId];
             else if (tipoCombate === 'dungeon') {
                 for (let dId in this.dungeons) {
                     if (this.dungeons[dId].entidadeEmCombate && this.dungeons[dId].entidadeEmCombate.id === alvoId) {
-                        this.resolverCombateDungeon(dId, false);
-                        break;
+                        this.resolverCombateDungeon(dId, false); break;
                     }
                 }
             }
             
             v.estado = 'Banido'; v.status = 'Cinzas'; v.pontosAcao = 0; v.sangue = 0; v.hpAtual = 0;
-            this._registrarEventoEspecial('global', 'CAÍDO EM BATALHA', `A alma de ${v.nome} foi estilhaçada nas trevas.`, false);
+            this._registrarEventoEspecial('global', 'CAÍDO EM BATALHA', `A alma de ${v.nome} foi estilhaçada nas trevas definitivamente.`, false);
             this._salvarBancoDeDados(); 
             return { finalizado: true, relato: msgMorte };
-        } 
+        }
 
         // ===================================
         // 4. MODO MASMORRA (DUNGEON CO-OP)
@@ -1729,7 +1835,7 @@ async processarCombateAcao(dadosAction) {
         this.vampiros[idSombrio] = {
             id: idSombrio, tgId, tgUsername: tgUsername ? `@${tgUsername}` : 'Alma_Oculta', 
             nome: nomeSombrio, senhaHash: senhaHashGerada, raca: racaEscolhida, clanRole: 'membro',
-            sangue: (isFirstVampire ? 15000 : 500) + extraHp, calice: 0, geracao, 
+            sangue: (isFirstVampire ? 15000 : 1000) + extraHp, calice: 0, geracao, 
             hpAtual: hpInicial, hpMax: hpInicial, 
             clan: senhor ? senhor.clan : 'Sangue Ralo', 
             estado: 'Ativo', senhor: senhor ? senhor.id : 'O_PRIMORDIAL', linhagem: [],
@@ -1740,8 +1846,9 @@ async processarCombateAcao(dadosAction) {
             tituloAtual: isFirstVampire ? 'Alfa Primordial' : (racaEscolhida === 'lycan' ? 'Filhote Desgarrado' : 'Sangue Frio'), conquistas: [],
             atributos: atributosIniciais,
             equipamentos: { arma: null, armadura: null, amuleto: null }, bolsa: [], 
-            inventario: { anima: extraAnima, cinzas: 0, vitae: 0, memoria: 0, ectoplasma: 0, pedraAlma: 0 }, historicoCombate: [], poderesDesbloqueados: ['solve_coagula'], manuscritos: [], projetosEstudo: [],
-            estatisticas: { totalDrenado: 0, mortaisSecos: 0, vitoriasPvP: 0, demoniosMortos: 0, guerrasVencidas: 0, eloOculto: 0 }
+            inventario: { anima: extraAnima, cinzas: 0, vitae: 0, memoria: 0, ectoplasma: 0, pedraAlma: 0, ankh_sangue: isFirstVampire ? 10 : 3 }, 
+            historicoCombate: [], poderesDesbloqueados: ['solve_coagula'], manuscritos: [], projetosEstudo: [],
+            estatisticas: { totalDrenado: 0, mortaisSecos: 0, vitoriasPvP: 0, demoniosMortos: 0, guerrasVencidas: 0, eloOculto: 0, ultimoTributo: 0 }
         };
 
         if (isFirstVampire) {
@@ -2353,8 +2460,13 @@ tickTemporal() {
                     }
                 }
             }
-            if (v.calice > 0) v.calice += Math.floor(v.calice * 0.02);
-        }
+            // JUROS DO BANCO (Balanceado para MMO): 
+            // 1% de chance a cada tick de render 0.1%. (Dobra o valor a cada ~24h reais)
+            if (v.calice > 0 && Math.random() > 0.99) {
+                v.calice += Math.max(1, Math.floor(v.calice * 0.001)); 
+            }
+            
+        }      
         
         for (let c in this.clans) { if (this.clans[c].cofre > 0) this.clans[c].cofre -= Math.floor(this.clans[c].cofre * 0.05); }
         

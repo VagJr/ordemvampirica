@@ -271,12 +271,17 @@
     </style>
 </head>
 <body>
-<div id="intro-video-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999999; display: flex; justify-content: center; align-items: center; cursor: pointer;" onclick="pularIntro()">
+<!-- ECRÃ DE SPLASH (Obrigatório para o navegador libertar o áudio) -->
+    <div id="splash-inicial" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 99999999; display: flex; justify-content: center; align-items: center; cursor: pointer;" onclick="libertarVideo()">
+        <h1 style="color: var(--sangue-claro); font-family: 'Cinzel', serif; letter-spacing: 5px; text-shadow: 0 0 20px red; animation: pulseRed 2s infinite; text-align: center;">TOCA PARA DESPERTAR</h1>
+    </div>
+
+    <!-- O CONTENTOR DO VÍDEO (Fica escondido até o clique acontecer) -->
+    <div id="intro-video-container" class="oculto" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999999;">
         <video id="video-intro" src="intro.mp4" playsinline style="width: 100%; height: 100%; object-fit: cover;" onended="pularIntro()"></video>
         
-        <div style="position: absolute; bottom: 30px; color: rgba(255, 0, 0, 0.6); font-family: 'Cinzel', serif; font-size: 1em; letter-spacing: 2px; pointer-events: none; text-shadow: 0 0 10px #000;">
-            Clica em qualquer lugar para despertar...
-        </div>
+        <!-- Botão para saltar o vídeo que só aparece DEPOIS do vídeo começar -->
+        <button id="btn-pular-intro" class="oculto" onclick="pularIntro(event)" style="position: absolute; top: 20px; right: 20px; width: auto; background: rgba(50,0,0,0.8); border: 1px solid red; color: #aaa; padding: 5px 15px; font-size: 0.8rem; z-index: 10000000;">SALTAR VISÃO</button>
     </div>
     <div id="tutorial-overlay" class="oculto">
         <div class="tut-box">
@@ -341,6 +346,7 @@
         </div>
         
         <div class="inimigo-container" id="inimigo-zona" style="margin-bottom: 5px; flex: 1;">
+            <div id="arena-threat-level" style="position:absolute; top: 10px; font-family: 'Cinzel', serif; font-size: 0.9em; font-weight: bold; background: rgba(0,0,0,0.8); padding: 5px 10px; border: 1px solid #333; border-radius: 5px;">Ameaça: Calculando...</div>
             <div class="inimigo-sprite" id="inimigo-icone">👹</div>
             <div class="inimigo-intent intent-idle" id="inimigo-status">A Espreitar...</div>
             <div style="color: var(--ouro); font-size: 1.2rem; font-family:'Cinzel',serif; text-shadow: 0 0 10px #000; margin-top:15px; z-index: 100006;">COMBO BRUTAL: <span id="arena-combo" style="font-size:2.5rem; color:#fff;">0</span></div>
@@ -552,6 +558,7 @@
                     <div class="perfil-stat" style="color:var(--ouro);">Elo Oculto<span id="p-elo">0</span></div>
                 </div>
                 <button onclick="curarFeridas()" style="background:#200; border-color:#f00; color:#fff; width:100%; margin-top:10px; font-size:1.1em;">Regenerar Carne (Gastar Gts)</button>
+				<button onclick="reclamarTributoDiario()" style="background:#051105; border-color:#0f5; color:#0f5; width:100%; font-size:1.1em; animation: pulseCyan 2s infinite;">🌟 Reclamar Benção Diária</button>
             </div>
             
             <div class="card">
@@ -1464,6 +1471,22 @@ socket.on('boss_coop_update', (dados) => {
     function abismoVoid() { playSfx('magia'); const s = document.createElement('div'); s.className = 'void-flash'; document.body.appendChild(s); document.body.classList.add('shake-screen'); setTimeout(() => { s.remove(); document.body.classList.remove('shake-screen'); }, 1000); }
 
     function nav(abaId, btn) {
+        // [PROGRESSÃO GUIADA - LEVEL GATING]
+        if (meuVampiro) {
+            if ((abaId === 'aventura' || abaId === 'leilao') && meuVampiro.nivel < 5) {
+                return ocultoAlert("🔒 O Abismo rejeita os fracos. Atinge o Grau 5 para aceder a este conteúdo.");
+            }
+            if (abaId === 'conclave' && meuVampiro.nivel < 10) {
+                return ocultoAlert("🔒 Apenas Imortais de Grau 10 ou superior podem entrar no Conclave.");
+            }
+            if (abaId === 'pvp' && meuVampiro.nivel < 15) {
+                return ocultoAlert("🔒 A Lei Hermética proíbe novatos de duelar. Atinge o Grau 15.");
+            }
+            if (abaId === 'reinos' && meuVampiro.nivel < 20) {
+                return ocultoAlert("🔒 Os Domínios Antigos exigem o poder do Grau 20.");
+            }
+        }
+
         playSfx('sangue');
         document.querySelectorAll('.aba').forEach(el => el.classList.add('oculto'));
         document.querySelectorAll('.tabs button').forEach(el => el.classList.remove('active'));
@@ -1743,6 +1766,56 @@ socket.on('boss_coop_update', (dados) => {
             jorrarSangue();
         } else {
             renderizarPassoTutorial();
+        }
+    }
+	
+	async function reclamarTributoDiario() {
+        try {
+            const res = await fetch('/api/perfil/diaria', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ id: meuVampiro.id }) 
+            });
+            const dados = await res.json();
+            
+            if(dados.erro) {
+                ocultoAlert(dados.erro);
+            } else {
+                playSfx('levelup');
+                abismoVoid();
+                ocultoAlert(dados.relato);
+                syncStatus();
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    function atualizarMedidorAmeaça(hpInimigo, isRaidBoss) {
+        const threatEl = document.getElementById('arena-threat-level');
+        if (!threatEl) return;
+
+        let ratio = hpInimigo / meuVampiro.hpMax;
+        
+        if (isRaidBoss) {
+            threatEl.innerText = "Ameaça: COLOSSAL (Obrigatório Co-op)";
+            threatEl.style.color = "#d080ff";
+            threatEl.style.borderColor = "#d080ff";
+        } else if (ratio < 0.5) {
+            threatEl.innerText = "Ameaça: TRIVIAL (Podes brincar)";
+            threatEl.style.color = "#aaa";
+            threatEl.style.borderColor = "#555";
+        } else if (ratio <= 1.5) {
+            threatEl.innerText = "Ameaça: EQUILIBRADA (Foco no Parry)";
+            threatEl.style.color = "#0f5";
+            threatEl.style.borderColor = "#0f5";
+        } else if (ratio <= 3.0) {
+            threatEl.innerText = "Ameaça: MORTAL (Prepara curas e magias)";
+            threatEl.style.color = "#ff1e2f";
+            threatEl.style.borderColor = "#ff1e2f";
+        } else {
+            threatEl.innerText = "Ameaça: SUICÍDIO (Foge ou morre)";
+            threatEl.style.color = "red";
+            threatEl.style.borderColor = "red";
+            threatEl.style.animation = "pulseRed 0.5s infinite";
         }
     }
 
@@ -2662,6 +2735,7 @@ socket.on('boss_coop_update', (dados) => {
         document.querySelectorAll('#inimigo-icone').forEach(el => { el.innerHTML = gerarAvatarSombrio(nomeAlvo, isRaidBoss); el.className = "inimigo-sprite"; });
         document.querySelectorAll('#arena-alvo-nome').forEach(el => el.innerText = nomeAlvo);
         document.querySelectorAll('#arena-jogador-nome').forEach(el => el.innerText = meuVampiro.nome);
+		atualizarMedidorAmeaça(hpInimigo, isRaidBoss);
         
         safeSet('arena-feedback', "A LUTA COMEÇA!"); 
         document.querySelectorAll('#arena-feedback').forEach(el => el.style.color = "#888");
@@ -3453,33 +3527,45 @@ socket.on('boss_coop_update', (dados) => {
         }
     });
 // ==========================================
-    // DESTRUIR O VÉU (PULAR VÍDEO)
+    // DESTRUIR O VÉU (GESTOR DO VÍDEO COM SOM FORÇADO)
     // ==========================================
-    window.pularIntro = function() {
+    window.libertarVideo = function() {
+        // Esconde a tela inicial de clique
+        const splash = document.getElementById('splash-inicial');
+        if (splash) splash.style.display = 'none';
+
+        // Mostra o vídeo
         const introCont = document.getElementById('intro-video-container');
+        if (introCont) introCont.classList.remove('oculto');
+
         const video = document.getElementById('video-intro');
-        if (introCont) {
-            if (video) video.pause(); // Cala o som do vídeo imediatamente
-            introCont.style.display = 'none'; // Revela o botão de Login
+        if (video) {
+            // O navegador AGORA permite som porque acabou de haver um clique ("onclick")!
+            video.muted = false;
+            video.volume = 1.0;
+            
+            video.play().catch(e => {
+                console.log("Erro bizarro no vídeo, a saltar por segurança:", e);
+                pularIntro();
+            });
         }
     };
 
-    // Auto-Play seguro (Navegadores exigem isto para dar play em vídeos)
-    document.addEventListener("DOMContentLoaded", () => {
+    window.pularIntro = function(event) {
+        if (event) event.stopPropagation();
+        
+        const introCont = document.getElementById('intro-video-container');
         const video = document.getElementById('video-intro');
-        if (video) {
-            video.play().catch(e => {
-                // Se o navegador do telemóvel bloquear autoplay com som,
-                // ele tenta reproduzir mutado para não falhar a intro.
-                console.log("Autoplay barrado pelo navegador. Tentando sem som.");
+        
+        if (introCont) {
+            if (video) {
+                video.pause(); 
                 video.muted = true;
-                video.play().catch(err => {
-                    // Se falhar tudo, pula o vídeo para não trancar o jogador
-                    pularIntro(); 
-   });
-            });
-        } // Correção: Fechamento correto do IF
-    }); // Correção: Fechamento correto do EventListener
+                video.currentTime = 0;
+            }
+            introCont.style.display = 'none'; // Esconde o vídeo e revela o Login
+        }
+    };
 </script>
 </body>
 </html>
