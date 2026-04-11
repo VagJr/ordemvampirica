@@ -2,6 +2,7 @@
 const crypto = require('crypto');
 const { MongoClient } = require('mongodb');
 const Groq = require('groq-sdk'); 
+const Lexicon = require('./LexiconSanguinis.js');
 
 // ==========================================
 // RITO DO ASTROLÁBIO HERMÉTICO E INFLUÊNCIA DE RAÇA
@@ -140,6 +141,8 @@ async interagirChat(mensagem, iniciado) {
             return chatCompletion.choices[0].message.content;
         } catch (e) { return "As trevas recusam-se a sussurrar agora."; }
     }
+	
+	
 
     async expandirEstudo(textoAtual, novoPedido) {
         try {
@@ -180,6 +183,22 @@ async interagirChat(mensagem, iniciado) {
             if (this.memoriasAkashicas[iniciado.id].length > 4) this.memoriasAkashicas[iniciado.id].shift();
             return textoFinal;
         } catch (e) { return `A matriz treme.`; }
+    }
+
+async forjarMagiaCombateUnica(iniciado) {
+        if (!this.apiKey) return null;
+        try {
+            const prompt = `Cria uma MAGIA ATIVA DE COMBATE única para o jogador: Nome [${iniciado.nome}], Raça [${iniciado.raca}], Nível [${iniciado.nivel}].
+            Baseado na sua lore, escolhe um tipo: 'dano' (ataque bruto), 'cura' (restaura HP), 'buff' (aumenta dano/defesa temporário) ou 'debuff' (atordoa inimigo).
+            RETORNA APENAS JSON EXATO: 
+            {"id": "${crypto.randomBytes(4).toString('hex')}", "nome": "Nome Épico e Curto", "desc": "1 frase sombria do efeito", "tipo": "dano", "poderBase": ${iniciado.nivel * 80}, "custoGts": ${iniciado.nivel * 50}, "custoFuria": 2, "cooldown": 3}`;
+            
+            const resposta = await this.groq.chat.completions.create({ 
+                messages: [{ role: "system", content: "JSON APENAS. " + this.promptSupremo }, { role: "user", content: prompt }], 
+                model: "llama-3.3-70b-versatile", response_format: { type: "json_object" } 
+            });
+            return JSON.parse(resposta.choices[0].message.content);
+        } catch (e) { return null; }
     }
 
     async julgarSacrificio(item, quantidade, jogador) {
@@ -232,13 +251,45 @@ async interagirChat(mensagem, iniciado) {
         } catch(e) { return detalhes; }
     }
 
-    async lerAuraMortal(identificador, plataforma) {
-        if (!this.apiKey) return { fama: false, multiplicador: 1, aura: "Aura mundana." };
+    async lerAuraMortal(identificador, plataforma, dadosLexicon) {
+        if (!this.apiKey) return { fama: false, multiplicador: 1, aura: "Aura mundana. Acesso negado à Malha." };
         try {
-            const prompt = `Crie um perfil psicológico para a presa "${identificador}" do "${plataforma}". JSON EXATO: { "fama": false, "multiplicador": 2, "aura": "Texto poético" }`;
-            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: this.promptSupremo }, { role: "user", content: prompt }], model: "llama-3.1-8b-instant", temperature: 0.9, response_format: { type: "json_object" } });
+            // Transformamos o prompt num motor de Cold Reading (Leitura Fria) e OSINT
+            const prompt = `
+            ATUE COMO UM PROFILER DE OSINT E MAGIA NEGRA.
+            O jogador invocou a identidade real do mundo físico: "${identificador}" na plataforma "${plataforma}".
+            A Matriz Criptográfica (Lexicon) já julgou esta alma com os seguintes dados:
+            - Qualidade da Alma: ${dadosLexicon.essencia}
+            - Taxa de Corrupção/Pecado: ${dadosLexicon.taxaCorrupcao}%
+            - Peso Espiritual: ${dadosLexicon.pesoEspiritual}
+            
+            MISSÃO:
+            Faça uma leitura de aura ASSUSTADORA e PRECISA. 
+            Se o nome for de uma pessoa famosa, cite características reais dela.
+            Se for um utilizador comum ou número, use psicologia sombria (cold reading) para deduzir os seus medos, segredos digitais e o que eles escondem nas redes sociais.
+            FINJA QUE HACKEOU E LEU A INTERNET EM TEMPO REAL. Seja poético, invasivo e cruel. MÁXIMO 3 FRASES.
+            
+            RETORNE APENAS UM JSON EXATO (NADA ALÉM DO JSON): 
+            { 
+                "fama": true/false (true apenas se for figura pública real mundial), 
+                "multiplicador": (1 a 5 baseado na fama ou peso da alma), 
+                "aura": "Texto assustador da leitura" 
+            }`;
+            
+            const resposta = await this.groq.chat.completions.create({ 
+                messages: [
+                    { role: "system", content: "JSON ESTRITO. És o olho da Dark Web e do Abismo." }, 
+                    { role: "user", content: prompt }
+                ], 
+                model: "llama-3.3-70b-versatile", // Usamos o modelo mais inteligente para deduções reais
+                temperature: 0.7, 
+                response_format: { type: "json_object" } 
+            });
             return JSON.parse(resposta.choices[0].message.content);
-        } catch (e) { return { fama: false, multiplicador: 1, aura: "Carne estéril." }; }
+        } catch (e) { 
+            console.error("Erro na Vidência da IA:", e);
+            return { fama: false, multiplicador: 1, aura: "A encriptação do mundo mortal bloqueou o meu Olho. Mas o sangue ainda é quente." }; 
+        }
     }
 
     async vozDoDemonio(nomeDemonio, contexto, detalhes) {
@@ -447,20 +498,28 @@ class ShadowCore {
 
             if(r.sangue < q) return { erro: "Vitalidade insuficiente no teu próprio corpo." };
             
-            r.sangue -= q; 
-            a.sangue += q;
+            // >>> O TOQUE DA MAGIA REAL AQUI <<<
+            // O Lexicon calcula o volume verdadeiro que chega à presa baseado na entropia
+            const transmutacao = Lexicon.TransmutarVitae(q, remetenteId, alvoId);
             
+            r.sangue -= q; // O remetente perde o que declarou
+            a.sangue += transmutacao.volume; // O alvo recebe o que a magia permitiu!
+            
+            let msgExtra = transmutacao.volume > q ? 
+                ` A pureza do rito multiplicou o sangue (+${transmutacao.volume - q} Gts extra).` : 
+                (transmutacao.volume < q ? ` A travessia no Umbral dissipou parte da oferenda.` : ` Pureza Oculta: ${transmutacao.pureza}`);
+
             if(global.io) {
                 global.io.to(`priv_${a.id}`).emit('nova_mensagem', { 
                     canal: 'privado', 
                     autor: `🩸 DONATIVO DE SANGUE`, 
-                    texto: `As tuas veias arderam. Recebeste ${q} Gts de Vitalidade do mestre ${r.nome}.`, 
+                    texto: `As tuas veias arderam. Recebeste ${transmutacao.volume} Gts de Vitalidade transmutada do mestre ${r.nome}.${msgExtra}`, 
                     hora: new Date().toLocaleTimeString() 
                 });
             }
             
             this._salvarBancoDeDados(); 
-            return { sucesso: true, relato: `Injetaste ${q} Gts nas veias de ${a.nome}.` };
+            return { sucesso: true, relato: `Injetaste a intenção de ${q} Gts na malha. ${msgExtra}` };
         } catch (e) {
             return { erro: "Interferência sombria no fluxo vital." };
         }
@@ -645,6 +704,66 @@ class ShadowCore {
     // ==========================================
     // MAGIA OCULTA: VÍNCULO ASTRAL E DRENO DE HUMANOS REAIS
     // ==========================================
+	
+	async despertarMagiaCombate(vampiroId) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Alma inexistente." };
+
+        if (!v.colecaoHabilidades) v.colecaoHabilidades = [];
+        if (!v.habilidadesAtivas) v.habilidadesAtivas = [];
+
+        // LIMITES DINÂMICOS: 1 Magia a cada 10 Níveis + 1 por cada Conquista Desbloqueada
+        let limiteMagias = Math.max(1, Math.floor(v.nivel / 10) + (v.conquistas ? v.conquistas.length : 0));
+        if (v.colecaoHabilidades.length >= limiteMagias) {
+            return { erro: `A tua mente já não suporta mais grimórios (Limite: ${limiteMagias}). Atinge o Grau ${(v.colecaoHabilidades.length + 1) * 10} ou adquire novas Conquistas para expandir a tua capacidade.` };
+        }
+
+        // CUSTOS ESCALONADOS: Mais magias possuis, mais caro fica.
+        let custoGts = 3000 + (v.colecaoHabilidades.length * 2000);
+        let custoFuria = 5 + (v.colecaoHabilidades.length * 2);
+
+        if (v.sangue < custoGts || v.pontosAcao < custoFuria) {
+            return { erro: `A Mente Abissal exige um tributo maior agora: ${custoGts} Gts e ${custoFuria} Fúrias.` };
+        }
+
+        v.sangue -= custoGts; v.pontosAcao -= custoFuria;
+        
+        const magia = await this.oraculo.forjarMagiaCombateUnica(v);
+        
+        // Se a IA alucinar e enviar um JSON corrompido, devolvemos o dinheiro
+        if (!magia || !magia.nome || !magia.tipo) {
+            v.sangue += custoGts; v.pontosAcao += custoFuria; 
+            return { erro: "A IA colapsou nas sombras. O teu Ouro foi devolvido. Tenta novamente." };
+        }
+        
+        // Garante a existência de custos base para não crashar na Arena
+        if (!magia.id) magia.id = crypto.randomBytes(4).toString('hex');
+        magia.custoGts = Math.floor(magia.custoGts || (v.nivel * 50));
+        magia.custoFuria = Math.floor(magia.custoFuria || 2);
+        
+        v.colecaoHabilidades.push(magia);
+        this._salvarBancoDeDados();
+        return { sucesso: true, relato: `A Mente Abissal forjou a magia: [${magia.nome}]!\nPodes equipá-la no Grimório.` };
+    }
+
+    equiparMagiaAtiva(vampiroId, magiaId) {
+        const v = this.vampiros[vampiroId]; if (!v) return { erro: "Fantasma." };
+        if (!v.habilidadesAtivas) v.habilidadesAtivas = [];
+        
+        if (v.habilidadesAtivas.some(h => h.id === magiaId)) {
+            v.habilidadesAtivas = v.habilidadesAtivas.filter(h => h.id !== magiaId);
+            this._salvarBancoDeDados(); return { sucesso: true, relato: "Magia desequipada." };
+        }
+        
+        if (v.habilidadesAtivas.length >= 4) return { erro: "A tua mente só suporta 4 magias ativas." };
+        
+        const mag = v.colecaoHabilidades.find(h => h.id === magiaId);
+        if (!mag) return { erro: "Magia não encontrada." };
+        
+        v.habilidadesAtivas.push(mag);
+        this._salvarBancoDeDados(); return { sucesso: true, relato: `[${mag.nome}] equipada para combate!` };
+    }
+	
     async drenarRebanho(vampiroId, hashAlvo, intensidadeStr) {
         try {
             const v = this.vampiros[vampiroId];
@@ -1225,16 +1344,25 @@ class ShadowCore {
             // ==========================================
             // LÓGICA DE ATAQUE (SE HOUVER)
             // ==========================================
+            // ==========================================
+            // LÓGICA DE ATAQUE (SE HOUVER) - COM RESSONÂNCIA DO LEXICON
+            // ==========================================
             else if (r.tipo === 'ataque') {
                 relatoMagia = `A tua magia obliterou o vazio! (Sem alvo)`;
                 if (alvoId && this.vampiros[alvoId]) {
                     let alvo = this.vampiros[alvoId];
-                    alvo.hpAtual -= r.dano;
+                    
+                    // >>> O TOQUE DA MAGIA REAL AQUI <<<
+                    const ressonancia = Lexicon.CalcularRessonanciaOculta(v.id, alvo.id, r.dano);
+                    const danoRealAplicado = ressonancia.forcaReal;
+                    
+                    alvo.hpAtual -= danoRealAplicado;
+                    
                     if (alvo.hpAtual <= 0) {
                         alvo.hpAtual = 0; alvo.estado = 'Morto';
-                        relatoMagia = `Desintegraste [${alvo.nome}] com ${r.nome}!`;
+                        relatoMagia = `Desintegraste [${alvo.nome}] com ${r.nome}! ${ressonancia.relato}`;
                     } else {
-                        relatoMagia = `Atingiste [${alvo.nome}] com ${r.nome} causando ${r.dano} de dano!`;
+                        relatoMagia = `Atingiste [${alvo.nome}] com ${r.nome} causando ${danoRealAplicado} de Dano Verdadeiro! ${ressonancia.relato}`;
                     }
                     if (global.io) global.io.to(`priv_${alvo.id}`).emit('tick');
                 }
@@ -1316,19 +1444,6 @@ class ShadowCore {
         };
         this.dbCollection.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: data }, { upsert: true }).catch(e => console.error(e));
     }
-
-    _extrairDnaEspiritual(nome) {
-        const gematria = { 'a':1, 'b':2, 'c':3, 'd':4, 'e':5, 'f':8, 'g':3, 'h':5, 'i':10, 'j':10, 'k':20, 'l':30, 'm':40, 'n':50, 'o':70, 'p':80, 'q':100, 'r':200, 's':60, 't':400, 'u':6, 'v':6, 'w':6, 'x':60, 'y':10, 'z':7 };
-        let freq = 0; for (let i = 0; i < nome.length; i++) { let letra = nome[i].toLowerCase(); if (gematria[letra]) freq += gematria[letra] * (i + 1); }
-        return freq.toString(16);
-    }
-
-    _forjarSigilo(plataforma, identificador) {
-        const idLimpo = identificador.toLowerCase().trim();
-        const dna = this._extrairDnaEspiritual(idLimpo);
-        return crypto.createHash('sha512').update(`${plataforma.toUpperCase()}::${dna}::${idLimpo}::EXARP_HCOMA`).digest('hex').substring(0, 40);
-    }
-
     // ==========================================
     // MAGIA OCULTA: CRIPTOGRAFIA DO VÍNCULO ASTRAL
     // ==========================================
@@ -1406,11 +1521,21 @@ class ShadowCore {
             this._salvarBancoDeDados(); 
             return { erro: `A mente da presa resistiu no plano físico. A barreira umbral repeliu a tua essência (-50 Gts).`, mortal }; 
         }
+		
+		// >>> INTEGRAÇÃO DO LEXICON SANGUINIS <<<
+        const gota = Lexicon.TransmutarVitae(conjuracao.volume, predador.id, mortal.identificadorVisivel);
+        let rouboFinal = gota.volume;
+        let ritoMsg = gota.ritoPerfeito ? " [RESSONÂNCIA ABSOLUTA: O sangue ferveu e multiplicou-se!]" : "";
 
-        let rouboFinal = conjuracao.volume; 
-        mortal.sangueAtual -= rouboFinal; 
-        predador.sangue += rouboFinal; 
-        predador.estatisticas.totalDrenado += rouboFinal;
+        // ========================================================
+        // A CORREÇÃO VITAL: SUBTRAIR DA VÍTIMA E DAR AO JOGADOR!
+        // ========================================================
+        mortal.sangueAtual = Math.max(0, mortal.sangueAtual - rouboFinal);
+        predador.sangue += rouboFinal;
+        
+        if (!predador.estatisticas) predador.estatisticas = {};
+        predador.estatisticas.totalDrenado = (predador.estatisticas.totalDrenado || 0) + rouboFinal;
+        // ========================================================
         
         if (predador.raca === 'lycan' && Math.random() > 0.5) predador.pontosAcao = Math.min(predador.maxAcao, predador.pontosAcao + 1);
         this.ganharXP(vampiroId, localMordida === 'caricia' ? 5 : 25); 
@@ -1423,10 +1548,14 @@ class ShadowCore {
             lootMsg += `\n[ARTEFATO MANIFESTADO DO ÉTER: ${drop.nome}]`; 
         }
 
-        let relato = localMordida === 'caricia' ? `Enfeitiçaste a mente frágil e subjugaste ${rouboFinal} Essência sem dor.` : `O Vínculo Astral rasgou a matriz da presa. Roubaste +${rouboFinal} Gts.${lootMsg}`;
+        let relato = localMordida === 'caricia' 
+            ? `Enfeitiçaste a mente frágil e subjugaste ${rouboFinal} Essência sem dor.` 
+            : `O Vínculo Astral rasgou a matriz da presa. Roubaste +${rouboFinal} Gts.${lootMsg}`;
+            
+        relato += ritoMsg; 
+
         if(localMordida === 'caricia' && Math.random() > 0.5){ predador.inventario.memoria = (predador.inventario.memoria||0) + 1; lootMsg += " [+1 Memória Akáshica]";}
 
-        // SUBSTITUÍDO O _pontuarMembro INEXISTENTE POR GANHO DIRETO DE INFLUÊNCIA
         predador.influencia += 1; 
         this._registrarEventoEspecial('caca', 'O ABATE', `${predador.nome} violou a vitalidade de ${mortal.identificadorVisivel}.`, false);
         mortal.registroMordidas.unshift({ predador: predador.nome, local: localMordida.toUpperCase(), dano: rouboFinal, data: Date.now() });
@@ -1435,12 +1564,18 @@ class ShadowCore {
             mortal.estado = 'Limbo'; 
             predador.inventario.cinzas += 1; 
             predador.estatisticas.mortaisSecos += 1; 
-            predador.influencia += 5; // Bônus por matar
+            predador.influencia += 5; 
             relato += " \nRUPTURA FATAL. O corpo físico foi consumido. (+1 Cinzas | +5 Influência Oculta)";
             this._registrarEventoEspecial('global', 'O LIMBO', `O fio vital de ${mortal.identificadorVisivel} foi destruído pela escuridão de ${predador.nome}.`, true);
         }
         
         this._salvarBancoDeDados(); 
+        
+        // Emite a aura atualizada instantaneamente para a janela modal do cliente não ficar dessincronizada
+        if (global.io) {
+            global.io.emit('aura_atualizada', hashMortal);
+        }
+
         return { roubo: rouboFinal, relato, mortal, lootMsg };
     }
 	
@@ -1817,7 +1952,10 @@ async processarCombateAcao(dadosAction) {
 
         let extraHp = 0; let extraAnima = 0;
         if (tgUsername) {
-            const hashMortal = this._forjarSigilo('telegram', `@${tgUsername.toLowerCase()}`);
+            // 👇 CORREÇÃO: Usa o Lexicon para gerar o selo do mortal durante o Login
+            const ancoragem = Lexicon.ForjarSigiloMortal('telegram', `@${tgUsername.toLowerCase()}`);
+            const hashMortal = ancoragem.sigilo;
+            
             const registroMortal = this.rebanho[hashMortal];
             if (registroMortal) {
                 if (registroMortal.estado === 'Limbo') { extraAnima = 3; this._registrarEventoEspecial('global', 'RESSURREIÇÃO PROFANA', `A poeira do mortal ${tgUsername} ergueu-se como o neófito ${nomeSombrio}.`, true); } 
@@ -1848,7 +1986,8 @@ async processarCombateAcao(dadosAction) {
             equipamentos: { arma: null, armadura: null, amuleto: null }, bolsa: [], 
             inventario: { anima: extraAnima, cinzas: 0, vitae: 0, memoria: 0, ectoplasma: 0, pedraAlma: 0, ankh_sangue: isFirstVampire ? 10 : 3 }, 
             historicoCombate: [], poderesDesbloqueados: ['solve_coagula'], manuscritos: [], projetosEstudo: [],
-            estatisticas: { totalDrenado: 0, mortaisSecos: 0, vitoriasPvP: 0, demoniosMortos: 0, guerrasVencidas: 0, eloOculto: 0, ultimoTributo: 0 }
+            colecaoHabilidades: [], habilidadesAtivas: [], // <--- NOVO AQUI
+            estatisticas: { totalDrenado: 0, mortaisSecos: 0, vitoriasPvP: 0, demoniosMortos: 0, guerrasVencidas: 0, eloOculto: 0, ultimoTributo: 0, sangueGastoMagia: 0, curaRuptura: 0 }
         };
 
         if (isFirstVampire) {
@@ -2119,35 +2258,79 @@ async processarCombateAcao(dadosAction) {
     }
 
     // ==========================================
-    // OSINT / CAÇA EXTREMA (ENDGAME)
+    // 👁️ OSINT / CAÇA EXTREMA (O VÉU RASGADO - GRAU 99)
     // ==========================================
     async mapearMortal(vampiroId, plataforma, identificador) {
-        const v = this.vampiros[vampiroId]; if (!v) return { erro: "Fantasma." };
-        if (v.nivel < 99) return { erro: "O Grau 99 (Auge do Abismo) é exigido para rasgar o Véu e ver o mundo real." };
-        if (v.pontosAcao < 1) return { erro: "Requer Fúria." };
+        const v = this.vampiros[vampiroId]; 
+        if (!v) return { erro: "O Abismo não reconhece a tua assinatura." };
+        if (v.nivel < 99) return { erro: "O Grau 99 (Auge do Abismo) é exigido para rasgar o Véu e acorrentar o mundo real." };
+        if (v.pontosAcao < 1) return { erro: "O 3º Olho exige 1 Fúria para focar a visão." };
 
         let idLimpo = identificador.trim().toLowerCase();
-        if ((plataforma === 'telegram' || plataforma === 'instagram' || plataforma === 'tiktok') && !idLimpo.startsWith('@')) { if (isNaN(idLimpo)) { idLimpo = '@' + idLimpo; } }
-        if (plataforma === 'whatsapp' && idLimpo.replace(/[^0-9]/g, '').length < 8) return { erro: "Cifra Inválida." };
         
-        const hashAlma = this._forjarSigilo(plataforma, idLimpo); v.pontosAcao -= 1; this.ganharXP(vampiroId, 5); 
+        if ((plataforma === 'telegram' || plataforma === 'instagram' || plataforma === 'tiktok') && !idLimpo.startsWith('@')) { 
+            if (isNaN(idLimpo)) { idLimpo = '@' + idLimpo; } 
+        }
+        if (plataforma === 'whatsapp' && idLimpo.replace(/[^0-9]/g, '').length < 8) {
+            return { erro: "A cifra telefónica está corrompida." };
+        }
+        
+        v.pontosAcao -= 1; 
+        this.ganharXP(vampiroId, 5); 
+
+        // >>> 1. O PODER DO LEXICON: FORJAR A ÂNCORA ASTRAL <<<
+        const ancoragem = Lexicon.ForjarSigiloMortal(plataforma, idLimpo);
+        const hashAlma = ancoragem.sigilo;
+
         if (this.rebanho[hashAlma]) return { sucesso: true, mortal: this.rebanho[hashAlma] };
 
-        let hpBase = 5000 + (v.nivel * 50); if (plataforma === 'whatsapp') hpBase *= 1.5;
+        // >>> 2. O PODER DO LEXICON: JULGAMENTO DO KHARMA DA VÍTIMA <<<
+        const julgamentoDivino = Lexicon.JulgarAlma(idLimpo);
+        
+        let hpBase = (julgamentoDivino.pesoEspiritual * 150) + (v.nivel * 50); 
+        if (plataforma === 'whatsapp') hpBase = Math.floor(hpBase * 1.5);
 
-        this.rebanho[hashAlma] = { hash: hashAlma, identificadorVisivel: idLimpo, plataforma, qualidade: "Sangue Mundano", sangueMax: hpBase, sangueAtual: hpBase, estado: 'Vibrante', maldicaoArcana: null, registroMordidas: [], leituraAura: "As Moiras estão tecendo..." };
-        this._registrarEventoEspecial('caca', 'A TEIA AUMENTA', `O fio do destino físico de ${idLimpo} foi atado por ${v.nome}.`); this._salvarBancoDeDados();
+        this.rebanho[hashAlma] = { 
+            hash: hashAlma, 
+            identificadorVisivel: idLimpo, 
+            plataforma: plataforma, 
+            qualidade: julgamentoDivino.essencia,
+            corrupcao: julgamentoDivino.taxaCorrupcao,
+            sangueMax: hpBase, 
+            sangueAtual: hpBase, 
+            estado: 'Vibrante', 
+            maldicaoArcana: null, 
+            registroMordidas: [], 
+            leituraAura: "O Olho do Abismo está a hackear a mente desta presa..." 
+        };
 
-        this.oraculo.lerAuraMortal(idLimpo, plataforma).then(dadosIA => {
+        this._registrarEventoEspecial('caca', 'O VÉU RASGADO', `A identidade física [${idLimpo}] foi vista e amarrada à Matriz Astral por ${v.nome}.`); 
+        this._salvarBancoDeDados();
+
+        // >>> 3. O PODER DA MENTE ABISSAL (IA - Tempo Real Simulado) <<<
+        // Agora passamos o julgamento divino para a IA ter "provas" da alma
+        this.oraculo.lerAuraMortal(idLimpo, plataforma, julgamentoDivino).then(dadosIA => {
             if(this.rebanho[hashAlma]) {
-                this.rebanho[hashAlma].leituraAura = dadosIA.aura; let mult = dadosIA.multiplicador || 1;
-                if (mult > 1) { this.rebanho[hashAlma].sangueMax *= mult; this.rebanho[hashAlma].sangueAtual *= mult; this.rebanho[hashAlma].qualidade = dadosIA.fama ? `Sangue Real (Notoriedade Nv.${mult})` : `Pecador Denso (Nv.${mult})`; this._registrarEventoEspecial('global', 'ALMA MASSIVA', `Uma presa humana real de Nível ${mult} foi amarrada à teia.`); }
-                this._salvarBancoDeDados(); if (global.io) global.io.emit('aura_atualizada', hashAlma);
+                this.rebanho[hashAlma].leituraAura = dadosIA.aura; 
+                let mult = dadosIA.multiplicador || 1;
+                
+                if (mult > 1) { 
+                    this.rebanho[hashAlma].sangueMax *= mult; 
+                    this.rebanho[hashAlma].sangueAtual *= mult; 
+                    this.rebanho[hashAlma].qualidade = dadosIA.fama ? `Sangue Real (Notoriedade Nv.${mult})` : `Pecador Denso (Nv.${mult})`; 
+                    this._registrarEventoEspecial('global', 'ALMA MASSIVA', `Uma presa física formidável (Nv.${mult}) foi ancorada à teia.`); 
+                }
+                this._salvarBancoDeDados(); 
+                // Atualiza a tela dos jogadores imediatamente!
+                if (global.io) {
+                    global.io.emit('aura_atualizada', hashAlma);
+                    global.io.emit('sync_geral');
+                }
             }
         });
+
         return { sucesso: true, mortal: this.rebanho[hashAlma] };
     }
-
     
 
     comprometerMortal(vampiroId, hashMortal) {

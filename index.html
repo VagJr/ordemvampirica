@@ -276,13 +276,16 @@
         <h1 style="color: var(--sangue-claro); font-family: 'Cinzel', serif; letter-spacing: 5px; text-shadow: 0 0 20px red; animation: pulseRed 2s infinite; text-align: center;">TOCA PARA DESPERTAR</h1>
     </div>
 
-    <!-- O CONTENTOR DO VÍDEO (Fica escondido até o clique acontecer) -->
-    <div id="intro-video-container" class="oculto" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999999;">
+    <!-- O CONTENTOR DO VÍDEO (Agora o ecrã inteiro é clicável para pular) -->
+    <div id="intro-video-container" class="oculto" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999999; cursor: pointer;" onclick="pularIntro(event)">
         <video id="video-intro" src="intro.mp4" playsinline style="width: 100%; height: 100%; object-fit: cover;" onended="pularIntro()"></video>
         
-        <!-- Botão para saltar o vídeo que só aparece DEPOIS do vídeo começar -->
-        <button id="btn-pular-intro" class="oculto" onclick="pularIntro(event)" style="position: absolute; top: 20px; right: 20px; width: auto; background: rgba(50,0,0,0.8); border: 1px solid red; color: #aaa; padding: 5px 15px; font-size: 0.8rem; z-index: 10000000;">SALTAR VISÃO</button>
-    </div>
+        <!-- Texto discreto avisando que a tela toda pula o vídeo -->
+        <div style="position: absolute; bottom: 30px; width: 100%; text-align: center; color: rgba(255, 255, 255, 0.4); font-family: 'Cinzel', serif; font-size: 0.9em; letter-spacing: 2px; pointer-events: none; text-shadow: 0 0 10px #000;">
+            Toca em qualquer lugar para pular...
+        </div>
+</div>
+		
     <div id="tutorial-overlay" class="oculto">
         <div class="tut-box">
             <h2 id="tut-title">O Despertar</h2>
@@ -316,8 +319,13 @@
 
     <div id="open-world-log"></div>
 
-    <div class="world-ticker"><span class="ticker-text" id="world-ticker">As brumas encobrem a história do mundo. O Oráculo aguarda o derramamento de sangue...</span></div>
-
+    <div class="world-ticker">
+            <span class="ticker-text" id="world-ticker">As brumas encobrem a história do mundo.</span>
+            <div style="position: absolute; right: 10px; top: 2px; z-index: 1001; display: flex; gap: 5px;">
+                <button id="btn-tts" onclick="toggleTTS()" style="background: transparent; border: 1px solid var(--ouro); color: var(--ouro); padding: 2px 8px; font-size: 0.7em; width: auto; margin:0;">🔊 Voz IA</button>
+                <button id="btn-voip" onclick="toggleVOIP()" style="background: transparent; border: 1px solid #0f5; color: #0f5; padding: 2px 8px; font-size: 0.7em; width: auto; margin:0;">🎤 Rádio OFF</button>
+            </div>
+        </div>
     <!-- CUSTOM NOTIFICATION SYSTEM -->
     <div id="occult-overlay" class="oculto">
         <div class="occult-modal">
@@ -363,7 +371,9 @@
                 <div id="arena-feedback" style="font-weight:bold; font-size:1.2rem; text-shadow: 0 0 5px #000; color: #888;">A LUTA COMEÇA!</div>
                 <div id="arena-ciclo-timer" style="margin-top:5px; color:#aaa; font-size:0.8rem;">Próxima Sincronização: 10s</div>
             </div>
-
+<div id="arena-habilidades-dinamicas" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 10px;">
+                <!-- Preenchido via JS -->
+            </div>
             <div class="arena-botoes">
                 <button class="btn-combat" style="border-color: red;" onclick="acaoVisceral('ataque')">⚔️ CORTAR</button>
                 <button class="btn-combat" style="border-color: gray;" onclick="acaoVisceral('defesa')">🛡️ PARRY</button>
@@ -546,8 +556,10 @@
                 </div>
             </div>
         </div>
-
-         <div id="aba-perfil" class="aba oculto">
+        
+        <!-- ADICIONE ESTA LINHA ABAIXO PARA ENCAPSULAR O GRIMÓRIO/PERFIL -->
+        <div id="aba-perfil" class="aba oculto">
+            
             <div class="card">
                 <h3>A Identidade</h3>
                 <select id="lista-titulos" onchange="mudarTitulo()"></select>
@@ -588,6 +600,13 @@
                     <p style="color: #888; font-size: 0.85em; text-align: center; margin: 0;">A Mente Abissal ainda não tocou a tua alma.</p>
                 </div>
                 <button id="btn-despertar" class="btn-magick" style="border-color:#d080ff; color:#d080ff;" onclick="invocarDespertar()">Despertar Talento (Nível 20 | 5000 Gts)</button>
+            </div>
+			
+		 <div class="card" style="border-color: var(--magia);">
+                <h3 style="color: var(--magia);">Grimório de Batalha (Mente Abissal)</h3>
+                <p style="font-size: 0.8em; color: #888;">Gera habilidades únicas baseadas no teu percurso.</p>
+                <button class="btn-magick" onclick="gerarMagiaDinamica()">Forjar Magia Única (3000 Gts | 5 Fúria)</button>
+                <div id="lista-magias-dinamicas" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
             </div>
             
             <div class="card">
@@ -1314,8 +1333,12 @@ socket.on('boss_coop_update', (dados) => {
     function renderizarCompendioCompleto() {
         if (!meuVampiro) return;
         const v = meuVampiro;
-        const eq = v.equipamentos;
-        const st = v.estatisticas;
+        
+        // BLINDAGEM CONTRA BUG DA MORTE (Se os stats sumirem, o código cria um vazio em vez de crashar)
+        const eq = v.equipamentos || { arma: null, armadura: null, amuleto: null };
+        const st = v.estatisticas || {}; 
+        const inv = v.inventario || {};
+        v.bolsa = v.bolsa || [];
 
         let htmlAnat = `
             <div class="compendio-stat-box">ID Astral <span>${v.id}</span></div>
@@ -1340,7 +1363,6 @@ socket.on('boss_coop_update', (dados) => {
         `;
         safeSet('compendio-guerra', htmlGuerra, true);
 
-        let inv = v.inventario;
         let htmlInv = `
             <div class="compendio-stat-box" style="border-color:#ff1e2f;">Vitalidade na Carne <span>${numFmt(v.sangue)} Gts</span></div>
             <div class="compendio-stat-box" style="border-color:#ff1e2f;">Cristal do Cálice (Banco) <span>${numFmt(v.calice)} Gts</span></div>
@@ -1469,7 +1491,45 @@ socket.on('boss_coop_update', (dados) => {
     };
     function jorrarSangue() { playSfx('sangue'); if (meuVampiro && meuVampiro.raca === 'lycan') { const s = document.createElement('div'); s.className = 'claw-splash'; document.body.appendChild(s); setTimeout(() => s.remove(), 1000); } else { const s = document.createElement('div'); s.className = 'blood-splash'; document.body.appendChild(s); setTimeout(() => s.remove(), 1500); } } 
     function abismoVoid() { playSfx('magia'); const s = document.createElement('div'); s.className = 'void-flash'; document.body.appendChild(s); document.body.classList.add('shake-screen'); setTimeout(() => { s.remove(); document.body.classList.remove('shake-screen'); }, 1000); }
+function usarHabilidadeCustom(habilidadeId) {
+        if(!combateAtivo || isSyncing) return;
+        const hab = meuVampiro.habilidadesAtivas.find(h => h.id === habilidadeId);
+        if(!hab) return;
 
+        if(meuVampiro.calice < hab.custoGts) return quebrarCombo(`Falta Gts no Cálice (${hab.custoGts})!`);
+        
+        // Empacota os dados para a Cloud processar!
+        meuVampiro.calice -= hab.custoGts;
+        combateDados.estatisticas.sangueGastoMagia += hab.custoGts;
+        
+        let multiplier = 1 + (combateDados.comboAtual * 0.1);
+        let poderAplicado = Math.floor(hab.poderBase * multiplier);
+
+        if(hab.tipo === 'dano') {
+            combateDados.hpAtualInimigo -= poderAplicado;
+            combateDados.estatisticas.danoCausado += poderAplicado;
+            combateDados.comboAtual = 0; // Descarrega combo
+            spawnDanoText(poderAplicado, "#ff1e2f");
+            playSfx('magia'); abismoVoid();
+            safeSet('arena-feedback', `${hab.nome} ESTILHAÇOU O INIMIGO!`); document.getElementById('arena-feedback').style.color = "#ff1e2f";
+        } 
+        else if (hab.tipo === 'cura') {
+            combateDados.hpAtualJogador = Math.min(combateDados.hpMaxJogador, combateDados.hpAtualJogador + poderAplicado);
+            combateDados.estatisticas.curaRuptura += poderAplicado; // Aproveita a var já existente
+            spawnDanoText(`+${poderAplicado}`, "#0f5");
+            playSfx('levelup'); jorrarSangue();
+            safeSet('arena-feedback', `${hab.nome} REGENEROU A CARNE!`); document.getElementById('arena-feedback').style.color = "#0f5";
+        }
+        else if (hab.tipo === 'buff' || hab.tipo === 'debuff') {
+            combateDados.estadoInimigo = 'vulneravel';
+            combateDados.timerAcaoInimigo = 30; // Paralisa o boss
+            playSfx('espada');
+            safeSet('arena-feedback', `${hab.nome} PARALISOU A ENTIDADE!`); document.getElementById('arena-feedback').style.color = "#d080ff";
+        }
+
+        if (combateDados.hpAtualInimigo <= 0) processarCicloComServidor(false); 
+        else { atualizarBarras(); atualizarFaseProceduralBoss(); }
+    }
     function nav(abaId, btn) {
         // [PROGRESSÃO GUIADA - LEVEL GATING]
         if (meuVampiro) {
@@ -1616,7 +1676,16 @@ socket.on('boss_coop_update', (dados) => {
         if (meuVampiro.faseLua) { safeSet('lua-icone', meuVampiro.faseLua.icone); safeSet('lua-nome', meuVampiro.faseLua.nome); safeSet('lua-buff', meuVampiro.faseLua.buff); }
 
         const titulosOpts = meuVampiro.titulos.map(t => `<option value="${t}" ${t === meuVampiro.tituloAtual ? 'selected' : ''}>${t}</option>`).join(''); safeSet('lista-titulos', titulosOpts, true);
-
+// Atualiza a Label do botão para refletir os custos e os Limites no Ecrã!
+        const btnForjaMagia = document.querySelector('button[onclick="gerarMagiaDinamica()"]');
+        if (btnForjaMagia) {
+            let qtdMagias = (meuVampiro.colecaoHabilidades || []).length;
+            let countConquistas = (meuVampiro.conquistas || []).length;
+            let custoGts = 3000 + (qtdMagias * 2000);
+            let custoFuria = 5 + (qtdMagias * 2);
+            let limite = Math.max(1, Math.floor((meuVampiro.nivel || 1) / 10) + countConquistas);
+            btnForjaMagia.innerText = `Forjar Magia Única (${numFmt(custoGts)} Gts | ${custoFuria} Fúria) [${qtdMagias}/${limite}]`;
+        }
         const atrBase = meuVampiro.atributos; const atrTot = meuVampiro.atributosTotais || atrBase;
         safeSet('pt-livres', atrBase.pontosLivres);
         ['vontade', 'gnose', 'magnetismo', 'densidade'].forEach(a => { safeSet(`atr-${a}`, atrBase[a]); let bonus = atrTot[a] - atrBase[a]; safeSet(`b-${a}`, bonus > 0 ? `(+${bonus})` : ''); });
@@ -1634,8 +1703,10 @@ socket.on('boss_coop_update', (dados) => {
         <button class="btn-magick" onmousedown="IniciarInspecao(event, 'reliquia', '${i.id}')" onmouseup="PararInspecao()" onmouseleave="PararInspecao()" ontouchstart="IniciarInspecao(event, 'reliquia', '${i.id}')" ontouchend="PararInspecao()" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto; border-color:#0f5; color:#0f5;">👁️ Segurar p/ Ver</button>
         </div>`).join(''), true);
         
-        safeSet('p-drenado', numFmt(meuVampiro.estatisticas.totalDrenado)); safeSet('p-secos', numFmt(meuVampiro.estatisticas.mortaisSecos));
-        safeSet('p-demonios', numFmt(meuVampiro.estatisticas.demoniosMortos || 0)); safeSet('p-elo', numFmt(meuVampiro.estatisticas.eloOculto || 0));
+        safeSet('p-drenado', numFmt(meuVampiro.estatisticas?.totalDrenado || 0)); 
+        safeSet('p-secos', numFmt(meuVampiro.estatisticas?.mortaisSecos || 0));
+        safeSet('p-demonios', numFmt(meuVampiro.estatisticas?.demoniosMortos || 0)); 
+        safeSet('p-elo', numFmt(meuVampiro.estatisticas?.eloOculto || 0));
         
         safeSet('ui-calice-txt', numFmt(meuVampiro.calice)); const caliceFill = document.getElementById('calice-fill'); if(caliceFill) caliceFill.style.height = `${Math.min(100, (meuVampiro.calice / 15000) * 100)}%`;
 
@@ -3529,7 +3600,14 @@ socket.on('boss_coop_update', (dados) => {
 // ==========================================
     // DESTRUIR O VÉU (GESTOR DO VÍDEO COM SOM FORÇADO)
     // ==========================================
+    // ==========================================
+    // DESTRUIR O VÉU (GESTOR DO VÍDEO COM SOM FORÇADO)
+    // ==========================================
     window.libertarVideo = function() {
+        // [CORREÇÃO MOBILE] Força o desbloqueio dos contextos de áudio no primeiro toque!
+        if (typeof audioCtx !== 'undefined' && audioCtx.state === 'suspended') audioCtx.resume();
+        if (typeof audioContextoProfundo !== 'undefined' && audioContextoProfundo.state === 'suspended') audioContextoProfundo.resume();
+
         // Esconde a tela inicial de clique
         const splash = document.getElementById('splash-inicial');
         if (splash) splash.style.display = 'none';
@@ -3540,7 +3618,6 @@ socket.on('boss_coop_update', (dados) => {
 
         const video = document.getElementById('video-intro');
         if (video) {
-            // O navegador AGORA permite som porque acabou de haver um clique ("onclick")!
             video.muted = false;
             video.volume = 1.0;
             
@@ -3554,6 +3631,10 @@ socket.on('boss_coop_update', (dados) => {
     window.pularIntro = function(event) {
         if (event) event.stopPropagation();
         
+        // [CORREÇÃO MOBILE] Garante o desbloqueio caso o utilizador pule direto
+        if (typeof audioCtx !== 'undefined' && audioCtx.state === 'suspended') audioCtx.resume();
+        if (typeof audioContextoProfundo !== 'undefined' && audioContextoProfundo.state === 'suspended') audioContextoProfundo.resume();
+        
         const introCont = document.getElementById('intro-video-container');
         const video = document.getElementById('video-intro');
         
@@ -3564,6 +3645,413 @@ socket.on('boss_coop_update', (dados) => {
                 video.currentTime = 0;
             }
             introCont.style.display = 'none'; // Esconde o vídeo e revela o Login
+        }
+    };
+	// ==========================================
+// DESTRUIR O VÉU
+// ==========================================
+let audioContextoProfundo = new (window.AudioContext || window.webkitAudioContext)();
+
+// ==========================================
+// SISTEMA TTS SUPREMO EVOLUÍDO
+// ==========================================
+let ttsSombrioAtivo = true;
+
+function toggleTTS() {
+    ttsSombrioAtivo = !ttsSombrioAtivo;
+    document.getElementById('btn-tts').innerText = ttsSombrioAtivo ? "🔊 Voz IA" : "🔇 Voz IA";
+    playSfx('espada');
+    if (!ttsSombrioAtivo && window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+// ==========================================
+// REVERB
+// ==========================================
+function gerarEcoCaverna(ctx) {
+    let length = ctx.sampleRate * 3;
+    let impulse = ctx.createBuffer(2, length, ctx.sampleRate);
+
+    for (let i = 0; i < length; i++) {
+        let n = i / length;
+        let decay = Math.pow(1 - n, 4);
+        impulse.getChannelData(0)[i] = (Math.random() * 2 - 1) * decay;
+        impulse.getChannelData(1)[i] = (Math.random() * 2 - 1) * decay;
+    }
+
+    let convolver = ctx.createConvolver();
+    convolver.buffer = impulse;
+    return convolver;
+}
+
+// ==========================================
+// DISTORÇÃO
+// ==========================================
+function gerarCurvaDistorcao(amount) {
+    let k = amount || 20;
+    let n_samples = 44100;
+    let curve = new Float32Array(n_samples);
+    let deg = Math.PI / 180;
+
+    for (let i = 0; i < n_samples; ++i) {
+        let x = i * 2 / n_samples - 1;
+        curve[i] = (3 + k) * x * 15 * deg / (Math.PI + k * Math.abs(x));
+    }
+
+    return curve;
+}
+
+// ==========================================
+// VOZ PRINCIPAL EVOLUÍDA
+// ==========================================
+// ==========================================
+// VOZ PRINCIPAL EVOLUÍDA
+// ==========================================
+// ==========================================
+// VOZ PRINCIPAL EVOLUÍDA (CORREÇÃO PARA FLY.IO)
+// ==========================================
+async function sussurroDemonioBrasil(texto) {
+    if (!ttsSombrioAtivo) return;
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+
+    let textoLimpo = texto.replace(/[\u1000-\uFFFF]/g, '').replace(/\[.*?\]/g, '').replace(/[*_~]/g, '').trim();
+    if (!textoLimpo) return;
+
+    // MAGIA NOVA: Chama o proxy blindado no seu próprio server.js em vez do AllOrigins!
+    const urlAPI = `/api/tts?text=${encodeURIComponent(textoLimpo)}`;
+
+    try {
+        if (audioContextoProfundo.state === 'suspended') await audioContextoProfundo.resume();
+
+        const res = await fetch(urlAPI);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        // Proteção extra
+        const contentType = res.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+             throw new Error('Servidor retornou HTML em vez de áudio');
+        }
+
+        const buffer = await res.arrayBuffer();
+        const audioBuffer = await audioContextoProfundo.decodeAudioData(buffer);
+
+        const main = audioContextoProfundo.createBufferSource();
+        const layer = audioContextoProfundo.createBufferSource();
+
+        main.buffer = layer.buffer = audioBuffer;
+        main.playbackRate.value = 0.90;   
+        layer.playbackRate.value = 0.82;  
+
+        const delay = audioContextoProfundo.createDelay();
+        delay.delayTime.value = 0.018; 
+
+        const lfo = audioContextoProfundo.createOscillator();
+        const lfoGain = audioContextoProfundo.createGain();
+        lfo.frequency.value = 0.6;
+        lfoGain.gain.value = 0.003;
+        lfo.connect(lfoGain);
+        lfoGain.connect(delay.delayTime);
+        lfo.start();
+
+        const panMain = audioContextoProfundo.createStereoPanner();
+        const panLayer = audioContextoProfundo.createStereoPanner();
+        panMain.pan.value = -0.1;
+        panLayer.pan.value = 0.1;
+
+        const trebleCut = audioContextoProfundo.createBiquadFilter();
+        trebleCut.type = "highshelf"; trebleCut.frequency.value = 4000; trebleCut.gain.value = -10;
+        const presence = audioContextoProfundo.createBiquadFilter();
+        presence.type = "peaking"; presence.frequency.value = 1400; presence.gain.value = 3;
+        const bass = audioContextoProfundo.createBiquadFilter();
+        bass.type = "lowshelf"; bass.frequency.value = 180; bass.gain.value = 12;
+
+        const dist = audioContextoProfundo.createWaveShaper();
+        dist.curve = gerarCurvaDistorcao(10);
+        const distGain = audioContextoProfundo.createGain();
+        distGain.gain.value = 0.2;
+
+        const comp = audioContextoProfundo.createDynamicsCompressor();
+        comp.threshold.value = -28; comp.ratio.value = 10; comp.attack.value = 0.004; comp.release.value = 0.25;
+
+        const sub = audioContextoProfundo.createOscillator();
+        const subGain = audioContextoProfundo.createGain();
+        sub.frequency.value = 75; subGain.gain.value = 0.08;
+        sub.connect(subGain); subGain.connect(comp); sub.start();
+
+        const gainNode = audioContextoProfundo.createGain();
+        gainNode.gain.setValueAtTime(0, audioContextoProfundo.currentTime);
+        gainNode.gain.linearRampToValueAtTime(1, audioContextoProfundo.currentTime + 0.08);
+
+        const reverb = gerarEcoCaverna(audioContextoProfundo);
+        const wet = audioContextoProfundo.createGain(); wet.gain.value = 0.45;
+        const dry = audioContextoProfundo.createGain(); dry.gain.value = 1;
+
+        main.connect(panMain); layer.connect(delay); delay.connect(panLayer);
+        panMain.connect(trebleCut); panLayer.connect(trebleCut);
+        trebleCut.connect(presence); presence.connect(bass); bass.connect(gainNode);
+        gainNode.connect(comp); gainNode.connect(dist); dist.connect(distGain);
+        distGain.connect(comp); comp.connect(dry); comp.connect(reverb); reverb.connect(wet);
+        dry.connect(audioContextoProfundo.destination); wet.connect(audioContextoProfundo.destination);
+
+        main.start();
+        layer.start();
+
+    } catch (e) {
+        console.warn("Falha no Audio Nativo, usando Voz do Sistema:", e);
+        if (window.speechSynthesis) {
+            let utter = new SpeechSynthesisUtterance(textoLimpo);
+            utter.lang = 'pt-BR';
+            utter.rate = 0.85;
+            utter.pitch = 0.5;
+            window.speechSynthesis.speak(utter);
+        }
+    }
+}
+
+// ==========================================
+// INTEGRAÇÃO
+// ==========================================
+socket.on('nova_mensagem', (dados) => {
+    if (dados.autor && (
+        dados.autor.includes('MENTE ABISSAL') ||
+        dados.autor.includes('ORÁCULO') ||
+        dados.autor.includes('Lumia')
+    )) {
+        sussurroDemonioBrasil(dados.texto);
+    }
+});
+
+   // ==========================================
+    // SISTEMA VOIP (WEBRTC P2P - RÁDIO DO CLÃ)
+    // ==========================================
+    let streamLocal = null;
+    let voipAtivo = false;
+    let webrtcConexoes = {}; // Armazena as conexões com cada jogador
+    const configIce = { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] };
+
+    async function toggleVOIP() {
+        const btn = document.getElementById('btn-voip');
+        if (voipAtivo) {
+            // Desligar o Microfone
+            if (streamLocal) streamLocal.getTracks().forEach(track => track.stop());
+            socket.emit('voip_leave', { clan: meuVampiro.clan });
+            
+            for (let id in webrtcConexoes) webrtcConexoes[id].close();
+            webrtcConexoes = {};
+            
+            document.querySelectorAll('audio.voip-player').forEach(a => a.remove());
+            
+            voipAtivo = false;
+            btn.innerText = "🎤 Rádio OFF";
+            btn.style.color = "#555"; btn.style.borderColor = "#555";
+            return;
+        }
+
+        try {
+            // Ligar o Microfone (EXIGE HTTPS NO MOBILE!)
+            streamLocal = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            voipAtivo = true;
+            btn.innerText = "🎙️ Rádio ON (Clã)";
+            btn.style.color = "#0f5"; btn.style.borderColor = "#0f5";
+            showJuiceNotif("RÁDIO LIGADO", "O teu canal telepático com o Clã está aberto.");
+            
+            socket.emit('voip_join', { clan: meuVampiro.clan, id: meuVampiro.id });
+        } catch (e) {
+            ocultoAlert("O feitiço falhou! Verifica se o jogo está a correr em HTTPS e se deste permissão ao microfone.");
+            console.error("Erro de Microfone:", e);
+        }
+    }
+
+    function criarConexaoWebRTC(targetId, isCaller) {
+        const pc = new RTCPeerConnection(configIce);
+        webrtcConexoes[targetId] = pc;
+
+        // Adiciona a nossa voz à chamada
+        streamLocal.getTracks().forEach(track => pc.addTrack(track, streamLocal));
+
+        // Quando recebemos a voz do outro jogador
+        pc.ontrack = (event) => {
+            let audioEl = document.getElementById(`audio_${targetId}`);
+            if (!audioEl) {
+                audioEl = document.createElement('audio');
+                audioEl.id = `audio_${targetId}`;
+                audioEl.className = 'voip-player';
+                audioEl.autoplay = true;
+                audioEl.playsInline = true; // [CORREÇÃO MOBILE CRÍTICA] Sem isto o Safari recusa tocar áudio WebRTC
+                document.body.appendChild(audioEl);
+            }
+            audioEl.srcObject = event.streams[0];
+        };
+
+        pc.onicecandidate = (event) => {
+            if (event.candidate) {
+                socket.emit('webrtc_ice_candidate', { target: targetId, candidate: event.candidate });
+            }
+        };
+
+        if (isCaller) {
+            pc.createOffer().then(offer => {
+                return pc.setLocalDescription(offer);
+            }).then(() => {
+                socket.emit('webrtc_offer', { target: targetId, sdp: pc.localDescription });
+            });
+        }
+        return pc;
+    }
+
+    // Ouve quando alguém liga o rádio
+    socket.on('voip_user_joined', (dados) => {
+        if (!voipAtivo) return;
+        showJuiceNotif("ECO ASTRAL", `[${dados.nome}] entrou na frequência do Clã.`);
+        criarConexaoWebRTC(dados.socketId, true);
+    });
+
+    // Ouve a resposta para conectar o áudio
+    socket.on('webrtc_offer', async (dados) => {
+        if (!voipAtivo) return;
+        const pc = criarConexaoWebRTC(dados.caller, false);
+        await pc.setRemoteDescription(new RTCSessionDescription(dados.sdp));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.emit('webrtc_answer', { target: dados.caller, sdp: pc.localDescription });
+    });
+
+    socket.on('webrtc_answer', (dados) => {
+        const pc = webrtcConexoes[dados.caller];
+        if (pc) pc.setRemoteDescription(new RTCSessionDescription(dados.sdp));
+    });
+
+    socket.on('webrtc_ice_candidate', (dados) => {
+        const pc = webrtcConexoes[dados.caller];
+        if (pc) pc.addIceCandidate(new RTCIceCandidate(dados.candidate));
+    });
+
+    socket.on('voip_user_left', (dados) => {
+        if (webrtcConexoes[dados.socketId]) {
+            webrtcConexoes[dados.socketId].close();
+            delete webrtcConexoes[dados.socketId];
+        }
+        const audioEl = document.getElementById(`audio_${dados.socketId}`);
+        if (audioEl) audioEl.remove();
+    });
+
+
+    // ==========================================
+    // SISTEMA DE MAGIAS DINÂMICAS (LIMITE & CUSTOS)
+    // ==========================================
+    async function gerarMagiaDinamica() {
+        if (!meuVampiro) return;
+        
+        let qtdMagias = (meuVampiro.colecaoHabilidades || []).length;
+        let countConquistas = (meuVampiro.conquistas || []).length;
+        
+        // MATEMÁTICA: 1 Magia a cada 10 Níveis + Conquistas. Mínimo 1.
+        let limiteMagias = Math.max(1, Math.floor((meuVampiro.nivel || 1) / 10) + countConquistas);
+        
+        if (qtdMagias >= limiteMagias) {
+            return ocultoAlert(`A tua mente não suporta mais grimórios (Limite: ${limiteMagias}). Atinge o Grau ${(qtdMagias + 1) * 10} ou conquista novas glórias para expandires o teu saber.`);
+        }
+
+        // CUSTOS CRESCENTES
+        let custoGts = 3000 + (qtdMagias * 2000);
+        let custoFuria = 5 + (qtdMagias * 2);
+        
+        if (!(await ocultoConfirm(`A Mente Abissal consumirá ${numFmt(custoGts)} Gts e ${custoFuria} Fúrias para forjar uma magia exclusiva para ti. Aceitas?`))) return;
+        
+        abismoVoid(); jorrarSangue();
+        try {
+            const res = await fetch('/api/magia/gerar_dinamica', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ id: meuVampiro.id }) 
+            });
+            const d = await res.json();
+            ocultoAlert(d.erro || d.relato);
+            syncStatus();
+        } catch(e){}
+    }
+
+    async function equiparMagiaDinamica(idMagia) {
+        try {
+            const res = await fetch('/api/magia/equipar_dinamica', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, magiaId: idMagia }) });
+            const d = await res.json();
+            if(!d.erro) playSfx('espada');
+            syncStatus();
+        } catch(e){}
+    }
+
+    // Sobrescreve a renderização do Compêndio/UI para desenhar as Skills
+    const originalSyncUI = syncUI;
+    syncUI = function() {
+        originalSyncUI();
+        if(!meuVampiro) return;
+        
+        // Renderiza no Perfil
+        if(meuVampiro.colecaoHabilidades) {
+            const htmlHab = meuVampiro.colecaoHabilidades.map(h => {
+                const isEquipped = (meuVampiro.habilidadesAtivas || []).some(ha => ha.id === h.id);
+                return `<div style="border: 1px dashed ${isEquipped ? '#0f5' : '#444'}; padding: 10px; margin-bottom: 5px; background: #050005;">
+                    <strong style="color:var(--magia-clara);">${h.nome}</strong> [${h.tipo.toUpperCase()}]<br>
+                    <span style="font-size:0.75em; color:#aaa;">${h.desc}</span><br>
+                    <span style="font-size:0.7em; color:var(--sangue-claro);">Custo: ${h.custoGts} Gts | ${h.custoFuria} Fúria</span><br>
+                    <button class="btn-magick" onclick="equiparMagiaDinamica('${h.id}')" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto; border-color:${isEquipped ? '#500' : '#0f5'}; color:${isEquipped ? '#888' : '#0f5'};">${isEquipped ? 'Desequipar' : 'Equipar no Combate'}</button>
+                </div>`;
+            }).join('');
+            safeSet('lista-magias-dinamicas', htmlHab || "<p style='color:#555;font-size:0.8em;font-style:italic;'>O teu grimório pessoal está vazio.</p>", true);
+        }
+
+        // Renderiza na Arena
+        if(meuVampiro.habilidadesAtivas && meuVampiro.habilidadesAtivas.length > 0) {
+            const htmlArena = meuVampiro.habilidadesAtivas.map(h => {
+                let cor = h.tipo === 'cura' ? '#0f5' : (h.tipo === 'dano' ? '#ff1e2f' : '#d080ff');
+                return `<button onclick="usarHabilidadeCustom('${h.id}')" style="background:#110011; border: 1px solid ${cor}; color: ${cor}; border-radius: 5px; padding: 10px 0; font-size: 0.7em; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family:'Cinzel',serif;">
+                    <span style="font-size:1.5em; margin-bottom:2px;">${h.tipo === 'cura'?'🩸':(h.tipo === 'dano'?'🔥':'🌀')}</span>
+                    ${h.nome.substring(0,8)}..
+                </button>`;
+            }).join('');
+            safeSet('arena-habilidades-dinamicas', htmlArena, true);
+        } else {
+            safeSet('arena-habilidades-dinamicas', '', true);
+        }
+    };
+	
+	// ==========================================
+    // NAVEGAÇÃO SUPREMA (SUBSTITUI CÓPIAS BUGADAS)
+    // ==========================================
+    window.nav = function(abaId, btn) {
+        // Bloqueios de Progressão (Level Gating)
+        if (meuVampiro) {
+            if ((abaId === 'aventura' || abaId === 'leilao') && meuVampiro.nivel < 5) {
+                return ocultoAlert("🔒 O Abismo rejeita os fracos. Atinge o Grau 5 para aceder a este conteúdo.");
+            }
+            if (abaId === 'conclave' && meuVampiro.nivel < 10) {
+                return ocultoAlert("🔒 Apenas Imortais de Grau 10 ou superior podem entrar no Conclave.");
+            }
+            if (abaId === 'pvp' && meuVampiro.nivel < 15) {
+                return ocultoAlert("🔒 A Lei Hermética proíbe novatos de duelar. Atinge o Grau 15.");
+            }
+            if (abaId === 'reinos' && meuVampiro.nivel < 20) {
+                return ocultoAlert("🔒 Os Domínios Antigos exigem o poder do Grau 20.");
+            }
+        }
+
+        playSfx('sangue');
+        document.querySelectorAll('.aba').forEach(el => el.classList.add('oculto'));
+        document.querySelectorAll('.tabs button').forEach(el => el.classList.remove('active'));
+        const abaTarget = document.getElementById('aba-' + abaId); 
+        if(abaTarget) abaTarget.classList.remove('oculto');
+        
+        if (btn) btn.classList.add('active');
+        
+        if (['pvp', 'magia', 'chat', 'aventura'].includes(abaId)) carregarSocial();
+        if (abaId === 'leilao') carregarLeilao();
+        if (abaId === 'biblioteca') carregarBiblioteca(); 
+        if (abaId === 'reinos') carregarReinos();
+        
+        if (abaId === 'chat') {
+            setTimeout(() => {
+                const box = document.getElementById('chat-box');
+                if(box) box.scrollTop = box.scrollHeight;
+            }, 50);
         }
     };
 </script>

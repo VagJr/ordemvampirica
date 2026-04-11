@@ -6,6 +6,7 @@ const path = require('path');
 const TelegramBot = require('node-telegram-bot-api'); 
 const { MongoClient } = require('mongodb');
 const { ShadowCore, AstrolabioLunar } = require('./ShadowCore.js');
+const Lexicon = require('./LexiconSanguinis.js'); 
 
 const app = express();
 const server = http.createServer(app);
@@ -272,6 +273,15 @@ app.post('/api/magia/conjurar', (req, res) => {
     }
 });
 
+app.post('/api/magia/gerar_dinamica', async (req, res) => {
+    try { res.json(await core.despertarMagiaCombate(req.body.id)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"Falha na forja."}); }
+});
+app.post('/api/magia/equipar_dinamica', (req, res) => {
+    try { res.json(core.equiparMagiaAtiva(req.body.id, req.body.magiaId)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"Falha."}); }
+});
+
 app.post('/api/perfil/diaria', (req, res) => {
     try {
         const v = core.vampiros[req.body.id];
@@ -313,6 +323,32 @@ app.post('/api/leilao/vender', (req, res) => {
 app.post('/api/leilao/comprar', (req, res) => {
     try { res.json(core.comprarLeilao(req.body.id, req.body.anuncioId)); io.emit('sync_geral'); } 
     catch(e){ res.status(500).json({erro:"Falha na compra."}); }
+});
+
+// ==========================================
+// ROTA PROXY PARA A VOZ DA IA (Contorna bloqueios CORS no Fly.io)
+// ==========================================
+app.get('/api/tts', async (req, res) => {
+    try {
+        const texto = req.query.text;
+        if (!texto) return res.status(400).send('Texto ausente');
+        
+        // Requisição direta do teu servidor backend para o Google
+        const googleUrl = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=pt-BR&q=${encodeURIComponent(texto)}`;
+        
+        // Usamos o fetch nativo do NodeJS 18+
+        const response = await fetch(googleUrl);
+        if (!response.ok) throw new Error(`Google TTS falhou com status ${response.status}`);
+        
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        res.set('Content-Type', 'audio/mpeg');
+        res.send(buffer);
+    } catch (e) {
+        console.error("Erro no TTS Proxy Backend:", e.message);
+        res.status(500).send('Erro ao gerar voz');
+    }
 });
 
 // Resgate do Mundo Aberto (Caça Bot Humanos)
@@ -652,6 +688,31 @@ io.on('connection', (socket) => {
         socket.emit('historico_chat', { canal: 'global', mensagens: core.historicoChat.global });
     });
 	
+	// ==========================================
+    // SINALIZAÇÃO WEBRTC (VOIP DO CLÃ)
+    // ==========================================
+    socket.on('voip_join', (dados) => {
+        socket.join(`voip_${dados.clan}`);
+        // Avisa os outros membros do clã que alguém ligou o rádio
+        socket.broadcast.to(`voip_${dados.clan}`).emit('voip_user_joined', { socketId: socket.id, nome: core.vampiros[dados.id].nome });
+    });
+
+    socket.on('voip_leave', (dados) => {
+        socket.leave(`voip_${dados.clan}`);
+        socket.broadcast.to(`voip_${dados.clan}`).emit('voip_user_left', { socketId: socket.id });
+    });
+
+    // Encaminhamento de pacotes WebRTC
+    socket.on('webrtc_offer', (dados) => {
+        io.to(dados.target).emit('webrtc_offer', { sdp: dados.sdp, caller: socket.id });
+    });
+    socket.on('webrtc_answer', (dados) => {
+        io.to(dados.target).emit('webrtc_answer', { sdp: dados.sdp, caller: socket.id });
+    });
+    socket.on('webrtc_ice_candidate', (dados) => {
+        io.to(dados.target).emit('webrtc_ice_candidate', { candidate: dados.candidate, caller: socket.id });
+    });
+	
 	// --- EVENTOS DA MASMORRA EM TEMPO REAL ---
     socket.on('dungeon_join', (data) => {
         socket.join(data.dungeonId); // Coloca o socket do jogador na sala daquela dungeon
@@ -794,6 +855,9 @@ const PORT = process.env.PORT || 8080;
 
 async function iniciarSistema() {
     try {
+		console.log("A invocar os antigos... A canalizar o Lexicon Sanguinis...");
+        // A "senha" aqui (SANGUINIS_AETERNUM) é o que faz o Hash dar certo lá no Lexicon.
+        Lexicon.DespertarMatriz("SANGUINIS_AETERNUM"); 
         await inicializarServidor();
         console.log("✅ Dados do Atlas carregados com sucesso.");
 
