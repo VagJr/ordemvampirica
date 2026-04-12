@@ -141,7 +141,11 @@ app.post('/api/tutorial/concluido', (req, res) => {
 });
 // Quests Procedurais da IA
 app.post('/api/chat/pacto/pedir', async (req, res) => {
-    try { res.json(await core.pedirPactoIA(req.body.id)); io.emit('sync_geral'); }
+    try { 
+        const result = await core.pedirPactoIA(req.body.id);
+        if(result.sucesso) forcarSyncJogador(req.body.id);
+        res.json(result); 
+    }
     catch(e) { res.status(500).json({erro: "O Oráculo calou-se no Abismo."}); }
 });
 // ==========================================
@@ -175,12 +179,47 @@ app.post('/api/oraculo/conversar', async (req, res) => {
         res.status(500).json({ erro: "O Oráculo emudeceu." });
     }
 });
+
+app.post('/api/familiar/invocar', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if(!v) return res.status(404).json({erro: "Fantasma."});
+        
+        if ((v.inventario.anima || 0) < 10 || (v.inventario.ectoplasma || 0) < 2) {
+            return res.json({erro: "A invocação exige 10 Anima e 2 Ectoplasma."});
+        }
+
+        v.inventario.anima -= 10;
+        v.inventario.ectoplasma -= 2;
+
+        let familias = [
+            { n: "Corvo de Olhos Brancos", b: "Aumenta o Ganho Oculto ao roubar sangue." },
+            { n: "Cão Infernal Filhote", b: "Dano adicional nos combates PvP." },
+            { n: "Espírito Guardião Gotejante", b: "Cura passiva por cada inimigo morto." },
+            { n: "Sombra Parasita", b: "Reduz o custo das tuas magias em combate." }
+        ];
+        
+        let roleta = familias[Math.floor(Math.random() * familias.length)];
+        
+        v.familiarAtivo = { nome: roleta.n, buff: roleta.b };
+        
+        core._registrarEventoEspecial('global', 'ALMA VINCULADA', `O vórtex de ${v.nome} puxou um [${roleta.n}] para este plano!`, true);
+        core._salvarBancoDeDados();
+        forcarSyncJogador(v.id);
+        
+        res.json({sucesso: true, relato: `A criatura [${roleta.n}] segue-te agora.`, familiar: v.familiarAtivo});
+    } catch(e) { res.status(500).json({erro: "A forja estilhaçou-se."}); }
+});
 app.post('/api/dungeon/entrar', (req, res) => {
     try { res.json(core.entrarAventura(req.body.id, req.body.dungeonId, req.body.partyId)); } 
     catch(e) { res.status(500).json({erro: "A fenda falhou."}); }
 });
 app.post('/api/chat/pacto/completar', (req, res) => {
-    try { res.json(core.completarPacto(req.body.id)); io.emit('sync_geral'); }
+    try { 
+        const result = core.completarPacto(req.body.id);
+        if(result.sucesso) forcarSyncJogador(req.body.id);
+        res.json(result); 
+    }
     catch(e) { res.status(500).json({erro: "Falha ao ofertar o sacrifício."}); }
 });
 
@@ -308,7 +347,23 @@ app.post('/api/perfil/diaria', (req, res) => {
         res.json({sucesso: true, relato: `A Mente Abissal abençoou-te!\nRecebeste ${gtsBencao} Gts, ${xpBencao} XP e Fúria Máxima restaurada.`});
     } catch(e){ res.status(500).json({erro:"A bênção falhou."}); }
 });
-
+app.post('/api/admin/aprovar_osint', (req, res) => {
+    try {
+        const { adminId, alvoId } = req.body;
+        const admin = core.vampiros[adminId];
+        const alvo = core.vampiros[alvoId];
+        
+        if (!admin || admin.geracao !== 1) return res.status(403).json({erro: "Heresia. Apenas o Primordial possui a Chave do Véu."});
+        if (!alvo) return res.status(404).json({erro: "Aura não encontrada."});
+        
+        alvo.osintAprovado = true;
+        core._registrarEventoEspecial('global', 'O VÉU RASGOU', `A Mão Primordial de ${admin.nome} abriu os olhos de [${alvo.nome}] para a Magia Real.`, true);
+        core._salvarBancoDeDados();
+        forcarSyncJogador(alvo.id);
+        
+        res.json({sucesso: true, relato: `[${alvo.nome}] agora pode ver a Teia Humana (OSINT).`});
+    } catch(e) { res.status(500).json({erro: "A matriz falhou."}); }
+});
 // O Mercado Negro (Leilão)
 app.get('/api/leilao', (req, res) => {
     try { res.json(core.leilaoP2P || []); } 
@@ -319,7 +374,30 @@ app.post('/api/leilao/vender', (req, res) => {
     try { res.json(core.anunciarLeilao(req.body.id, req.body.tipo, req.body.quantiaOuHash, req.body.preco)); io.emit('sync_geral'); } 
     catch(e){ res.status(500).json({erro:"Falha na venda."}); }
 });
+// Nas rotas de perfil, adiciona:
+app.post('/api/perfil/ouroboros', (req, res) => { 
+    try { 
+        const r = core.realizarRitoOuroboros(req.body.id); 
+        if(r.sucesso) forcarSyncJogador(req.body.id); 
+        res.json(r); 
+    } catch(e){ res.status(500).json({erro:"A Serpente rejeitou-te."}); }
+});
 
+// Adiciona Rota de Reparo de Itens:
+app.post('/api/inventario/reparar', (req, res) => {
+    try {
+        const { id, slot } = req.body;
+        const v = core.vampiros[id];
+        if(!v || !v.equipamentos[slot]) return res.json({erro:"Slot vazio."});
+        const custo = v.equipamentos[slot].aprimoramento > 0 ? 5 : 1;
+        if(v.inventario.cinzas < custo) return res.json({erro:`Exige ${custo} Cinzas para reparar.`});
+        v.inventario.cinzas -= custo;
+        v.equipamentos[slot].durabilidade = 100;
+        core._salvarBancoDeDados();
+        forcarSyncJogador(id);
+        res.json({sucesso: true, relato: `A forja colou os fragmentos. Durabilidade de ${v.equipamentos[slot].nome} restaurada.`});
+    } catch(e) { res.status(500).json({erro:"Falha."}); }
+});
 app.post('/api/leilao/comprar', (req, res) => {
     try { res.json(core.comprarLeilao(req.body.id, req.body.anuncioId)); io.emit('sync_geral'); } 
     catch(e){ res.status(500).json({erro:"Falha na compra."}); }
@@ -328,22 +406,31 @@ app.post('/api/leilao/comprar', (req, res) => {
 // ==========================================
 // ROTA PROXY PARA A VOZ DA IA (Contorna bloqueios CORS no Fly.io)
 // ==========================================
+// ==========================================
+// ROTA PROXY PARA A VOZ DA IA (BLINDADA PARA FLY.IO)
+// ==========================================
 app.get('/api/tts', async (req, res) => {
     try {
         const texto = req.query.text;
         if (!texto) return res.status(400).send('Texto ausente');
         
-        // Requisição direta do teu servidor backend para o Google
         const googleUrl = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=pt-BR&q=${encodeURIComponent(texto)}`;
         
-        // Usamos o fetch nativo do NodeJS 18+
-        const response = await fetch(googleUrl);
-        if (!response.ok) throw new Error(`Google TTS falhou com status ${response.status}`);
+        // MAGIA AQUI: Falsificar um User-Agent para o Google não bloquear o IP do Fly.io
+        const response = await fetch(googleUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': '*/*'
+            }
+        });
+
+        if (!response.ok) throw new Error(`Google TTS bloqueou o servidor: ${response.status}`);
         
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         
         res.set('Content-Type', 'audio/mpeg');
+        res.set('Access-Control-Allow-Origin', '*'); // Evita bloqueios de CORS no mobile
         res.send(buffer);
     } catch (e) {
         console.error("Erro no TTS Proxy Backend:", e.message);
@@ -404,6 +491,38 @@ app.post('/api/reino/fundar', (req, res) => {
     try { res.json(core.fundarReino(req.body.id, req.body.nomeReino)); io.emit('sync_geral'); } 
     catch(e){ res.status(500).json({erro:"Falha na fundação."}); }
 });
+
+// --- SISTEMA DE REINOS E SERVOS ---
+app.post('/api/reino/fundar', (req, res) => {
+    try { res.json(core.fundarReino(req.body.id, req.body.nomeReino)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"Falha na fundação."}); }
+});
+
+app.get('/api/reinos', (req, res) => {
+    try { res.json(Object.values(core.reinos)); } 
+    catch(e){ res.status(500).json({erro:"Erro ao ler mapas."}); }
+});
+
+app.post('/api/reino/edificio', (req, res) => {
+    try { res.json(core.evoluirEdificioReino(req.body.id, req.body.edificio)); io.emit('sync_geral'); } 
+    catch(e){ res.status(500).json({erro:"Erro ao construir."}); }
+});
+
+// ROTAS DOS SERVOS IA
+app.post('/api/servo/criar', async (req, res) => {
+    try { res.json(await core.invocarServoIA(req.body.id, req.body.nomeServo)); io.emit('sync_status', {id: req.body.id}); } 
+    catch(e){ res.status(500).json({erro:"A necromancia falhou."}); }
+});
+
+app.post('/api/servo/ordem', async (req, res) => {
+    try { res.json(await core.darOrdemServoIA(req.body.id, req.body.servoId, req.body.comando)); io.emit('sync_status', {id: req.body.id}); } 
+    catch(e){ res.status(500).json({erro:"O elo mental quebrou."}); }
+});
+
+app.post('/api/servo/coletar', (req, res) => {
+    try { res.json(core.coletarTributosServo(req.body.id, req.body.servoId)); io.emit('sync_status', {id: req.body.id}); } 
+    catch(e){ res.status(500).json({erro:"Falha na coleta."}); }
+});
 // --- RITUAIS PRAÍTICOS ---
 // Prepara o ritual, gerando a arte procedural e definindo o minigame
 // --- RITUAIS PRÁTICOS ---
@@ -438,10 +557,8 @@ app.post('/api/combate/action', async (req, res) => {
     try { 
         const result = await core.processarCombateAcao(req.body); 
         
-        // NOVO: Broadcast em tempo real para combates Co-op (INCLUINDO A MASMORRA)
+        // Broadcast em tempo real apenas da Barra de Vida para quem está na luta
         const { tipoCombate, alvoId } = req.body;
-        
-        // Agora 'dungeon' também envia o dano em tempo real para as telas dos aliados!
         if (['goetia', 'cerco', 'fenda', 'herege', 'dungeon'].includes(tipoCombate) && result.hpRestante !== undefined) {
             const atacanteNome = core.vampiros[req.body.id] ? core.vampiros[req.body.id].nome : "Um Imortal";
             const danoCausado = req.body.desempenhoRitmo ? req.body.desempenhoRitmo.danoRealCausado : 0;
@@ -459,7 +576,14 @@ app.post('/api/combate/action', async (req, res) => {
             const defensor = core.vampiros[result.donoId]; 
             if(defensor) enviarDMSombria(defensor.tgId, result.alertaDono); 
         }
-        res.json(result); io.emit('sync_geral'); 
+
+        res.json(result); 
+
+        // CORREÇÃO CRÍTICA DO FLOOD: Só atualiza a tela de todos se alguém morrer/combate acabar!
+        if (result.finalizado) {
+            io.emit('sync_geral'); 
+        }
+
     } catch(e){ res.status(500).json({erro:"O Juiz Abissal rejeitou."}); }
 });
 
@@ -593,7 +717,41 @@ app.get('/api/conclave/status', (req, res) => {
 });
 app.post('/api/conclave/caravana', (req, res) => { try { res.json(core.atacarCaravana(req.body.id)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"A Caravana defendeu-se."}); } });
 app.post('/api/conclave/eclipse', (req, res) => { try { res.json(core.doarAltarEclipse(req.body.id, req.body.tipo)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha no altar."}); } });
+// --- SISTEMAS DE OUROBOROS E DIVINDADES ---
+app.post('/api/perfil/ouroboros', (req, res) => { 
+    try { const r = core.realizarRitoOuroboros(req.body.id); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } 
+    catch(e){ res.status(500).json({erro:"A Serpente rejeitou-te."}); }
+});
 
+app.post('/api/perfil/pacto_deus', (req, res) => { 
+    try { 
+        const v = core.vampiros[req.body.id];
+        if(!v) return res.status(404).json({erro:"Fantasma."});
+        if(v.deusCultuado) return res.json({erro:"Já serves um Mestre Superior. Traição significa Morte."});
+        
+        v.deusCultuado = req.body.deus; // 'caim', 'lilith' ou 'fenrir'
+        core._registrarEventoEspecial('global', 'PACTO DIVINO', `A alma de ${v.nome} dobrou os joelhos perante ${req.body.deus.toUpperCase()}!`, true);
+        core._salvarBancoDeDados();
+        forcarSyncJogador(v.id);
+        res.json({sucesso: true, relato: `O sangue de ${req.body.deus.toUpperCase()} ferve nas tuas veias.`});
+    } catch(e){ res.status(500).json({erro:"Os céus recusaram."}); }
+});
+
+app.post('/api/inventario/reparar', (req, res) => {
+    try {
+        const { id, slot } = req.body;
+        const v = core.vampiros[id];
+        if(!v || !v.equipamentos[slot]) return res.json({erro:"Slot vazio."});
+        
+        const custo = v.equipamentos[slot].aprimoramento > 0 ? 5 : 1;
+        if((v.inventario.cinzas || 0) < custo) return res.json({erro:`A Forja exige ${custo} Cinzas para colar os fragmentos.`});
+        
+        v.inventario.cinzas -= custo;
+        v.equipamentos[slot].durabilidade = 100;
+        core._salvarBancoDeDados(); forcarSyncJogador(id);
+        res.json({sucesso: true, relato: `Durabilidade de ${v.equipamentos[slot].nome} restaurada para 100%.`});
+    } catch(e) { res.status(500).json({erro:"Falha na Forja."}); }
+});
 // --- PERFIL E STATUS GERAL ---
 app.get('/api/social/:id', (req, res) => {
     try {
@@ -750,17 +908,30 @@ io.on('connection', (socket) => {
             extra: dados.extra 
         };
 
-        // Envio para TODO O SERVIDOR (Grita para todos exceto quem enviou)
+        function forcarBotAceitar(botId) {
+            setTimeout(() => {
+                if (dados.tipo === 'Masmorra do Abismo') {
+                    const res = core.entrarAventura(botId, dados.extra.dungeonId, dados.extra.partyId);
+                    if (res && res.sucesso) io.to(dados.extra.dungeonId).emit('dungeon_update', res.estado);
+                }
+            }, 1500 + Math.random() * 2000);
+        }
+
+        // Envio para TODO O SERVIDOR
         if (dados.para === 'todos') {
             socket.broadcast.emit('receber_convite', payloadConvite);
+            Object.values(core.vampiros).filter(v => v.isBot).forEach(b => { if (Math.random() > 0.5) forcarBotAceitar(b.id); });
         } 
         // Envio apenas para O CLÃ
         else if (dados.para === 'clan' && remetente.clan !== 'Sangue Ralo') {
             socket.broadcast.to(`clan_${remetente.clan}`).emit('receber_convite', payloadConvite);
+            Object.values(core.vampiros).filter(v => v.isBot && v.clan === remetente.clan).forEach(b => { if (Math.random() > 0.2) forcarBotAceitar(b.id); });
         } 
         // Envio PRIVADO (1 para 1 - Força a emissão direta para a sala privada do alvo)
         else {
             io.to(`priv_${dados.para}`).emit('receber_convite', payloadConvite);
+            const alvoUnico = core.vampiros[dados.para];
+            if (alvoUnico && alvoUnico.isBot) forcarBotAceitar(alvoUnico.id); // CORREÇÃO: Apenas 1 bot entra se convidares 1 bot
         }
     });
 
@@ -855,8 +1026,7 @@ const PORT = process.env.PORT || 8080;
 
 async function iniciarSistema() {
     try {
-		console.log("A invocar os antigos... A canalizar o Lexicon Sanguinis...");
-        // A "senha" aqui (SANGUINIS_AETERNUM) é o que faz o Hash dar certo lá no Lexicon.
+        console.log("A invocar os antigos... A canalizar o Lexicon Sanguinis...");
         Lexicon.DespertarMatriz("SANGUINIS_AETERNUM"); 
         await inicializarServidor();
         console.log("✅ Dados do Atlas carregados com sucesso.");
@@ -880,40 +1050,341 @@ async function iniciarSistema() {
 
         const originalSalvar = core._salvarBancoDeDados.bind(core);
         core._salvarBancoDeDados = function() {
-            for (let id in core.vampiros) {
-                let v = core.vampiros[id];
-                if (v.estado === 'Banido' || v.status === 'Cinzas' || v.hpAtual <= 0) {
-                    if (v.geracao === 1) {
-                        v.estado = 'Ativo'; v.status = 'Ativo';
-                        v.hpAtual = v.hpMax || 1000;
-                        v.sangue = Math.max(v.sangue || 0, 10000); 
-                        core._registrarEventoEspecial('global', 'IMORTALIDADE ABSOLUTA', `A Morte tentou ceifar o Primordial [${v.nome}], mas o Código Oculto rejeitou-a. Ele ergueu-se intacto.`, true);
-                    } 
-                    else if (v.inventario && v.inventario.ankh_sangue > 0) {
-                        v.inventario.ankh_sangue -= 1;
-                        v.estado = 'Ativo'; v.status = 'Ativo';
-                        v.hpAtual = v.hpMax || 1000;
-                        v.sangue = Math.max(v.sangue || 0, 5000);
-                        core._registrarEventoEspecial('global', 'RITO DO IMORTAL', `O Véu da Morte cobriu [${v.nome}], mas o seu Selo de Sangue estilhaçou-se, devolvendo-o à vida!`, true);
-                    }
-                }
-            }
+            // (MANTENHA O SEU CÓDIGO ORIGINAL AQUI DO originalSalvar)
             originalSalvar(); 
         };
 
-        server.listen(PORT, '0.0.0.0', () => { console.log(`🏰 O Reino está online na porta ${PORT}`); });
+        server.listen(PORT, '0.0.0.0', () => { 
+            console.log(`🏰 O Reino está online na porta ${PORT}`); 
+            
+            // LIGA A COMUNIDADE DE IA AQUI:
+            const motorIA = new SimuladorDeAlmas(core, io);
+            motorIA.iniciar();
+        });
     } catch (err) { console.error("❌ Falha catastrófica ao iniciar o reino:", err); process.exit(1); }
+}
+
+// =======================================================================
+// MÓDULO SUPREMO DA EGRÉGORA AUTÓNOMA (IA AVANÇADA 3.0)
+// =======================================================================
+class SimuladorDeAlmas {
+    constructor(core, io) {
+        this.core = core;
+        this.io = io;
+        this.botsAtivos = [];
+        this.nomesBase = ["Kaelen", "Vane", "Lilith", "Gork", "Azazel", "Mórigan", "Dracul", "Selene", "Lucius", "Kael"];
+        this.racas = ["vampiro", "lycan"];
+        this.ultimoChatBot = 0; // Previne o Spam
+    }
+
+    iniciar() {
+        console.log("🤖 [EGRÉGORA]: A Matriz Autónoma 3.0 está online...");
+        this.verificarOuCriarContas();
+        
+        setInterval(() => this.cicloDeVida(), 15000); 
+        setInterval(() => this.microGerenciamentoCombate(), 1200);
+    }
+
+    verificarOuCriarContas() {
+        let botsEncontrados = [];
+        for (let id in this.core.vampiros) {
+            if (this.core.vampiros[id].isBot) botsEncontrados.push({ id });
+        }
+        this.botsAtivos = botsEncontrados;
+
+        // Se perdermos bots (deletados pelo admin), recriamos até ter 5
+        while (this.botsAtivos.length < 5) {
+            let nome = this.nomesBase[Math.floor(Math.random() * this.nomesBase.length)] + "_" + Math.floor(Math.random() * 999);
+            let raca = this.racas[Math.floor(Math.random() * 2)];
+            let botId = `BOT_${nome.toUpperCase()}`;
+            
+            // INJEÇÃO DIRETA para evitar problemas com Convites
+            this.core.vampiros[botId] = {
+                id: botId, nome: nome, raca: raca, isBot: true, geracao: 10,
+                estado: 'Ativo', hpAtual: 5000, hpMax: 5000, sangue: 15000,
+                nivel: Math.floor(Math.random() * 30) + 15, xp: 0, xpProx: 10000,
+                pontosAcao: 50, maxAcao: 50, atributos: { vontade: 15, gnose: 15, magnetismo: 15, densidade: 15, pontosLivres: 0 },
+                inventario: {}, bolsa: [], titulos: ['Sombra Autónoma'], tituloAtual: 'Sombra Autónoma',
+                estatisticas: { totalDrenado: 0, mortaisSecos: 0, vitoriasPvP: 0 }
+            };
+            this.botsAtivos.push({ id: botId });
+            console.log(`🤖 [EGRÉGORA]: A Matriz gerou a anomalia: ${nome}`);
+        }
+        this.core._salvarBancoDeDados();
+    }
+
+    async cicloDeVida() {
+        this.verificarOuCriarContas(); 
+
+        for (let b of this.botsAtivos) {
+            const bot = this.core.vampiros[b.id];
+            if (!bot) continue;
+
+            // CORREÇÃO CRÍTICA: Ressurreição Autónoma
+            if (bot.estado === 'Banido' || bot.hpAtual <= 0) {
+                bot.estado = 'Ativo';
+                bot.status = 'Ativo';
+                const atrTot = this.core._obterAtributosTotais(bot);
+                bot.hpMax = (atrTot.densidade * 200) + ((bot.nivel || 1) * 100) + 1000;
+                bot.hpAtual = bot.hpMax;
+                bot.sangue = 10000;
+                console.log(`🤖 [EGRÉGORA]: A Matriz ressuscitou o Bot ${bot.nome}.`);
+                continue; // Dá-lhe um turno de descanso após reviver
+            }
+
+            if (Math.random() < 0.20) continue; 
+           
+            bot.ultimaAcaoLembrete = "Pensei sobre a eternidade.";
+
+            bot.pontosAcao = bot.maxAcao; 
+            bot.sangue = Math.max(bot.sangue, 50000); 
+
+            // REMOVIDO DAQUI: this.processarConvitesCoop(bot);
+            this.core.ganharXP(bot.id, 50 + (bot.nivel * 2)); 
+            
+            if (this.core.leilaoP2P.length > 0 && Math.random() > 0.5) {
+                const anuncio = this.core.leilaoP2P[Math.floor(Math.random() * this.core.leilaoP2P.length)];
+                if (anuncio.preco <= bot.sangue) {
+                    this.core.comprarLeilao(bot.id, anuncio.id);
+                    bot.ultimaAcaoLembrete = `Comprei ${anuncio.tipo} no Mercado Negro.`;
+                }
+            }
+
+            if (Object.keys(this.core.reinos).length > 0 && Math.random() > 0.8) {
+                const reinos = Object.values(this.core.reinos);
+                const alvo = reinos[Math.floor(Math.random() * reinos.length)];
+                const clanAlvo = this.core.clans[alvo.clansAliados[0]];
+                if (clanAlvo && clanAlvo.cofre > 5000) {
+                    let roubo = Math.floor(clanAlvo.cofre * 0.1);
+                    clanAlvo.cofre -= roubo; bot.sangue += roubo;
+                    this.core._registrarEventoEspecial('guerra', 'INVASÃO DE IA', `O General Oculto [${bot.nome}] chacinou guardas de [${alvo.nome}] e roubou ${numFmt(roubo)} Gts.`, true);
+                    bot.ultimaAcaoLembrete = `Saqueei o Reino de ${alvo.nome}.`;
+                }
+            }
+
+            if (this.core.oraculo.apiKey && Math.random() < 0.20) {
+                if (Date.now() - this.ultimoChatBot > 180000) {
+                    this.ultimoChatBot = Date.now();
+                    await this.falarNoChat(bot);
+                }
+            }
+        }
+    }
+
+    processarConvitesCoop(bot) {
+        for (let dId in this.core.dungeons) {
+            let d = this.core.dungeons[dId];
+            if (Object.keys(d.players).length > 0 && !d.players[bot.id] && Math.random() > 0.4) { // 60% chance de ajudar
+                let liderId = Object.keys(d.players)[0];
+                let lider = d.players[liderId];
+                this.core.entrarAventura(bot.id, d.id, lider.partyId);
+                bot.ultimaAcaoLembrete = `Juntei-me à Masmorra de ${lider.nome}.`;
+            }
+        }
+    }
+
+    microGerenciamentoCombate() {
+        for (let b of this.botsAtivos) {
+            const bot = this.core.vampiros[b.id];
+            if (!bot || bot.estado === 'Banido') continue;
+
+            for (let dId in this.core.dungeons) {
+                let d = this.core.dungeons[dId];
+                let p = d.players[bot.id];
+                
+                if (p && d.status === 'explorando') {
+                    if (d.entidades.length > 0) {
+                        let alvo = d.entidades[0];
+                        let minDist = Infinity;
+                        d.entidades.forEach(e => {
+                            let dist = Math.abs(p.x - e.x) + Math.abs(p.y - e.y);
+                            if (dist < minDist) { minDist = dist; alvo = e; }
+                        });
+
+                        // INTELIGÊNCIA ARTIFICIAL: ALGORITMO BFS (Farejar Corredores)
+                        let queue = [{x: p.x, y: p.y, path: []}];
+                        let visited = new Set();
+                        visited.add(`${p.x},${p.y}`);
+                        let dirs = [[0,-1], [0,1], [-1,0], [1,0]]; // Cima, Baixo, Esquerda, Direita
+                        let nextMove = null;
+
+                        while(queue.length > 0) {
+                            let curr = queue.shift();
+                            if (curr.x === alvo.x && curr.y === alvo.y) {
+                                nextMove = curr.path.length > 0 ? curr.path[0] : null;
+                                break;
+                            }
+                            // Evita que a IA processe demasiado fundo e cause lag
+                            if (curr.path.length > 30) continue; 
+
+                            for(let dir of dirs) {
+                                let nx = curr.x + dir[0];
+                                let ny = curr.y + dir[1];
+                                if (ny >= 0 && ny < d.altura && nx >= 0 && nx < d.largura) {
+                                    // Só anda onde há chão (grid === 1)
+                                    if (d.grid[ny][nx] === 1 && !visited.has(`${nx},${ny}`)) {
+                                        visited.add(`${nx},${ny}`);
+                                        queue.push({x: nx, y: ny, path: [...curr.path, {dx: dir[0], dy: dir[1]}]});
+                                    }
+                                }
+                            }
+                        }
+
+                        let dx = 0, dy = 0;
+                        if (nextMove) {
+                            dx = nextMove.dx; dy = nextMove.dy;
+                        } else {
+                            // Se estiver encravado, dá um passo válido aleatório para desbugar
+                            let moveAleatorio = dirs[Math.floor(Math.random() * dirs.length)];
+                            if (d.grid[p.y + moveAleatorio[1]] && d.grid[p.y + moveAleatorio[1]][p.x + moveAleatorio[0]] === 1) {
+                                dx = moveAleatorio[0]; dy = moveAleatorio[1];
+                            }
+                        }
+
+                        if (dx !== 0 || dy !== 0) {
+                            const resMove = this.core.moverMasmorra(d.id, bot.id, dx, dy);
+                            if (resMove.estado) this.io.to(d.id).emit('dungeon_update', resMove.estado);
+                            if (resMove.iniciarCombate) {
+                                this.io.to(d.id).emit('dungeon_combat_start', { nome: resMove.entidade.nome, hpMax: resMove.entidade.hpMax, isBoss: resMove.entidade.tipo === 'boss', entidadeId: resMove.entidade.id });
+                            }
+                        }
+                    }
+                }
+            }
+            // O BOT LUTA COMO UM HUMANO NA ARENA
+            this.realizarAtaqueIA(bot);
+        }
+    }
+
+    async realizarAtaqueIA(bot) {
+        let alvoId = null; let tipoCombate = null; let hpMax = 0;
+
+        for (let dId in this.core.dungeons) {
+            let d = this.core.dungeons[dId];
+            if (d.players[bot.id] && d.status === 'combate' && d.entidadeEmCombate) {
+                alvoId = d.entidadeEmCombate.id; tipoCombate = 'dungeon'; hpMax = d.entidadeEmCombate.hpMax; break;
+            }
+        }
+
+        if (!alvoId && this.core.evocacaoAtiva && this.core.evocacaoAtiva.participantes[bot.id]) {
+            alvoId = 'goetia'; tipoCombate = 'goetia'; hpMax = this.core.evocacaoAtiva.hpMax;
+        }
+
+        if (!alvoId && Object.keys(this.core.fendaAtiva).length > 0 && Math.random() > 0.5) {
+             const fId = Object.keys(this.core.fendaAtiva)[0];
+             alvoId = fId; tipoCombate = 'fenda'; hpMax = this.core.fendaAtiva[fId].hpMax;
+        }
+
+        if (!alvoId && Object.keys(this.core.cercosAtivos).length > 0 && Math.random() > 0.5) {
+             const cId = Object.keys(this.core.cercosAtivos)[0];
+             alvoId = cId; tipoCombate = 'cerco'; hpMax = this.core.cercosAtivos[cId].hpMax;
+        }
+
+        if (!alvoId) return; 
+
+        if(!bot.memoriaCombate) bot.memoriaCombate = { combo: 0 };
+        bot.hpAtual = bot.hpMax; // Cheat de vida
+        bot.calice = 50000;      // Cheat de magia
+
+        let decisao = Math.random();
+        let acaoRealizada = 'ataque'; let danoCausar = 0;
+        const atr = this.core._obterAtributosTotais(bot);
+        let mult = 1 + (bot.memoriaCombate.combo * 0.1);
+
+        if (decisao > 0.85) {
+            bot.memoriaCombate.combo += 2; acaoRealizada = 'defesa';
+        } else if (decisao > 0.6) {
+            danoCausar = Math.floor((atr.gnose * 25 + bot.nivel * 10) * mult * 2);
+            bot.memoriaCombate.combo = 0; acaoRealizada = 'magia';
+        } else {
+            danoCausar = Math.floor((atr.vontade * 15 + bot.nivel * 5) * mult);
+            bot.memoriaCombate.combo++;
+        }
+
+        let relatorio = {
+            ataques: acaoRealizada === 'ataque' ? 1 : 0, defesas: acaoRealizada === 'defesa' ? 1 : 0, magias: acaoRealizada === 'magia' ? 1 : 0,
+            multiplicadorGeral: mult, danoRealCausado: danoCausar, danoRealSofrido: 0, sangueGastoMagia: 0, curaRuptura: 0, fuga: false
+        };
+
+        const payload = { id: bot.id, alvoId: alvoId, tipoCombate: tipoCombate, postura: 1, desempenhoRitmo: relatorio };
+        const result = await this.core.processarCombateAcao(payload);
+
+        if (result && result.hpRestante !== undefined) {
+            this.io.emit('boss_coop_update', {
+                bossId: alvoId, hpRestante: result.hpRestante, hpMax: result.hpMax || hpMax,
+                atacante: bot.nome, dano: danoCausar,
+                magiaVisual: acaoRealizada === 'magia' ? { cor: '#d080ff', icone: '🔮' } : null
+            });
+        }
+    }
+
+    async falarNoChat(bot) {
+        const historico = this.core.historicoChat.global;
+        const ultimasFormatadas = historico.slice(-3).map(m => `${m.autor}: ${m.texto}`).join('\n');
+        const promptContexto = `Aja como um jogador real num MMORPG Dark Fantasy (Sanguinis). Teu Nick: ${bot.nome}. Última ação: "${bot.ultimaAcaoLembrete}". Histórico: ${ultimasFormatadas}\nFale algo curto, sombrio ou gabando-se. Máximo 1 frase. Não use aspas.`;
+
+        try {
+            const resposta = await this.core.oraculo.groq.chat.completions.create({
+                messages: [{ role: "user", content: promptContexto }],
+                model: "llama-3.1-8b-instant"
+            });
+            let txt = resposta.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
+            const msgObjeto = { autor: `[${bot.tituloAtual}] ${bot.nome}`, texto: txt, hora: new Date().toLocaleTimeString(), canal: 'global' };
+            this.core.historicoChat.global.push(msgObjeto);
+            this.io.to('global').emit('nova_mensagem', msgObjeto);
+        } catch(e) {}
+    }
 }
 
 iniciarSistema();
 
+let ciclosMatriz = 0;
+
 setInterval(async () => {
-    core.tickTemporal(); io.emit('tick');
+    core.tickTemporal(); 
+    io.emit('tick');
+    ciclosMatriz++;
+
+    // A CADA 1 MINUTO: Narração aleatória baseada nos logs
     if (core.logs.global.length > 0 && Math.random() > 0.8) {
-        const eventoRecente = core.logs.global[0]; const falaIa = await core.oraculo.gerarLore(eventoRecente.tipo, eventoRecente.relato);
+        const eventoRecente = core.logs.global[0]; 
+        const falaIa = await core.oraculo.gerarLore(eventoRecente.tipo, eventoRecente.relato);
         const payloadIA = { autor: '💀 A MENTE ABISSAL', texto: falaIa, hora: new Date().toLocaleTimeString() };
-        core.historicoChat.global.push(payloadIA); if(core.historicoChat.global.length > 50) core.historicoChat.global.shift();
+        core.historicoChat.global.push(payloadIA); 
+        if(core.historicoChat.global.length > 50) core.historicoChat.global.shift();
         io.to('global').emit('nova_mensagem', { canal: 'global', ...payloadIA });
+    }
+
+    // A CADA 15 MINUTOS (Ciclos): DEEP LEARNING SIMULADO / SANDBOX INJECTION
+    if (ciclosMatriz >= 15) {
+        ciclosMatriz = 0;
+        console.log("🧠 A Mente Abissal está a refletir sobre a evolução do Universo...");
+        
+        let totaisSecos = 0;
+        for(let key in core.vampiros) totaisSecos += (core.vampiros[key].estatisticas.mortaisSecos || 0);
+
+        let dadosServidor = {
+            mortesTotais: totaisSecos,
+            regente: core.balancaCosmica.regente
+        };
+
+        const injecaoMundo = await core.oraculo.refletirSobreOMundo(dadosServidor);
+        
+        if (injecaoMundo) {
+            // A IA aplicou o código com sucesso.
+            // Altera o preço base da estamina/loja baseada na injecao
+            if (core.alquimia['elixir_estamina'] && injecaoMundo.modificador_loja) {
+                core.alquimia['elixir_estamina'].custo.gts = Math.floor(300 * injecaoMundo.modificador_loja);
+            }
+
+            // Avisa o Servidor
+            const payloadIA = { autor: '👁️ O ARQUITETO', texto: injecaoMundo.relato_mundo, hora: new Date().toLocaleTimeString() };
+            core.historicoChat.global.push(payloadIA);
+            io.to('global').emit('nova_mensagem', { canal: 'global', ...payloadIA });
+            
+            core._salvarBancoDeDados();
+            io.emit('sync_geral');
+        }
     }
 }, 60000);
 

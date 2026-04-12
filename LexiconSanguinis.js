@@ -133,22 +133,20 @@ class LexiconSanguinis {
     // O dano no PvP/PvE não é só "Ataque - Defesa". A corda do destino entre os dois julga o impacto.
     CalcularRessonanciaOculta(atacanteId, defensorId, forcaBaseBruta) {
         this.#verificarSelo();
-        
         const pesoA = this.#calcularPesoGematrico(atacanteId);
         const pesoD = this.#calcularPesoGematrico(defensorId);
-        
-        // Fórmula Caótica: (PesoA * Tempo) MOD (PesoD * Frequência do Servidor)
         const atritoEspiritual = Math.abs((pesoA * Date.now()) ^ this.#VIBRACAO_CÓSMICA) % (pesoD || 7);
         
         let multiplicadorMagico = 1.0;
         let relatoOculto = "";
         let tipoEfeito = "Normal";
+        let rasgouOVeo = false; // Pilar 9: Consequência Mágica
 
-        // As leis universais de SANGUINIS:
         if (atritoEspiritual === 0 || atritoEspiritual % 13 === 0) {
             multiplicadorMagico = 2.5; 
             tipoEfeito = "Ruptura Qliphótica";
-            relatoOculto = "A Árvore da Morte ressoou. O teu ataque atravessou a carne e rasgou a Alma!";
+            relatoOculto = "A Árvore da Morte ressoou. O teu ataque rasgou a realidade!";
+            rasgouOVeo = true; // Isto vai avisar o servidor para spawnar um Boss
         } 
         else if (atritoEspiritual % 7 === 0) {
             multiplicadorMagico = 1.5; 
@@ -158,7 +156,7 @@ class LexiconSanguinis {
         else if (atritoEspiritual % 9 === 0) {
             multiplicadorMagico = 0.3; 
             tipoEfeito = "Escudo de Metatron";
-            relatoOculto = "Uma geometria de luz bloqueou a tua escuridão. O golpe esvaiu-se.";
+            relatoOculto = "Uma geometria de luz bloqueou a tua escuridão.";
         }
 
         const danoVerdadeiro = Math.floor(forcaBaseBruta * multiplicadorMagico);
@@ -167,7 +165,8 @@ class LexiconSanguinis {
             forcaReal: danoVerdadeiro,
             tipo: tipoEfeito,
             relato: relatoOculto,
-            escalaCaos: multiplicadorMagico
+            escalaCaos: multiplicadorMagico,
+            rasgouOVeo: rasgouOVeo
         });
     }
 
