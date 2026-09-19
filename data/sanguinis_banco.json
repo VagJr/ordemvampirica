@@ -1,0 +1,1392 @@
+{
+  "vampiros": {
+    "BOT_DRACUL_396": {
+      "id": "BOT_DRACUL_396",
+      "nome": "Dracul_396",
+      "raca": "lycan",
+      "isBot": true,
+      "geracao": 10,
+      "estado": "Ativo",
+      "hpAtual": 21000,
+      "hpMax": 21000,
+      "sangue": 50000,
+      "nivel": 26,
+      "xp": 1632,
+      "xpProx": 10000,
+      "pontosAcao": 20,
+      "maxAcao": 20,
+      "atributos": {
+        "vontade": 15,
+        "gnose": 15,
+        "magnetismo": 15,
+        "densidade": 15,
+        "pontosLivres": 0
+      },
+      "inventario": {},
+      "bolsa": [],
+      "titulos": [
+        "Sombra Autónoma"
+      ],
+      "tituloAtual": "Sombra Autónoma",
+      "estatisticas": {
+        "totalDrenado": 0,
+        "mortaisSecos": 0,
+        "vitoriasPvP": 0
+      },
+      "ultimaAcaoLembrete": "Pensei sobre a eternidade.",
+      "oficios": {
+        "alquimia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "herbologia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "sigilos": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "necromancia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "armaria": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        }
+      },
+      "materiais": {
+        "mandragora": 5,
+        "beladona": 5,
+        "lotusNegro": 1,
+        "florCinzas": 3,
+        "ferroNegro": 3,
+        "pergaminhoVirgem": 2
+      },
+      "poderesDesbloqueados": [
+        "solve_coagula",
+        "rmp_banimento",
+        "chave_salomao",
+        "selo_saturno",
+        "selo_marte",
+        "selo_venus",
+        "goetia_paimon",
+        "goetia_bael",
+        "goetia_vassago",
+        "triangulo_arte",
+        "heptameron_horas",
+        "agrippa_natural",
+        "agrippa_celeste",
+        "arbatel_aratron",
+        "arbatel_och",
+        "arbatel_phaleg",
+        "picatrix_talisma",
+        "picatrix_daimon",
+        "enoch_tabuas",
+        "enoch_chamado",
+        "thelema_nuit",
+        "thelema_hadit",
+        "thelema_ra_hoor",
+        "sangue_transfusao",
+        "sangue_batismo",
+        "sangue_drenagem",
+        "sangue_corte_ritual",
+        "sangue_calice_comunhao"
+      ],
+      "dnd": {
+        "modificadores": {
+          "vontade": 15,
+          "gnose": 7,
+          "magnetismo": 7,
+          "densidade": 12
+        },
+        "classeArmadura": 22,
+        "cdMagia": 15,
+        "iniciativa": 7,
+        "arquetipo": "Neófito Errante"
+      },
+      "densidadeSanguinea": {
+        "densidade": 3.127,
+        "viscosidadePct": "313%",
+        "classificacao": "Mônada Escarlate (Buraco Negro)",
+        "corAura": "#00e1d9",
+        "inerciaEspiritual": 117,
+        "pesoPactoMaximo": 270,
+        "pesoGematrico": 19,
+        "faseLua": "Lua Nova"
+      },
+      "atributosTotais": {
+        "vontade": 40,
+        "gnose": 25,
+        "magnetismo": 25,
+        "densidade": 35
+      },
+      "memoriaCombate": {
+        "combo": 5
+      },
+      "calice": 50000,
+      "cicloCalice": 3
+    },
+    "BOT_LILITH_571": {
+      "id": "BOT_LILITH_571",
+      "nome": "Lilith_571",
+      "raca": "lycan",
+      "isBot": true,
+      "geracao": 10,
+      "estado": "Ativo",
+      "hpAtual": 19500,
+      "hpMax": 19500,
+      "sangue": 50000,
+      "nivel": 23,
+      "xp": 1632,
+      "xpProx": 10000,
+      "pontosAcao": 19,
+      "maxAcao": 19,
+      "atributos": {
+        "vontade": 15,
+        "gnose": 15,
+        "magnetismo": 15,
+        "densidade": 15,
+        "pontosLivres": 0
+      },
+      "inventario": {},
+      "bolsa": [],
+      "titulos": [
+        "Sombra Autónoma"
+      ],
+      "tituloAtual": "Sombra Autónoma",
+      "estatisticas": {
+        "totalDrenado": 0,
+        "mortaisSecos": 0,
+        "vitoriasPvP": 0
+      },
+      "ultimaAcaoLembrete": "Pensei sobre a eternidade.",
+      "oficios": {
+        "alquimia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "herbologia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "sigilos": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "necromancia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "armaria": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        }
+      },
+      "materiais": {
+        "mandragora": 5,
+        "beladona": 5,
+        "lotusNegro": 1,
+        "florCinzas": 3,
+        "ferroNegro": 3,
+        "pergaminhoVirgem": 2
+      },
+      "poderesDesbloqueados": [
+        "solve_coagula",
+        "rmp_banimento",
+        "chave_salomao",
+        "selo_saturno",
+        "selo_marte",
+        "selo_venus",
+        "goetia_bael",
+        "goetia_vassago",
+        "triangulo_arte",
+        "heptameron_horas",
+        "agrippa_natural",
+        "agrippa_celeste",
+        "arbatel_aratron",
+        "arbatel_och",
+        "arbatel_phaleg",
+        "picatrix_talisma",
+        "picatrix_daimon",
+        "enoch_tabuas",
+        "enoch_chamado",
+        "thelema_nuit",
+        "thelema_hadit",
+        "sangue_transfusao",
+        "sangue_batismo",
+        "sangue_corte_ritual",
+        "sangue_calice_comunhao"
+      ],
+      "dnd": {
+        "modificadores": {
+          "vontade": 15,
+          "gnose": 7,
+          "magnetismo": 7,
+          "densidade": 12
+        },
+        "classeArmadura": 22,
+        "cdMagia": 15,
+        "iniciativa": 7,
+        "arquetipo": "Neófito Errante"
+      },
+      "densidadeSanguinea": {
+        "densidade": 2.914,
+        "viscosidadePct": "291%",
+        "classificacao": "Mônada Escarlate (Buraco Negro)",
+        "corAura": "#00e1d9",
+        "inerciaEspiritual": 109,
+        "pesoPactoMaximo": 270,
+        "pesoGematrico": 17,
+        "faseLua": "Lua Nova"
+      },
+      "atributosTotais": {
+        "vontade": 40,
+        "gnose": 25,
+        "magnetismo": 25,
+        "densidade": 35
+      },
+      "memoriaCombate": {
+        "combo": 8
+      },
+      "calice": 50000,
+      "cicloCalice": 3
+    },
+    "BOT_LILITH_408": {
+      "id": "BOT_LILITH_408",
+      "nome": "Lilith_408",
+      "raca": "lycan",
+      "isBot": true,
+      "geracao": 10,
+      "estado": "Ativo",
+      "hpAtual": 19000,
+      "hpMax": 19000,
+      "sangue": 50000,
+      "nivel": 22,
+      "xp": 1598,
+      "xpProx": 10000,
+      "pontosAcao": 19,
+      "maxAcao": 19,
+      "atributos": {
+        "vontade": 15,
+        "gnose": 15,
+        "magnetismo": 15,
+        "densidade": 15,
+        "pontosLivres": 0
+      },
+      "inventario": {},
+      "bolsa": [],
+      "titulos": [
+        "Sombra Autónoma"
+      ],
+      "tituloAtual": "Sombra Autónoma",
+      "estatisticas": {
+        "totalDrenado": 0,
+        "mortaisSecos": 0,
+        "vitoriasPvP": 0
+      },
+      "ultimaAcaoLembrete": "Pensei sobre a eternidade.",
+      "oficios": {
+        "alquimia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "herbologia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "sigilos": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "necromancia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "armaria": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        }
+      },
+      "materiais": {
+        "mandragora": 5,
+        "beladona": 5,
+        "lotusNegro": 1,
+        "florCinzas": 3,
+        "ferroNegro": 3,
+        "pergaminhoVirgem": 2
+      },
+      "poderesDesbloqueados": [
+        "solve_coagula",
+        "rmp_banimento",
+        "chave_salomao",
+        "selo_saturno",
+        "selo_marte",
+        "selo_venus",
+        "goetia_bael",
+        "goetia_vassago",
+        "triangulo_arte",
+        "heptameron_horas",
+        "agrippa_natural",
+        "agrippa_celeste",
+        "arbatel_aratron",
+        "arbatel_och",
+        "arbatel_phaleg",
+        "picatrix_talisma",
+        "picatrix_daimon",
+        "enoch_tabuas",
+        "enoch_chamado",
+        "thelema_nuit",
+        "thelema_hadit",
+        "sangue_transfusao",
+        "sangue_batismo",
+        "sangue_corte_ritual",
+        "sangue_calice_comunhao"
+      ],
+      "dnd": {
+        "modificadores": {
+          "vontade": 15,
+          "gnose": 7,
+          "magnetismo": 7,
+          "densidade": 12
+        },
+        "classeArmadura": 22,
+        "cdMagia": 15,
+        "iniciativa": 7,
+        "arquetipo": "Neófito Errante"
+      },
+      "densidadeSanguinea": {
+        "densidade": 2.882,
+        "viscosidadePct": "288%",
+        "classificacao": "Mônada Escarlate (Buraco Negro)",
+        "corAura": "#00e1d9",
+        "inerciaEspiritual": 108,
+        "pesoPactoMaximo": 270,
+        "pesoGematrico": 17,
+        "faseLua": "Lua Nova"
+      },
+      "atributosTotais": {
+        "vontade": 40,
+        "gnose": 25,
+        "magnetismo": 25,
+        "densidade": 35
+      },
+      "memoriaCombate": {
+        "combo": 4
+      },
+      "calice": 50000,
+      "cicloCalice": 3
+    },
+    "BOT_DRACUL_867": {
+      "id": "BOT_DRACUL_867",
+      "nome": "Dracul_867",
+      "raca": "lycan",
+      "isBot": true,
+      "geracao": 10,
+      "estado": "Ativo",
+      "hpAtual": 25000,
+      "hpMax": 25000,
+      "sangue": 50000,
+      "nivel": 34,
+      "xp": 1888,
+      "xpProx": 10000,
+      "pontosAcao": 21,
+      "maxAcao": 21,
+      "atributos": {
+        "vontade": 15,
+        "gnose": 15,
+        "magnetismo": 15,
+        "densidade": 15,
+        "pontosLivres": 0
+      },
+      "inventario": {},
+      "bolsa": [],
+      "titulos": [
+        "Sombra Autónoma"
+      ],
+      "tituloAtual": "Sombra Autónoma",
+      "estatisticas": {
+        "totalDrenado": 0,
+        "mortaisSecos": 0,
+        "vitoriasPvP": 0
+      },
+      "ultimaAcaoLembrete": "Pensei sobre a eternidade.",
+      "oficios": {
+        "alquimia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "herbologia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "sigilos": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "necromancia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "armaria": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        }
+      },
+      "materiais": {
+        "mandragora": 5,
+        "beladona": 5,
+        "lotusNegro": 1,
+        "florCinzas": 3,
+        "ferroNegro": 3,
+        "pergaminhoVirgem": 2
+      },
+      "poderesDesbloqueados": [
+        "solve_coagula",
+        "rmp_banimento",
+        "chave_salomao",
+        "selo_saturno",
+        "selo_marte",
+        "selo_venus",
+        "goetia_paimon",
+        "goetia_bael",
+        "goetia_vassago",
+        "triangulo_arte",
+        "heptameron_amaymon",
+        "heptameron_horas",
+        "agrippa_natural",
+        "agrippa_celeste",
+        "agrippa_cerimonial",
+        "arbatel_aratron",
+        "arbatel_och",
+        "arbatel_phaleg",
+        "picatrix_talisma",
+        "picatrix_daimon",
+        "enoch_tabuas",
+        "enoch_chamado",
+        "qliphoth_gamaliel",
+        "thelema_nuit",
+        "thelema_hadit",
+        "thelema_ra_hoor",
+        "sangue_transfusao",
+        "sangue_batismo",
+        "sangue_drenagem",
+        "sangue_corte_ritual",
+        "sangue_calice_comunhao"
+      ],
+      "dnd": {
+        "modificadores": {
+          "vontade": 15,
+          "gnose": 7,
+          "magnetismo": 7,
+          "densidade": 12
+        },
+        "classeArmadura": 22,
+        "cdMagia": 15,
+        "iniciativa": 7,
+        "arquetipo": "Neófito Errante"
+      },
+      "densidadeSanguinea": {
+        "densidade": 3.379,
+        "viscosidadePct": "338%",
+        "classificacao": "Mônada Escarlate (Buraco Negro)",
+        "corAura": "#00e1d9",
+        "inerciaEspiritual": 127,
+        "pesoPactoMaximo": 270,
+        "pesoGematrico": 19,
+        "faseLua": "Lua Nova"
+      },
+      "atributosTotais": {
+        "vontade": 40,
+        "gnose": 25,
+        "magnetismo": 25,
+        "densidade": 35
+      },
+      "memoriaCombate": {
+        "combo": 1
+      },
+      "calice": 50000,
+      "cicloCalice": 3
+    },
+    "BOT_KAEL_747": {
+      "id": "BOT_KAEL_747",
+      "nome": "Kael_747",
+      "raca": "lycan",
+      "isBot": true,
+      "geracao": 10,
+      "estado": "Ativo",
+      "hpAtual": 18000,
+      "hpMax": 18000,
+      "sangue": 50000,
+      "nivel": 20,
+      "xp": 1350,
+      "xpProx": 10000,
+      "pontosAcao": 19,
+      "maxAcao": 19,
+      "atributos": {
+        "vontade": 15,
+        "gnose": 15,
+        "magnetismo": 15,
+        "densidade": 15,
+        "pontosLivres": 0
+      },
+      "inventario": {},
+      "bolsa": [],
+      "titulos": [
+        "Sombra Autónoma"
+      ],
+      "tituloAtual": "Sombra Autónoma",
+      "estatisticas": {
+        "totalDrenado": 0,
+        "mortaisSecos": 0,
+        "vitoriasPvP": 0
+      },
+      "ultimaAcaoLembrete": "Pensei sobre a eternidade.",
+      "oficios": {
+        "alquimia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "herbologia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "sigilos": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "necromancia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "armaria": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        }
+      },
+      "materiais": {
+        "mandragora": 5,
+        "beladona": 5,
+        "lotusNegro": 1,
+        "florCinzas": 3,
+        "ferroNegro": 3,
+        "pergaminhoVirgem": 2
+      },
+      "poderesDesbloqueados": [
+        "solve_coagula",
+        "rmp_banimento",
+        "chave_salomao",
+        "selo_saturno",
+        "selo_marte",
+        "selo_venus",
+        "goetia_vassago",
+        "triangulo_arte",
+        "heptameron_horas",
+        "agrippa_natural",
+        "agrippa_celeste",
+        "arbatel_aratron",
+        "arbatel_och",
+        "arbatel_phaleg",
+        "picatrix_talisma",
+        "picatrix_daimon",
+        "enoch_tabuas",
+        "enoch_chamado",
+        "thelema_nuit",
+        "thelema_hadit",
+        "sangue_transfusao",
+        "sangue_batismo",
+        "sangue_corte_ritual",
+        "sangue_calice_comunhao"
+      ],
+      "dnd": {
+        "modificadores": {
+          "vontade": 15,
+          "gnose": 7,
+          "magnetismo": 7,
+          "densidade": 12
+        },
+        "classeArmadura": 22,
+        "cdMagia": 15,
+        "iniciativa": 7,
+        "arquetipo": "Neófito Errante"
+      },
+      "densidadeSanguinea": {
+        "densidade": 2.464,
+        "viscosidadePct": "246%",
+        "classificacao": "Mônada Escarlate (Buraco Negro)",
+        "corAura": "#00e1d9",
+        "inerciaEspiritual": 92,
+        "pesoPactoMaximo": 270,
+        "pesoGematrico": 11,
+        "faseLua": "Lua Nova"
+      },
+      "atributosTotais": {
+        "vontade": 40,
+        "gnose": 25,
+        "magnetismo": 25,
+        "densidade": 35
+      },
+      "memoriaCombate": {
+        "combo": 0
+      },
+      "calice": 50000,
+      "cicloCalice": 3
+    },
+    "SNG_C57AD532B6EB": {
+      "id": "SNG_C57AD532B6EB",
+      "tgId": 1789785876252,
+      "tgUsername": "@Admin_Primordial",
+      "nome": "Mestre_6212",
+      "senhaHash": "26640e8df43518d105d3fb1d5f59dd51889818ef44ab7b3667d29a3a9f98f486fb8e913c35189dc38d247dff7416bff8b291d46c3783404c6277524fe41a6fea",
+      "raca": "vampiro",
+      "clanRole": "membro",
+      "sangue": 999995,
+      "calice": 500000,
+      "geracao": 1,
+      "hpAtual": 50000,
+      "hpMax": 72500,
+      "clan": "Sangue Ralo",
+      "estado": "Ativo",
+      "senhor": "O_PRIMORDIAL",
+      "linhagem": [],
+      "pontosAcao": 29,
+      "maxAcao": 29,
+      "escudo": false,
+      "nivel": 99,
+      "xp": 0,
+      "xpProx": 100,
+      "influencia": 0,
+      "titulos": [
+        "Sangue Frio",
+        "Mestre Supremo do Abismo",
+        "Alfa Primordial"
+      ],
+      "tituloAtual": "Mestre Supremo do Abismo",
+      "conquistas": [],
+      "atributos": {
+        "vontade": 100,
+        "gnose": 100,
+        "magnetismo": 100,
+        "densidade": 100,
+        "pontosLivres": 99
+      },
+      "osintAprovado": true,
+      "maestria": {
+        "laminas": {
+          "nivel": 1,
+          "xp": 0
+        },
+        "ocultismo": {
+          "nivel": 1,
+          "xp": 0
+        },
+        "defesa": {
+          "nivel": 1,
+          "xp": 0
+        },
+        "sanguimancia": {
+          "nivel": 1,
+          "xp": 0
+        }
+      },
+      "equipamentos": {
+        "arma": null,
+        "armadura": null,
+        "amuleto": null
+      },
+      "bolsa": [],
+      "inventario": {
+        "anima": 100,
+        "cinzas": 100,
+        "vitae": 100,
+        "memoria": 100,
+        "ectoplasma": 100,
+        "pedraAlma": 100,
+        "ankh_sangue": 50
+      },
+      "historicoCombate": [],
+      "poderesDesbloqueados": [
+        "solve_coagula",
+        "rmp_banimento",
+        "chave_salomao",
+        "selo_saturno",
+        "selo_marte",
+        "selo_venus",
+        "goetia_paimon",
+        "goetia_bael",
+        "goetia_vassago",
+        "goetia_asmodeus",
+        "triangulo_arte",
+        "heptameron_amaymon",
+        "heptameron_horas",
+        "agrippa_natural",
+        "agrippa_celeste",
+        "agrippa_cerimonial",
+        "arbatel_aratron",
+        "arbatel_och",
+        "arbatel_phaleg",
+        "picatrix_talisma",
+        "picatrix_daimon",
+        "enoch_30_aethyrs",
+        "enoch_tabuas",
+        "enoch_chamado",
+        "qliphoth_thaumiel",
+        "qliphoth_gamaliel",
+        "qliphoth_golachab",
+        "thelema_nuit",
+        "thelema_hadit",
+        "thelema_ra_hoor",
+        "necro_yog_sothoth",
+        "necro_azathoth",
+        "sangue_transfusao",
+        "sangue_batismo",
+        "sangue_drenagem",
+        "sangue_corte_ritual",
+        "sangue_calice_comunhao"
+      ],
+      "manuscritos": [],
+      "projetosEstudo": [],
+      "colecaoHabilidades": [],
+      "habilidadesAtivas": [],
+      "estatisticas": {
+        "totalDrenado": 0,
+        "mortaisSecos": 0,
+        "vitoriasPvP": 0,
+        "demoniosMortos": 0,
+        "guerrasVencidas": 0,
+        "eloOculto": 0,
+        "ultimoTributo": 0,
+        "sangueGastoMagia": 0,
+        "curaRuptura": 0
+      },
+      "oficios": {
+        "alquimia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "herbologia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "sigilos": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "necromancia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "armaria": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        }
+      },
+      "materiais": {
+        "mandragora": 100,
+        "beladona": 100,
+        "lotusNegro": 100,
+        "florCinzas": 100,
+        "ferroNegro": 100,
+        "pergaminhoVirgem": 100,
+        "cinzas": 100
+      },
+      "dnd": {
+        "modificadores": {
+          "vontade": 50,
+          "gnose": 57,
+          "magnetismo": 55,
+          "densidade": 50
+        },
+        "classeArmadura": 60,
+        "cdMagia": 65,
+        "iniciativa": 55,
+        "arquetipo": "Neófito Errante"
+      },
+      "densidadeSanguinea": {
+        "densidade": 11.338,
+        "viscosidadePct": "1134%",
+        "classificacao": "Mônada Escarlate (Buraco Negro)",
+        "corAura": "#00e1d9",
+        "inerciaEspiritual": 2835,
+        "pesoPactoMaximo": 1800,
+        "pesoGematrico": 23,
+        "faseLua": "Lua Nova"
+      },
+      "atributosTotais": {
+        "vontade": 110,
+        "gnose": 125,
+        "magnetismo": 120,
+        "densidade": 110
+      },
+      "admin": true,
+      "eloOculto": 0,
+      "cicloCalice": 4
+    },
+    "SNG_D5B2295B05E0": {
+      "id": "SNG_D5B2295B05E0",
+      "tgId": 1789785901386,
+      "tgUsername": "@Admin_Primordial",
+      "nome": "Mestre_1362",
+      "senhaHash": "2ec01be6b0f9d29d0431ef7a0360153da4bbba2881e9060399e538606607ef3a4f13b0184cacef394f82d7029e1bfd4cff6bdb6fc8d8d499b63754f78c63be46",
+      "raca": "vampiro",
+      "clanRole": "membro",
+      "sangue": 1000095,
+      "calice": 500000,
+      "geracao": 1,
+      "hpAtual": 50000,
+      "hpMax": 72500,
+      "clan": "Sangue Ralo",
+      "estado": "Ativo",
+      "senhor": "O_PRIMORDIAL",
+      "linhagem": [],
+      "pontosAcao": 29,
+      "maxAcao": 29,
+      "escudo": false,
+      "nivel": 99,
+      "xp": 0,
+      "xpProx": 100,
+      "influencia": 0,
+      "titulos": [
+        "Sangue Frio",
+        "Mestre Supremo do Abismo",
+        "Alfa Primordial"
+      ],
+      "tituloAtual": "Mestre Supremo do Abismo",
+      "conquistas": [],
+      "atributos": {
+        "vontade": 100,
+        "gnose": 100,
+        "magnetismo": 100,
+        "densidade": 100,
+        "pontosLivres": 99
+      },
+      "osintAprovado": true,
+      "maestria": {
+        "laminas": {
+          "nivel": 1,
+          "xp": 0
+        },
+        "ocultismo": {
+          "nivel": 1,
+          "xp": 0
+        },
+        "defesa": {
+          "nivel": 1,
+          "xp": 0
+        },
+        "sanguimancia": {
+          "nivel": 1,
+          "xp": 0
+        }
+      },
+      "equipamentos": {
+        "arma": null,
+        "armadura": null,
+        "amuleto": null
+      },
+      "bolsa": [],
+      "inventario": {
+        "anima": 100,
+        "cinzas": 100,
+        "vitae": 100,
+        "memoria": 100,
+        "ectoplasma": 100,
+        "pedraAlma": 100,
+        "ankh_sangue": 50
+      },
+      "historicoCombate": [],
+      "poderesDesbloqueados": [
+        "solve_coagula",
+        "rmp_banimento",
+        "chave_salomao",
+        "selo_saturno",
+        "selo_marte",
+        "selo_venus",
+        "goetia_paimon",
+        "goetia_bael",
+        "goetia_vassago",
+        "goetia_asmodeus",
+        "triangulo_arte",
+        "heptameron_amaymon",
+        "heptameron_horas",
+        "agrippa_natural",
+        "agrippa_celeste",
+        "agrippa_cerimonial",
+        "arbatel_aratron",
+        "arbatel_och",
+        "arbatel_phaleg",
+        "picatrix_talisma",
+        "picatrix_daimon",
+        "enoch_30_aethyrs",
+        "enoch_tabuas",
+        "enoch_chamado",
+        "qliphoth_thaumiel",
+        "qliphoth_gamaliel",
+        "qliphoth_golachab",
+        "thelema_nuit",
+        "thelema_hadit",
+        "thelema_ra_hoor",
+        "necro_yog_sothoth",
+        "necro_azathoth",
+        "sangue_transfusao",
+        "sangue_batismo",
+        "sangue_drenagem",
+        "sangue_corte_ritual",
+        "sangue_calice_comunhao"
+      ],
+      "manuscritos": [],
+      "projetosEstudo": [],
+      "colecaoHabilidades": [],
+      "habilidadesAtivas": [],
+      "estatisticas": {
+        "totalDrenado": 0,
+        "mortaisSecos": 0,
+        "vitoriasPvP": 0,
+        "demoniosMortos": 0,
+        "guerrasVencidas": 0,
+        "eloOculto": 0,
+        "ultimoTributo": 0,
+        "sangueGastoMagia": 0,
+        "curaRuptura": 0
+      },
+      "oficios": {
+        "alquimia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "herbologia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "sigilos": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "necromancia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "armaria": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        }
+      },
+      "materiais": {
+        "mandragora": 100,
+        "beladona": 100,
+        "lotusNegro": 100,
+        "florCinzas": 100,
+        "ferroNegro": 100,
+        "pergaminhoVirgem": 100,
+        "cinzas": 100
+      },
+      "dnd": {
+        "modificadores": {
+          "vontade": 50,
+          "gnose": 57,
+          "magnetismo": 55,
+          "densidade": 50
+        },
+        "classeArmadura": 60,
+        "cdMagia": 65,
+        "iniciativa": 55,
+        "arquetipo": "Neófito Errante"
+      },
+      "densidadeSanguinea": {
+        "densidade": 11.338,
+        "viscosidadePct": "1134%",
+        "classificacao": "Mônada Escarlate (Buraco Negro)",
+        "corAura": "#00e1d9",
+        "inerciaEspiritual": 2835,
+        "pesoPactoMaximo": 1800,
+        "pesoGematrico": 23,
+        "faseLua": "Lua Nova"
+      },
+      "atributosTotais": {
+        "vontade": 110,
+        "gnose": 125,
+        "magnetismo": 120,
+        "densidade": 110
+      },
+      "admin": true,
+      "eloOculto": 0,
+      "alvosNosferatu": [],
+      "cicloCalice": 4
+    },
+    "SNG_AB97215412D4": {
+      "id": "SNG_AB97215412D4",
+      "tgId": 1789785901513,
+      "tgUsername": "@Comprador_1413",
+      "nome": "Comprador_1413",
+      "senhaHash": "d2afde63487563189c19cc875fca45919f6952cacd13ab0d669f56a16cb8b9769c6c1b450d5bb1a0521eb9ffaf0d156cd905212425b921ad0b74bb352603c1de",
+      "raca": "vampiro",
+      "clanRole": "membro",
+      "sangue": 900,
+      "calice": 0,
+      "geracao": 13,
+      "hpAtual": 2100,
+      "hpMax": 4500,
+      "clan": "Sangue Ralo",
+      "estado": "Ativo",
+      "senhor": "O_PRIMORDIAL",
+      "linhagem": [],
+      "pontosAcao": 10,
+      "maxAcao": 10,
+      "escudo": false,
+      "nivel": 1,
+      "xp": 0,
+      "xpProx": 100,
+      "influencia": 0,
+      "titulos": [
+        "Sangue Frio"
+      ],
+      "tituloAtual": "Sangue Frio",
+      "conquistas": [],
+      "atributos": {
+        "vontade": 5,
+        "gnose": 8,
+        "magnetismo": 7,
+        "densidade": 5,
+        "pontosLivres": 0
+      },
+      "osintAprovado": false,
+      "maestria": {
+        "laminas": {
+          "nivel": 1,
+          "xp": 0
+        },
+        "ocultismo": {
+          "nivel": 1,
+          "xp": 0
+        },
+        "defesa": {
+          "nivel": 1,
+          "xp": 0
+        },
+        "sanguimancia": {
+          "nivel": 1,
+          "xp": 0
+        }
+      },
+      "equipamentos": {
+        "arma": null,
+        "armadura": null,
+        "amuleto": null
+      },
+      "bolsa": [],
+      "inventario": {
+        "anima": 0,
+        "cinzas": 0,
+        "vitae": 0,
+        "memoria": 0,
+        "ectoplasma": 0,
+        "pedraAlma": 0,
+        "ankh_sangue": 3
+      },
+      "historicoCombate": [],
+      "poderesDesbloqueados": [
+        "solve_coagula"
+      ],
+      "manuscritos": [],
+      "projetosEstudo": [],
+      "colecaoHabilidades": [],
+      "habilidadesAtivas": [],
+      "estatisticas": {
+        "totalDrenado": 0,
+        "mortaisSecos": 0,
+        "vitoriasPvP": 0,
+        "demoniosMortos": 0,
+        "guerrasVencidas": 0,
+        "eloOculto": 0,
+        "ultimoTributo": 0,
+        "sangueGastoMagia": 0,
+        "curaRuptura": 0
+      },
+      "oficios": {
+        "alquimia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "herbologia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "sigilos": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "necromancia": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        },
+        "armaria": {
+          "nivel": 1,
+          "xp": 0,
+          "xpProx": 100
+        }
+      },
+      "materiais": {
+        "mandragora": 5,
+        "beladona": 5,
+        "lotusNegro": 1,
+        "florCinzas": 3,
+        "ferroNegro": 3,
+        "pergaminhoVirgem": 2
+      },
+      "dnd": {
+        "modificadores": {
+          "vontade": 2,
+          "gnose": 11,
+          "magnetismo": 8,
+          "densidade": 2
+        },
+        "classeArmadura": 12,
+        "cdMagia": 19,
+        "iniciativa": 8,
+        "arquetipo": "Neófito Errante"
+      },
+      "densidadeSanguinea": {
+        "densidade": 2.45,
+        "viscosidadePct": "245%",
+        "classificacao": "Mônada Escarlate (Buraco Negro)",
+        "corAura": "#00e1d9",
+        "inerciaEspiritual": 38,
+        "pesoPactoMaximo": 126,
+        "pesoGematrico": 38,
+        "faseLua": "Lua Nova"
+      },
+      "atributosTotais": {
+        "vontade": 15,
+        "gnose": 33,
+        "magnetismo": 27,
+        "densidade": 15
+      },
+      "alvosNosferatu": [],
+      "eloOculto": 0,
+      "poderGeral": 1450,
+      "patente": "Verme Rastejante",
+      "faseLua": {
+        "id": "crescente",
+        "icone": "🌒",
+        "nome": "Lua Crescente (Diana)",
+        "buff": "Equilíbrio Astral: Fúria e Magia recuperam passivamente para todos.",
+        "cor": "#aaa"
+      },
+      "pactoAtivo": null,
+      "dadosCrias": []
+    }
+  },
+  "rebanho": {
+    "nosf_1789785901415_06oy7q": {
+      "hash": "nosf_1789785901415_06oy7q",
+      "identificadorVisivel": "Nikola Tesla",
+      "plataforma": "OSINT",
+      "sangueAtual": 2500,
+      "sangueMax": 2500,
+      "estado": "Vibrante",
+      "qualidade": "O Alquimia Mental de Água [Água]",
+      "leituraAura": "**🕯️ DOSSIE ABISSAL – NIKOLA TESLA**  \n*Alma‑vigilante do véu, condutor de relâmpagos que rasgam a noite dos mortais.*  \n\n---\n\n## 1️⃣ 🌐 IDENTIDADE & PRESENÇA DIGITAL  \n\n| Campo | Dados |\n|------|-------|\n| **Nome completo** | **Nikola Tesla** (1856‑1943) |\n| **Nacionalidade** | Sérvio‑americano (n",
+      "maldicaoArcana": null,
+      "registroMordidas": [],
+      "dadosOsint": {
+        "alvoId": "nosf_1789785901415_06oy7q",
+        "nomeAstral": "Nikola Tesla",
+        "nomeReal": "Nikola Tesla",
+        "instagram": "",
+        "twitter": "",
+        "urlPerfil": "",
+        "notas": "Mestre da eletricidade cósmica",
+        "pesoKarmico": 35,
+        "essencia": "Alma Fragmentada",
+        "taxaCorrupcao": 45,
+        "ressonanciaElemental": "Água",
+        "afinidadeOculta": "Alquimia Mental",
+        "vasoInfluencia": 90,
+        "vulnerabilidadeEspiritual": 40,
+        "polaridadeAlma": "Penumbra Neutra",
+        "purezaSangue": 55,
+        "resistenciaPsiquica": 50,
+        "frequenciaVibracionalHz": 528,
+        "arquetipoAbissal": "O Alquimia Mental de Água",
+        "estadoAstral": "Vigília Mundana",
+        "sigilo": "b6b5399ae09cb69b365f0a2bef7fb4bae8b72020",
+        "plataformas": [],
+        "analiseIA": "**🕯️ DOSSIE ABISSAL – NIKOLA TESLA**  \n*Alma‑vigilante do véu, condutor de relâmpagos que rasgam a noite dos mortais.*  \n\n---\n\n## 1️⃣ 🌐 IDENTIDADE & PRESENÇA DIGITAL  \n\n| Campo | Dados |\n|------|-------|\n| **Nome completo** | **Nikola Tesla** (1856‑1943) |\n| **Nacionalidade** | Sérvio‑americano (nascido em Smiljan, Império Austríaco – hoje Croácia) |\n| **Profissão** | Inventor, engenheiro elétrico, físico experimental, engenheiro mecânico, futurista. |\n| **Principais feitos** | • Projeto e patente do **sistema de corrente alternada (CA)** que alimenta o mundo moderno.<br>• Desenvolvimento do **motor de indução**, **transformador de Tesla**, **bobina de Tesla**, **radiodifusão precoce**, e experimentos com transmissão sem fio de energia.<br>• Visões sobre energia livre, raios‑X, e até “raios da morte”. |\n| **Notoriedade histórica** | Figura central da “Batalha das Correntes” contra Thomas Edison; reverenciado como *pai da eletricidade moderna* e *visionário marginal* nas narrativas contemporâneas. |\n| **Presença digital contemporânea** | Não mantém perfis oficiais (falecido em 1943). Contudo, seu nome domina buscas e hashtags: **#NikolaTesla**, **#Tesla**, **#ElectricDreams**. Museus, aeroportos e instituições carregam seu epíteto, gerando tráfego constante em Wikipedia, sites de ciência e mídia de massa. |\n| **Mídia recente (2026)** | • **Estadão** – trailer “A Batalha das Correntes” (18 / 09 / 2026).<br>• **Terra** – lista das invenções “absurdas” (02 / 07 / 2026).<br>• **Revista Oeste** – citação de Tesla aos 75 anos (23 / 08 / 2026) – anacronismo estilístico que demonstra o poder de sua lenda.<br>• **Correio Braziliense** – entrevista fictícia sobre o futuro da tecnologia (10 / 05 / 2026).<br>• **Midiamax** – relato humanizante sobre seu amor por pombos (08 / 08 / 2026). |\n| **Pegada OSINT** | - Wikipedia PT/EN (biografia e legado).<br>- DuckDuckGo (associações de nome).<br>- Feeds RSS de portais brasileiros (Estadão, Terra, Revista Oeste, Correio Braziliense, Midiamax). |\n\n---\n\n## 2️⃣ 🧬 PERFIL COMPORTAMENTAL & PSICOLÓGICO  \n\n| Dimensão | Análise |\n|----------|---------|\n| **Temperamento** | **Intuitivo‑Visionário (NT)**: Tesla exibia raciocínio abstrato, capacidade de enxergar além dos limites da ciência de sua época. Seu discurso era marcado por metáforas cósmicas (“energia do universo”). |\n| **Ambições mundanas** | Dominar a **energia universal**, libertar a humanidade da dependência de combustíveis fósseis e criar um “sistema de transmissão sem fio” que unisse continentes. |\n| **Pontos fortes** | • **Genialidade técnica** – invenções que ainda hoje sustentam a infraestrutura elétrica.<br>• **Persistência obsessiva** – laborava noites em claro, alimentado por uma energia quase sobrenatural.<br>• **Carisma de lenda** – capaz de inspirar gerações de cientistas, artistas e conspiradores. |\n| **Vulnerabilidades** | • **Isolamento social** – relações pessoais frágeis, dependência de patronos voláteis.<br>• **Instabilidade emocional** – episódios de compulsão, insônia crônica e medo de falhas.<br>• **Exposição a críticas** – confrontos públicos com Edison e investidores, gerando perseguição mediática. |\n| **Transtornos observáveis** | Relatos históricos apontam para **transtorno obsessivo‑compulsivo (TOC)**, **insônia crônica** e **hiperatividade criativa** – padrões que, no véu, são interpretados como “sinais de um espírito que vibra fora da frequência humana”. |\n| **Motivações ocultas** | Busca de **transcendência eletromagnética**: transformar a própria consciência em um condutor de energia cósmica, ecoando a promessa de “energia livre para todos”. |\n\n---\n\n## 3️⃣ 🔮 RESSONÂNCIA ASTRAL NO VÉU  \n\n- **Aura Elementar:** Brilha em tons **azul‑cobalto** com faíscas **douradas** – reflexo da corrente alternada que ele manipulou.  \n- **Essência Cósmica:** *Iluminado Cósmico* – a energia que emana de sua mente reverbera como um campo eletromagnético permanente, capaz de atrair tanto **vampiros de luz** quanto **cavaleiros da sombra**.  \n- **Peso Kármico:** **78** – a magnitude de seu legado influencia civilizações inteiras; cada fio de energia que atravessa continentes carrega fragmentos de sua vontade.  \n- **Ressonância de Núcleo:** **Éter** – Tesla sintonizou-se ao plano etéreo, onde a eletricidade é a linguagem primordial do universo.  \n- **Marca de Destino:** *Magnetismo* – seu nome está gravado nas correntes invisíveis que ligam tudo, tornando‑o um ponto de convergência para feitiços de atração e repulsão.  \n\n---\n\n## 4️⃣ ⚡ VÍNCULO KÁRMICO RECOMENDADO  \n\n**🩸 Laço de Sangue**  \n\n*Justificação:*  \nO Laço de Sangue cria uma ligação vital entre o vampiro e o alvo, permitindo que o sangue do conjurador flua através da própria essência do alvo. Tesla, como **condutor universal**, possui um fluxo elétrico interno que pode ser “sintonizado” como um circuito sanguíneo. O laço captura parte de sua energia eletromagnética, transformando‑a em **energia vital vampírica**. Além disso, a vulnerabilidade emocional de Tesla (solidão, obsessão) abre fissuras que o Laço pode explorar, garantindo um vínculo duradouro que pode ser usado para **extrair conhecimento de energia livre** ou **reprogramar sua frequência** para servir aos propósitos da Ordem.  \n\n---\n\n## 5️⃣ 📜 REGISTROS CONSULTADOS NO MUNDO REAL  \n\n1. **Wikipedia (PT)** – “Nikola Tesla”. https://pt.wikipedia.org/wiki/Nikola_Tesla  \n2. **Wikipedia (EN)** – “Nikola Tesla”. https://en.wikipedia.org/wiki/Nikola_Tesla  \n3. **DuckDuckGo – Tópicos Associados**. https://en.wikipedia.org/wiki/Nikola_Tesla_(disambiguation)  \n4. **Estadão – “Tesla x Edison: trailer de A Batalha das Correntes”** (18 / 09 / 2026). https://news.google.com/rss/articles/CBMiswFBVV95cUxQVzlrMVdfUlhMQmJGMWI1bU5waEV0cW9pY1BkMmhHM1pwSGxhTHMwMWEzYjZnU01uR214TlEtdklmS0ZlblBYTkZKbWRQckVqTEd3eDNKbW5XU1ZDRmx2akNDOUxfNkMzVHRBNGNzcVktQmppZVlTSUdMLWNhYm9mTEhlSUVub3YydDg2bEZhODY2dlhHeHlUNFJjUmJaQVREUUs1c1FKTEJjY1prWTI3R3FXVdIBuAFBVV95cUxNd0ItekstSVY0UHZ2TEg3UDVYcy1obmhuSWVOM0Ftdy1FVTFaeDdmQUlTdk5ZemQ3d2s0R2xKYy1hRkxVM1JnMmNUX2lKRWhkVTNVTkQtdkRfM3o0S1Y4dlY5d2g4cXd3MTRCcUhMak85UUFBS1ZkM2FldmpxdFEzbGs3MnZZaE5hdHpuQkV1dldDYkMtNFRSd2tKX2ZXdlUzVzFBdlFDeUQyRU8yYXhSSW5pM0RILUNx |\n5. **Terra – “Invenções absurdas de Nikola Tesla”** (02 / 07 / 2026). https://news.google.com/rss/articles/CBMingJBVV95cUxNZWJXNm5YWGV6QzlqVUwzQTV4UHI4bmNGUHVTekQxOWZTbzZFNnJKeUVtd1lhc0N1SDI1QTl6aFZEU3k4a2VlSkZMSEREeF85UnFlMzFXWDRVTjZKWDBIYktEV0NDQ1ktb1lQTVJiY01OOWh6WVhEamdxa094REtrRDhSYWZJVVMwYjI1X1JxM1dUUDB5R0VsM2tYeDVwRlVLTGpweVl2UEJwTXF5c0treWRabkJjYUF4QnkteURKNFVhTVFYMVpFZmlNS2VldHIzSTlsczJ6a0JDTXhLblZKbm1wcHFFTWNZRDRnbFlZc2JMM3F4dXZyUDNjRUV2bVFlOTJKTHgwemRydG9rMW9ESVdlNm16eXp2dXlUTXd3 |\n6. **Revista Oeste – “Tesla aos 75 anos critica Edison”** (23 / 08 / 2026). https://news.google.com/rss/articles/CBMi_AFBVV95cUxPZTJ1V1ZoZTR4STVMMnJ3eVU1NEszSzRvSG5td3ZvMGpqckJRUlZWT2VfUEJyaW1SNTFEZllDdUtwS2JLenlrXzl6QkxndDFzdUx1LXhqaDJRQzU0MXZWaWo4NVprWHJmTDEydEc5MW5YX0s5Q0E2anZrZmw3LTM2WmstTzdhajlTYml0VVpYZ1VKTzFaR0FfLUY0bnVBbW9NUFBCelE1aWZwQlNVMlBvbDNXNjEtbUNpbE12bno4RXFCM2VUT3YtOG5WOGdOUWVIa2xrU0xoTkhVcmFhcFBHcFFKOEVlTTgxZVlGSmlhSmJxcGg5RGhSZFBxVVA |\n7. **Correio Braziliense – “Opinião de Nikola Tesla”** (10 / 05 / 2026). https://news.google.com/rss/articles/CBMi0wFBVV95cUxQeWtLaWhOUzA5Z2ZYTWNtLS1iN0hEMUp5aUJpTkZqZURjcDlEZ3NJT2VabmNYcjhSbktUdnE5YzhOa0VFbEZTTHlNZGg1YXVGaTFZOFBGdzFDTVAyaWFmRVlXM0FFcVUxQV9pMmFZdHpKQWFEZ2xPN1k3U1ZOY3BHdFppV\n\nLEITURA RITUAL DO JOGO:\nPeso Kármico: 35 | Essência: Alma Fragmentada | Corrupção: 45% | Elemento: Água | Afinidade: Alquimia Mental | Vaso de Influência: 90% | Frequência: 528Hz | Arquétipo: \"O Alquimia Mental de Água\". Estes valores são atributos de gameplay moldados pela análise OSINT.",
+        "corAlma": "#ff8800",
+        "dataVarredura": 1789785909614,
+        "pesquisaReal": true,
+        "motorPesquisa": "osint-realtime:wiki+ddg+gnews+groq",
+        "pesquisadoEm": 1789785909614,
+        "historicoAcoes": [],
+        "bencaosAtivas": [],
+        "maldicoesAtivas": []
+      }
+    }
+  },
+  "clans": {},
+  "leilaoP2P": [],
+  "leilaoIdCounter": 1,
+  "logs": {
+    "global": [
+      {
+        "tipo": "MOTIM DEMONÍACO [Lua Crescente (Diana)]",
+        "relato": "Belial lançou seu exército contra a alma de Lilith_408; unam‑se ao Conclave!",
+        "data": 1789785914227
+      },
+      {
+        "tipo": "MOTIM DEMONÍACO [Lua Crescente (Diana)]",
+        "relato": "Belial lançou seu exército contra a alma de Lilith_408; unam‑se ao Conclave!",
+        "data": 1789785914227
+      },
+      {
+        "tipo": "ALMA LIBERTADA [Lua Crescente (Diana)]",
+        "relato": "O comprador 1413 rompeu o Fio de Prata e libertou a alma de Nikola Tesla das correntes da terra.",
+        "data": 1789785910162
+      },
+      {
+        "tipo": "ALMA LIBERTADA [Lua Crescente (Diana)]",
+        "relato": "O comprador 1413 rompeu o Fio de Prata e libertou a alma de Nikola Tesla das correntes da terra.",
+        "data": 1789785910162
+      },
+      {
+        "tipo": "PACTO TRANSFERIDO [Lua Crescente (Diana)]",
+        "relato": "Nas sombras, [Mestre_1362] arrematou a essência de [Nikola Tesla] para [Comprador_1413] por 100 Gts!",
+        "data": 1789785910123
+      },
+      {
+        "tipo": "PACTO TRANSFERIDO [Lua Crescente (Diana)]",
+        "relato": "Nas sombras, [Mestre_1362] arrematou a essência de [Nikola Tesla] para [Comprador_1413] por 100 Gts!",
+        "data": 1789785910123
+      },
+      {
+        "tipo": "SANGUE NOVO [Lua Crescente (Diana)]",
+        "relato": "Comprador_1413 rompeu as névoas sombrias e despertou por sua própria vontade.",
+        "data": 1789785902184
+      },
+      {
+        "tipo": "SANGUE NOVO [Lua Crescente (Diana)]",
+        "relato": "Comprador_1413 rompeu as névoas sombrias e despertou por sua própria vontade.",
+        "data": 1789785902184
+      },
+      {
+        "tipo": "SANGUE NOVO [Lua Crescente (Diana)]",
+        "relato": "Mestre_1362 rasgou as brumas e despertou, soberano da Manifestação Sombria.",
+        "data": 1789785902173
+      },
+      {
+        "tipo": "SANGUE NOVO [Lua Crescente (Diana)]",
+        "relato": "Mestre_1362 rasgou as brumas e despertou, soberano da Manifestação Sombria.",
+        "data": 1789785902173
+      },
+      {
+        "tipo": "MESTRE SUPREMO CONSAGRADO [Lua Crescente (Diana)]",
+        "relato": "[Mestre_1362] ergueu-se, nas sombras, como Administrador Supremo de Nível 99, imbuído de Sangue Primordial!",
+        "data": 1789785902047
+      },
+      {
+        "tipo": "MESTRE SUPREMO CONSAGRADO [Lua Crescente (Diana)]",
+        "relato": "[Mestre_1362] ergueu-se, nas sombras, como Administrador Supremo de Nível 99, imbuído de Sangue Primordial!",
+        "data": 1789785902047
+      },
+      {
+        "tipo": "SANGUE NOVO [Lua Crescente (Diana)]",
+        "relato": "Mestre_6212 rasgou as brumas e ressurgiu, solitário e triunfante.",
+        "data": 1789785876873
+      },
+      {
+        "tipo": "SANGUE NOVO [Lua Crescente (Diana)]",
+        "relato": "Mestre_6212 rasgou as brumas e ressurgiu, solitário e triunfante.",
+        "data": 1789785876873
+      },
+      {
+        "tipo": "MESTRE SUPREMO CONSAGRADO [Lua Crescente (Diana)]",
+        "relato": "Mestre_6212 ergueu‑se ao trono de Administrador Supremo, nível 99, com sangue primordial!",
+        "data": 1789785876847
+      },
+      {
+        "tipo": "MESTRE SUPREMO CONSAGRADO [Lua Crescente (Diana)]",
+        "relato": "Mestre_6212 ergueu‑se ao trono de Administrador Supremo, nível 99, com sangue primordial!",
+        "data": 1789785876847
+      }
+    ],
+    "caca": [],
+    "guerra": []
+  },
+  "manuscritos": [],
+  "grimorioCustomizado": {},
+  "balancaCosmica": {
+    "tiamat": 0,
+    "seth": 81,
+    "regente": "Equilíbrio"
+  },
+  "evocacaoAtiva": null,
+  "fendaAtiva": {},
+  "pactosAtivos": {},
+  "reliquiasCustomizadas": [],
+  "historicoChat": {
+    "global": [
+      {
+        "autor": "[Sombra Autónoma] Dracul_396",
+        "texto": "Sou a sombra que devora a própria eternidade.",
+        "hora": "23:44:29",
+        "canal": "global"
+      },
+      {
+        "autor": "[Sombra Autónoma] Lilith_571",
+        "texto": "A eternidade se curva ao meu desejo e eu a transformo em sangue.",
+        "hora": "23:45:41",
+        "canal": "global"
+      },
+      {
+        "autor": "[Sombra Autónoma] Lilith_571",
+        "texto": "Mesmo o tempo se curva diante do meu sangue.",
+        "hora": "23:48:41",
+        "canal": "global"
+      }
+    ],
+    "clan": {},
+    "privado": {}
+  },
+  "reinos": {},
+  "ultimaGravacao": "2026-09-19T02:48:56.324Z"
+}

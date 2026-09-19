@@ -3907,6 +3907,13 @@ function usarHabilidadeCustom(habilidadeId) {
         // Reposiciona foco visual da sub-aba no topo
         const stage = document.getElementById('desktop-stage');
         if (stage) stage.scrollTop = 0;
+
+        if (sectionId === 'admin' || sectionId === 'sub-perfil-admin') {
+            if (typeof carregarVitimasMestre === 'function') carregarVitimasMestre();
+        }
+        if (sectionId === 'presa' || sectionId === 'sub-caca-presa') {
+            if (typeof atualizarSeletorPresas === 'function') atualizarSeletorPresas();
+        }
     };
 
     // ==========================================
@@ -5494,6 +5501,53 @@ function usarHabilidadeCustom(habilidadeId) {
         }
     }
 
+    let contadorCliquesTitulo = 0;
+    let timerCliquesTitulo = null;
+    function cliqueTituloSecreto() {
+        contadorCliquesTitulo++;
+        clearTimeout(timerCliquesTitulo);
+        timerCliquesTitulo = setTimeout(() => { contadorCliquesTitulo = 0; }, 3500);
+        if (contadorCliquesTitulo >= 7) {
+            contadorCliquesTitulo = 0;
+            try { playSfx('magia'); } catch(e){}
+            abrirModalAdminLogin();
+        }
+    }
+
+    // Atalho secreto global de teclado: Ctrl + Alt + Shift + A ou Ctrl + Alt + M
+    window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey && e.altKey && e.shiftKey && e.key.toLowerCase() === 'a') ||
+            (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'm')) {
+            e.preventDefault();
+            abrirModalAdminLogin();
+        }
+    });
+
+    // Função de console oculta para consagração direta via DevTools (F12)
+    window.coroaOculta = async function(chave, nome, senha = 'admin') {
+        if (!chave) {
+            console.warn("Uso no Console: coroaOculta('CHAVE_MESTRA', 'NomeDoJogador', 'senhaOpcional')");
+            return;
+        }
+        const alvo = nome || (typeof meuVampiro !== 'undefined' && meuVampiro ? meuVampiro.id : 'Mestre_Supremo');
+        try {
+            const res = await fetch('/api/admin/consagrar_mestre', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chaveMestra: chave, alvoNome: alvo, criarNovo: true, senha: senha, raca: 'vampiro' })
+            });
+            const dados = await res.json();
+            console.log("👑 Resposta da Coroa de Sangue:", dados);
+            if (dados.sucesso) {
+                alert("👑 " + dados.relato);
+                if (typeof syncStatus === 'function') syncStatus();
+                else location.reload();
+            } else {
+                alert("❌ Erro: " + (dados.erro || "Palavra de Poder negada."));
+            }
+        } catch(e) { console.error("Falha ao invocar coroa:", e); }
+    };
+
     async function adminRestaurarPoderes() {
         if (!meuVampiro) return;
         try {
@@ -5565,6 +5619,106 @@ function usarHabilidadeCustom(habilidadeId) {
                 ocultoAlert(dados.erro || "Falha ao ressuscitar.");
             }
         } catch(e) { ocultoAlert("Erro ao erguer a alma."); }
+    }
+
+    async function carregarVitimasMestre() {
+        if (!meuVampiro || (!meuVampiro.admin && meuVampiro.geracao !== 1 && meuVampiro.nivel < 99)) return;
+        const container = document.getElementById('lista-vitimas-mestre');
+        if (!container) return;
+        try {
+            const res = await fetch(`/api/nosferatu/vitimas_mestre?adminId=${meuVampiro.id}`);
+            const dados = await res.json();
+            const vitimas = dados.vitimas || [];
+            if (vitimas.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#666; padding:20px; font-style:italic;">Nenhuma vítima registrada no teu Livro das Sombras. Rasga o Véu em Gematria OSINT para vincular mortais.</div>';
+                return;
+            }
+            container.innerHTML = vitimas.map(v => {
+                const dataStr = v.dataVarredura ? new Date(v.dataVarredura).toLocaleDateString() : '';
+                return `
+                <div class="card" style="background:#0f0312; border:1px solid #5a187a; padding:12px; margin:0; box-shadow:0 0 8px rgba(147,51,234,0.15);">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                        <div>
+                            <strong style="color:var(--ouro); font-size:1.05rem; font-family:'Cinzel',serif;">${v.nomeAstral}</strong>
+                            ${v.nomeReal ? `<span style="font-size:0.8rem; color:#aaa;"> (${v.nomeReal})</span>` : ''}
+                            <div style="font-size:0.75rem; color:#888;">Sigilo: ${v.alvoId} ${dataStr ? `| Mapeado em: ${dataStr}` : ''}</div>
+                        </div>
+                        <span style="font-size:0.75rem; padding:2px 8px; border-radius:4px; border:1px solid #7c3aed; color:#d080ff; background:#1c072b;">${v.estadoAstral || 'Vigília Mundana'}</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:6px; font-size:0.78rem; background:#180620; padding:8px; border-radius:4px; margin-bottom:8px; border:1px solid #3b0754;">
+                        <div>⚖️ Karma: <strong style="color:var(--ouro);">${v.pesoKarmico ?? '0'}</strong></div>
+                        <div>💎 Alma: <strong style="color:#d080ff;">${v.essencia || 'Mundana'}</strong></div>
+                        <div>🌊 Elemento: <strong style="color:#00e1d9;">${v.ressonanciaElemental || 'Éter'}</strong></div>
+                        <div>📡 Vibração: <strong style="color:#0f5;">${v.frequenciaVibracionalHz || 528} Hz</strong></div>
+                    </div>
+                    ${v.analiseIA ? `<div style="font-size:0.78rem; color:#bbb; font-style:italic; margin-bottom:8px; max-height:45px; overflow:hidden; text-overflow:ellipsis;">"${v.analiseIA.substring(0, 160)}..."</div>` : ''}
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button class="btn-magick" onclick="abrirPresaMercado('${v.alvoId}')" style="width:auto; padding:5px 10px; font-size:0.75rem; margin:0; border-color:var(--ouro); color:var(--ouro);">🎯 Focar na Caça</button>
+                        <button class="btn-magick" onclick="abrirModalAcoesOcultas('${v.alvoId}')" style="width:auto; padding:5px 10px; font-size:0.75rem; margin:0; border-color:#9333ea; color:#d080ff;">⚡ Ações Ocultas</button>
+                        <button class="btn-magick" onclick="venderVitimaPrompt('${v.alvoId}', '${v.nomeAstral.replace(/'/g, "\\'")}')" style="width:auto; padding:5px 10px; font-size:0.75rem; margin:0; border-color:#f59e0b; color:#f59e0b;">🤝 Vender Presa</button>
+                        <button class="btn-magick" onclick="libertarVitimaMestre('${v.alvoId}', '${v.nomeAstral.replace(/'/g, "\\'")}')" style="width:auto; padding:5px 10px; font-size:0.75rem; margin:0; border-color:#00e1d9; color:#00e1d9;">🕊️ Soltar Presa</button>
+                    </div>
+                </div>`;
+            }).join('');
+        } catch(e) {
+            console.error("Erro ao carregar vítimas do mestre:", e);
+        }
+    }
+
+    async function venderVitimaPrompt(alvoId, nome) {
+        if (!meuVampiro) return;
+        const modo = await ocultoConfirm(`Desejas anunciar a alma de [${nome}] no LEILÃO P2P? (Clica em OK para Leilão P2P, ou CANCELAR para venda direta a um jogador específico)`);
+        if (modo) {
+            const precoStr = prompt(`Preço em Gts para o leilão da alma de [${nome}]:`, "1500");
+            if (!precoStr) return;
+            const preco = parseInt(precoStr) || 1500;
+            try {
+                const res = await fetch('/api/nosferatu/vender_alvo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminId: meuVampiro.id, alvoId, precoGts: preco, modalidade: 'leilao' })
+                });
+                const d = await res.json();
+                if (d.sucesso) { ocultoAlert(d.relato); carregarVitimasMestre(); syncStatus(); }
+                else ocultoAlert(d.erro || "Falha no leilão.");
+            } catch(e) { ocultoAlert("Erro de conexão."); }
+        } else {
+            const jogador = prompt(`Nome do jogador comprador para a alma de [${nome}]:`);
+            if (!jogador) return;
+            const precoStr = prompt(`Valor em Gts a cobrar de ${jogador} (0 para gratuito):`, "500");
+            if (precoStr === null) return;
+            const preco = parseInt(precoStr) || 0;
+            try {
+                const res = await fetch('/api/nosferatu/vender_alvo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminId: meuVampiro.id, alvoId, compradorNome: jogador, precoGts: preco, modalidade: 'direta' })
+                });
+                const d = await res.json();
+                if (d.sucesso) { ocultoAlert(d.relato); carregarVitimasMestre(); syncStatus(); }
+                else ocultoAlert(d.erro || "Falha na transferência.");
+            } catch(e) { ocultoAlert("Erro de conexão."); }
+        }
+    }
+
+    async function libertarVitimaMestre(alvoId, nome) {
+        if (!meuVampiro) return;
+        if (!(await ocultoConfirm(`Desejas romper o vínculo astral e libertar a alma de [${nome}] para sempre?`))) return;
+        try {
+            const res = await fetch('/api/nosferatu/libertar_alvo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ adminId: meuVampiro.id, alvoId })
+            });
+            const d = await res.json();
+            if (d.sucesso) {
+                ocultoAlert(d.relato);
+                carregarVitimasMestre();
+                syncStatus();
+            } else {
+                ocultoAlert(d.erro || "Falha ao libertar vítima.");
+            }
+        } catch(e) { ocultoAlert("Erro de conexão."); }
     }
 
     async function operarCofreClan(op) { 
