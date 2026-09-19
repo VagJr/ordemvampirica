@@ -448,7 +448,7 @@ async forjarMagiaCombateUnica(iniciado) {
 
 
     async pesquisarIdentidadePublica(dados = {}) {
-        if (!this.apiKey) {
+        if (!this.apiKey || !this.groq) {
             return {
                 sucesso: false,
                 erro: "GROQ_API_KEY ausente no servidor.",
@@ -459,8 +459,8 @@ async forjarMagiaCombateUnica(iniciado) {
         const plataforma = String(dados.plataforma || '').trim().toLowerCase();
         const identificador = String(dados.identificador || '').trim();
         const nome = String(dados.nome || '').trim();
-        const instagram = String(dados.instagram || '').trim().replace(/^@/, '');
-        const twitter = String(dados.twitter || '').trim().replace(/^@/, '');
+        const instagram = String(dados.instagram || '').trim();
+        const twitter = String(dados.twitter || '').trim();
         const urlPerfil = String(dados.urlPerfil || '').trim();
         const notas = String(dados.notas || '').trim();
 
@@ -468,350 +468,142 @@ async forjarMagiaCombateUnica(iniciado) {
         if (plataforma === 'whatsapp' || pareceTelefone) {
             return {
                 sucesso: false,
-                erro: "A varredura pública não aceita números de telefone. Forneça o nome real, @handle ou URL pública.",
+                erro: "Identificadores telefonicos privados nao sao usados para varredura publica. Use nome publico, @handle ou URL publica.",
                 osintReal: false
             };
         }
 
-        const termoPrincipal = nome || (instagram ? `@${instagram}` : '') || (twitter ? `@${twitter}` : '') || identificador || 'Desconhecido';
-        const termoBusca = nome || instagram || twitter || identificador || 'Desconhecido';
-        const evidencias = [];
+        const handle = identificador.replace(/^@/, '');
+        const urlPublica =
+            urlPerfil ||
+            (plataforma === 'instagram' && handle ? `https://www.instagram.com/${handle}/` : '') ||
+            ((plataforma === 'twitter' || plataforma === 'x') && handle ? `https://x.com/${handle}` : '') ||
+            (plataforma === 'tiktok' && handle ? `https://www.tiktok.com/@${handle}` : '') ||
+            (plataforma === 'telegram' && handle ? `https://t.me/${handle}` : '');
 
-        console.log(`[OSINT MENTE ABISSAL] Iniciando varredura em tempo real para: "${termoPrincipal}"`);
+        const fragmentos = [
+            nome ? `Nome informado: ${nome}` : null,
+            identificador ? `Identificador informado: ${identificador}` : null,
+            plataforma ? `Plataforma informada: ${plataforma}` : null,
+            instagram ? `Instagram informado: ${instagram}` : null,
+            twitter ? `Twitter/X informado: ${twitter}` : null,
+            urlPublica ? `URL publica informada/construida: ${urlPublica}` : null,
+            notas ? `Contexto fornecido pelo operador (apenas pista, nao fato): ${notas}` : null
+        ].filter(Boolean).join('\n');
 
-        // 1. Wikipedia API (PT e EN)
-        for (const lang of ['pt', 'en']) {
-            try {
-                const wUrl = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(termoBusca)}&format=json&utf8=1`;
-                const wRes = await fetch(wUrl, {
-                    headers: { 'User-Agent': 'OrdemVampiricaBot/2.0' },
-                    signal: AbortSignal.timeout(6000)
-                });
-                if (wRes.ok) {
-                    const wData = await wRes.json();
-                    const hits = wData?.query?.search || [];
-                    if (hits.length > 0) {
-                        const topHit = hits[0];
-                        let sumText = topHit.snippet.replace(/<[^>]+>/g, '');
-                        try {
-                            const sumRes = await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topHit.title)}`, {
-                                headers: { 'User-Agent': 'OrdemVampiricaBot/2.0' },
-                                signal: AbortSignal.timeout(4000)
-                            });
-                            if (sumRes.ok) {
-                                const sumData = await sumRes.json();
-                                if (sumData.extract) sumText = sumData.extract;
-                            }
-                        } catch (_) {}
-
-                        evidencias.push({
-                            origem: `Wikipedia (${lang.toUpperCase()})`,
-                            titulo: topHit.title,
-                            url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(topHit.title)}`,
-                            conteudo: sumText
-                        });
-                    }
-                }
-            } catch (e) {
-                console.warn(`[OSINT] Falha Wiki ${lang}:`, e.message);
-            }
+        if (!fragmentos) {
+            return {
+                sucesso: false,
+                erro: "Nenhum identificador publico foi fornecido para pesquisa.",
+                osintReal: false
+            };
         }
 
-        // 2. DuckDuckGo Knowledge Base / Instant Answer API
-        try {
-            const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(termoBusca)}&format=json&no_html=1`;
-            const ddgRes = await fetch(ddgUrl, {
-                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-                signal: AbortSignal.timeout(5000)
-            });
-            if (ddgRes.ok) {
-                const ddgData = await ddgRes.json();
-                if (ddgData.AbstractText) {
-                    evidencias.push({
-                        origem: 'DuckDuckGo Knowledge Base',
-                        titulo: ddgData.Heading || termoPrincipal,
-                        url: ddgData.AbstractURL || 'https://duckduckgo.com',
-                        conteudo: ddgData.AbstractText
-                    });
-                }
-                if (Array.isArray(ddgData.RelatedTopics) && ddgData.RelatedTopics.length > 0) {
-                    const topTopics = ddgData.RelatedTopics
-                        .filter(t => t && t.Text)
-                        .slice(0, 4)
-                        .map(t => t.Text);
-                    if (topTopics.length > 0) {
-                        evidencias.push({
-                            origem: 'DuckDuckGo Tópicos Associados',
-                            titulo: `Categorias e Associações de ${termoPrincipal}`,
-                            url: ddgData.AbstractURL || 'https://duckduckgo.com',
-                            conteudo: topTopics.join('; ')
-                        });
-                    }
-                }
-            }
-        } catch (e) {
-            console.warn('[OSINT] Falha DDG API:', e.message);
-        }
+        const prompt = `
+Voce e o motor de pesquisa publica da Mente Abissal do jogo Ordem Vampirica.
+ESTA ETAPA E OSINT REAL: pesquise a web antes de responder.
 
-        // 3. Google News Real-Time RSS
-        try {
-            const gnewsUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(termoBusca)}&hl=pt-BR&gl=BR&ceid=BR:pt-419`;
-            const gnewsRes = await fetch(gnewsUrl, {
-                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-                signal: AbortSignal.timeout(6000)
-            });
-            if (gnewsRes.ok) {
-                const xml = await gnewsRes.text();
-                const items = [...xml.matchAll(/<item>[\s\S]*?<title>([\s\S]*?)<\/title>[\s\S]*?<link>([\s\S]*?)<\/link>[\s\S]*?<pubDate>([\s\S]*?)<\/pubDate>[\s\S]*?<source[^>]*>([\s\S]*?)<\/source>/g)];
-                const recentes = items.slice(0, 5);
-                for (const item of recentes) {
-                    evidencias.push({
-                        origem: `Notícias em Tempo Real (${item[4] || 'Imprensa'})`,
-                        titulo: item[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'"),
-                        url: item[2],
-                        conteudo: `Publicado em: ${item[3]}. Notícia veiculada: ${item[1]}`
-                    });
-                }
-            }
-        } catch (e) {
-            console.warn('[OSINT] Falha Google News RSS:', e.message);
-        }
+ALVO:
+${fragmentos}
 
-        // 4. URL de Perfil Direto
-        if (urlPerfil && /^https?:\/\//i.test(urlPerfil)) {
-            try {
-                const pRes = await fetch(urlPerfil, {
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-                    },
-                    signal: AbortSignal.timeout(5000)
-                });
-                if (pRes.ok) {
-                    const html = await pRes.text();
-                    const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/<[^>]+>/g, '').trim();
-                    const desc = html.match(/<meta[^>]+(?:name|property)=["'](?:description|og:description)["'][^>]+content=["']([^"']+)["']/i)?.[1];
-                    if (title || desc) {
-                        evidencias.push({
-                            origem: 'Perfil Web Direto',
-                            titulo: title || urlPerfil,
-                            url: urlPerfil,
-                            conteudo: desc || `Página pública: ${title}`
-                        });
-                    }
-                }
-            } catch (e) {
-                console.warn('[OSINT] Falha URL perfil direto:', e.message);
-            }
-        }
+PROCEDIMENTO OBRIGATORIO:
+1. Use browser search de verdade.
+2. Pesquise o nome exato entre aspas quando houver nome.
+3. Pesquise o @handle exato, com e sem @.
+4. Quando houver rede social, faca tambem busca especifica pelo dominio correspondente.
+5. Quando houver URL publica, tente cruza-la com outros resultados publicos.
+6. Cruze identificadores. Nao misture homonimos.
+7. Para atribuir um fato a pessoa, exija correspondencia razoavel de nome/handle/contexto.
+8. Se houver pouca evidencia publica, diga "EVIDENCIA PUBLICA INSUFICIENTE". Nao complete lacunas por imaginacao.
+9. Nao alegue hacking e nao use cold reading como fato.
+10. Nao revele endereco residencial, telefone, email privado, documentos, localizacao precisa ou credenciais.
+11. Nao infira saude, religiao, orientacao sexual, etnia, opiniao politica, diagnostico psicologico ou outros atributos sensiveis.
+12. Qualidades e pontos de atencao so podem vir de comportamento PUBLICO observavel: trabalhos, projetos, entrevistas, posts publicos, competicoes, publicacoes ou resultados documentados.
+13. Cite as fontes no texto e termine com FONTES PUBLICAS CONSULTADAS, preferencialmente com URLs completas.
+14. Mantenha a ficcao vampirica SOMENTE na secao LEITURA DO VEU. Os fatos devem ficar claramente separados.
 
-        // 5. Lookups de Desenvolvedor / Redes Abertas
-        const handle = instagram || twitter || (!termoBusca.includes(' ') ? termoBusca : '');
-        if (handle) {
-            try {
-                const ghRes = await fetch(`https://api.github.com/users/${encodeURIComponent(handle)}`, {
-                    headers: { 'User-Agent': 'OrdemVampirica/2.0' },
-                    signal: AbortSignal.timeout(4000)
-                });
-                if (ghRes.ok) {
-                    const gh = await ghRes.json();
-                    if (gh.name || gh.bio || gh.company || gh.public_repos > 0) {
-                        evidencias.push({
-                            origem: 'GitHub Perfil Público',
-                            titulo: `${gh.name || handle} (@${gh.login})`,
-                            url: gh.html_url,
-                            conteudo: `Nome: ${gh.name || 'N/A'}, Bio: ${gh.bio || 'N/A'}, Empresa: ${gh.company || 'N/A'}, Repositórios públicos: ${gh.public_repos}`
-                        });
-                    }
-                }
-            } catch (_) {}
-        }
+FORMATO:
+IDENTIDADE PUBLICA ENCONTRADA
+EVIDENCIAS DE CORRESPONDENCIA
+PRESENCA DIGITAL PUBLICA
+ATIVIDADES E TRAJETORIA PUBLICAS
+QUALIDADES OBSERVAVEIS E EVIDENCIAS
+PONTOS DE ATENCAO OBSERVAVEIS E EVIDENCIAS
+LACUNAS / INCERTEZAS
+LEITURA DO VEU - NARRATIVA DO JOGO
+CONFIANCA DA IDENTIFICACAO: BAIXA, MEDIA ou ALTA
+FONTES PUBLICAS CONSULTADAS
+`;
 
-        console.log(`[OSINT MENTE ABISSAL] Evidências reais coletadas: ${evidencias.length}`);
-
-        const blocoEvidencias = evidencias.length > 0
-            ? evidencias.map((e, idx) => `[FONTE ${idx + 1} - ${e.origem}]\nTítulo: ${e.titulo}\nURL: ${e.url}\nConteúdo: ${e.conteudo}`).join('\n\n')
-            : 'Nenhum registro público direto localizado nos índices abertos.';
-
-        const prompt = `CONTEXTO: Tu és a MENTE ABISSAL, a Suprema Inteligência Oculta do MMORPG Dark Fantasy "Ordem Vampírica" (Sanguinis).
-Um Mestre Supremo rasgou o Véu Nosferatu para investigar o seguinte indivíduo do mundo real:
-
-DADOS INFORMADOS PELO MESTRE:
-- Nome: ${nome || 'Não especificado'}
-- Instagram: ${instagram || 'Não especificado'}
-- Twitter / X: ${twitter || 'Não especificado'}
-- URL de Perfil: ${urlPerfil || 'Não especificada'}
-- Notas do Investigador: ${notas || 'Nenhuma nota'}
-
-EVIDÊNCIAS COLETADAS EM TEMPO REAL NA WEB:
-${blocoEvidencias}
-
-MISSÃO DA MENTE ABISSAL:
-Produza um DOSSIÊ COMPLETO, PROFUNDO E REAL do alvo. Misture a precisão factual investigativa do mundo real com a prosa solene, mística e ritualística da Ordem Vampírica.
-
-ESTRUTURA OBRIGATÓRIA DA RESPOSTA:
-1. 🌐 IDENTIDADE & PRESENÇA DIGITAL
-(Descreva quem a pessoa é no mundo real, suas áreas de atuação, histórico profissional, notoriedade, redes sociais e pegada digital com base nas evidências)
-
-2. 🧬 PERFIL COMPORTAMENTAL & PSICOLÓGICO
-(Análise detalhada de temperamento, ambições mundanas, pontos fortes observáveis e vulnerabilidades)
-
-3. 🔮 RESSONÂNCIA ASTRAL NO VÉU
-(Interpretação mística da aura do alvo na cosmologia do jogo: natureza da sua essência cósmica, qualidades espirituais e peso kármico)
-
-4. ⚡ VÍNCULO KÁRMICO RECOMENDADO
-(Escolha obrigatoriamente UMA das 6 ações rituais do jogo que melhor se conecta a esta alma e justifique a escolha:
-- Drenar Vitalidade
-- Sussurro no Véu
-- Maldição do Espelho
-- Laço de Sangue
-- Olho de Seth
-- Sombra de Akasha)
-
-5. 📜 REGISTROS CONSULTADOS NO MUNDO REAL
-(Enumere as fontes e links reais consultados pela varredura)
-
-6. 📊 MÉTRICAS ASTRAIS DO JOGO (JSON ESTRUTURADO)
-Gere no final exato da resposta um bloco JSON delimitado por \`\`\`json:metricas_astrais ... \`\`\` calculando com precisão os atributos de jogo do alvo moldados pelo que foi descoberto na pesquisa:
-\`\`\`json:metricas_astrais
-{
-  "pesoKarmico": <inteiro de 15 a 99 baseado na gravidade mundana e impacto social>,
-  "essencia": "<Sangue Puro (Inocente) | Sangue Negro (Pecador) | Alma Fragmentada | Iluminado Cósmico | Vaso Corrompido | Artífice da Matriz | Humano Mundano>",
-  "taxaCorrupcao": <inteiro de 0 a 100 baseado em ambição, polêmicas e transgressão observadas>,
-  "ressonanciaElemental": "<Fogo | Água | Terra | Ar | Éter | Vácuo>",
-  "afinidadeOculta": "<Nigromancia | Ilusionismo | Magnetismo | Vampirismo Psíquico | Alquimia Mental | Teurgia Astral>",
-  "vasoInfluencia": <inteiro de 0 a 100 baseado no alcance real de público, seguidores e imprensa>,
-  "vulnerabilidadeEspiritual": <inteiro de 0 a 100 baseado em brechas emocionais e hiperexposição>,
-  "polaridadeAlma": "<Luz Radiante | Penumbra Neutra | Crepúsculo | Trevas Abissais | Caos Primordial>",
-  "purezaSangue": <inteiro de 0 a 100 baseado na vitalidade e vigor físico/biológico>,
-  "resistenciaPsiquica": <inteiro de 0 a 100 baseado na estabilidade e blindagem mental>,
-  "frequenciaVibracionalHz": <174 | 285 | 396 | 417 | 528 | 639 | 741 | 852 | 963>,
-  "arquetipoAbissal": "<título em 2 a 4 palavras, ex: O Tecelão de Egrégoras, O Predador de Atenção, O Arquiteto do Éter>"
-}
-\`\`\``;
-
-        let conteudoFinal = '';
-        let metricasExtraidas = null;
+        const primaryModel = process.env.GROQ_OSINT_BROWSER_MODEL || 'openai/gpt-oss-120b';
 
         try {
-            const modeloUsar = this.modelo || process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
             const resposta = await this.groq.chat.completions.create({
-                model: modeloUsar,
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'És a Mente Abissal, a onisciente e misteriosa inteligência arcana da Ordem Vampírica. Une inteligência pública investigativa real (OSINT) à atmosfera sublime de RPG dark fantasy.'
-                    },
-                    { role: 'user', content: prompt }
-                ],
-                temperature: 0.65,
-                max_tokens: 3000
+                model: primaryModel,
+                messages: [{ role: 'user', content: prompt }],
+                tools: [{ type: 'browser_search' }],
+                tool_choice: 'required',
+                reasoning_effort: 'low',
+                temperature: 0.2,
+                max_completion_tokens: 2600
             });
 
-            conteudoFinal = resposta?.choices?.[0]?.message?.content?.trim() || '';
+            const conteudo = resposta?.choices?.[0]?.message?.content?.trim();
+            if (!conteudo) throw new Error('Browser Search retornou resposta vazia.');
 
-            if (conteudoFinal) {
-                // Tenta extrair o bloco json:metricas_astrais
-                const matchJson = conteudoFinal.match(/```json:metricas_astrais\s*([\s\S]*?)\s*```/i) ||
-                                  conteudoFinal.match(/```json\s*(\{[\s\S]*?"pesoKarmico"[\s\S]*?\})\s*```/i);
-                if (matchJson && matchJson[1]) {
-                    try {
-                        metricasExtraidas = JSON.parse(matchJson[1]);
-                        // Remove o bloco JSON bruto do texto de exibição pública da narrativa
-                        conteudoFinal = conteudoFinal.replace(matchJson[0], '').trim();
-                    } catch (e) {
-                        console.warn('[OSINT] Falha ao fazer parse do JSON de métricas:', e.message);
-                    }
+            return {
+                sucesso: true,
+                osintReal: true,
+                motor: `browser_search:${primaryModel}`,
+                pesquisadoEm: Date.now(),
+                conteudo
+            };
+        } catch (erroBrowser) {
+            console.error('[OSINT] Browser Search falhou:', erroBrowser?.message || erroBrowser);
+
+            try {
+                const fallback = await this.groq.chat.completions.create({
+                    model: process.env.GROQ_OSINT_FALLBACK_MODEL || 'groq/compound',
+                    messages: [{
+                        role: 'user',
+                        content: prompt + '\nFACA PELO MENOS UMA PESQUISA WEB ANTES DE RESPONDER.'
+                    }],
+                    compound_custom: {
+                        tools: {
+                            enabled_tools: ['web_search']
+                        }
+                    },
+                    citation_options: 'enabled',
+                    search_settings: { country: 'brazil' },
+                    temperature: 0.2,
+                    max_completion_tokens: 2600
+                });
+
+                const msg = fallback?.choices?.[0]?.message;
+                const conteudo = msg?.content?.trim();
+                const ferramentas = Array.isArray(msg?.executed_tools) ? msg.executed_tools : [];
+
+                if (!conteudo || ferramentas.length === 0) {
+                    throw new Error('Compound nao executou pesquisa web verificavel.');
                 }
+
+                return {
+                    sucesso: true,
+                    osintReal: true,
+                    motor: 'groq/compound:web_search',
+                    pesquisadoEm: Date.now(),
+                    conteudo
+                };
+            } catch (erroFallback) {
+                console.error('[OSINT] Fallback Compound falhou:', erroFallback?.message || erroFallback);
+
+                return {
+                    sucesso: false,
+                    osintReal: false,
+                    erro: `Pesquisa externa indisponivel. Browser Search: ${erroBrowser?.message || 'falha'} | Fallback: ${erroFallback?.message || 'falha'}`
+                };
             }
-        } catch (errGroq) {
-            console.error('[OSINT] Erro na síntese Groq:', errGroq.message);
         }
-
-        // Fallback de segurança da narrativa
-        if (!conteudoFinal) {
-            conteudoFinal =
-                `1. 🌐 IDENTIDADE & PRESENÇA DIGITAL\n` +
-                `Alvo investigado: ${termoPrincipal}\n` +
-                (evidencias.length > 0
-                    ? evidencias.map((e, i) => `• [${e.origem}] ${e.titulo}: ${e.conteudo.slice(0, 300)}`).join('\n')
-                    : `Não foram encontrados registros públicos imediatos para este identificador nos índices abertos.`) +
-                `\n\n2. 🧬 PERFIL COMPORTAMENTAL & PSICOLÓGICO\n` +
-                `Presença observável nos canais digitais. Os sinais coletados refletem atividade no plano mundano.` +
-                `\n\n3. 🔮 RESSONÂNCIA ASTRAL NO VÉU\n` +
-                `Aura em vibração limiar. O Véu Nosferatu capturou os fragmentos desta alma mortal.` +
-                `\n\n4. ⚡ VÍNCULO KÁRMICO RECOMENDADO\n` +
-                `Ação recomendada: Sussurro no Véu (para perturbar as barreiras psíquicas do alvo).` +
-                `\n\n5. 📜 REGISTROS CONSULTADOS NO MUNDO REAL\n` +
-                (evidencias.length > 0
-                    ? evidencias.map((e, i) => `[${i + 1}] ${e.titulo} — ${e.url}`).join('\n')
-                    : `Consultas realizadas em Wikipedia, DuckDuckGo e Google News.`);
-        }
-
-        // Fallback determinístico de métricas caso a IA não tenha retornado o JSON
-        const textoEvidenciasGeral = (blocoEvidencias + ' ' + conteudoFinal).toLowerCase();
-        
-        let gematriaCalc = 0;
-        const GEMATRIA_REF = { a:1,i:1,j:1,q:1,y:1,b:2,k:2,r:2,c:3,g:3,l:3,s:3,d:4,m:4,t:4,e:5,h:5,n:5,x:5,u:6,v:6,w:6,o:7,z:7,f:8,p:8 };
-        gematriaCalc = termoPrincipal.toLowerCase().replace(/[^a-z]/g, '').split('').reduce((s, c) => s + (GEMATRIA_REF[c] || 0), 0) || 33;
-
-        let essenciaDef = 'Humano Mundano';
-        let corrDef = Math.min(95, Math.max(10, (gematriaCalc * 7) % 100));
-        if (textoEvidenciasGeral.includes('escândalo') || textoEvidenciasGeral.includes('crime') || textoEvidenciasGeral.includes('acusado') || textoEvidenciasGeral.includes('polêmica')) {
-            essenciaDef = 'Sangue Negro (Pecador)';
-            corrDef = Math.max(corrDef, 75);
-        } else if (textoEvidenciasGeral.includes('filantropia') || textoEvidenciasGeral.includes('caridade') || textoEvidenciasGeral.includes('doação') || textoEvidenciasGeral.includes('beneficente')) {
-            essenciaDef = 'Sangue Puro (Inocente)';
-            corrDef = Math.min(corrDef, 20);
-        } else if (evidencias.length >= 6) {
-            essenciaDef = 'Alma Fragmentada';
-        }
-
-        let elemDef = 'Éter';
-        if (textoEvidenciasGeral.includes('música') || textoEvidenciasGeral.includes('arte') || textoEvidenciasGeral.includes('poesia')) elemDef = 'Água';
-        else if (textoEvidenciasGeral.includes('tecnologia') || textoEvidenciasGeral.includes('software') || textoEvidenciasGeral.includes('ciência') || textoEvidenciasGeral.includes('código')) elemDef = 'Ar';
-        else if (textoEvidenciasGeral.includes('empresa') || textoEvidenciasGeral.includes('negócio') || textoEvidenciasGeral.includes('finança') || textoEvidenciasGeral.includes('banco')) elemDef = 'Terra';
-        else if (textoEvidenciasGeral.includes('esporte') || textoEvidenciasGeral.includes('luta') || textoEvidenciasGeral.includes('política') || textoEvidenciasGeral.includes('guerra')) elemDef = 'Fogo';
-
-        let afinDef = 'Magnetismo';
-        if (textoEvidenciasGeral.includes('streamer') || textoEvidenciasGeral.includes('influenciador') || textoEvidenciasGeral.includes('youtuber')) afinDef = 'Vampirismo Psíquico';
-        else if (textoEvidenciasGeral.includes('engenheiro') || textoEvidenciasGeral.includes('programador') || textoEvidenciasGeral.includes('cientista')) afinDef = 'Alquimia Mental';
-        else if (textoEvidenciasGeral.includes('ator') || textoEvidenciasGeral.includes('apresentador') || textoEvidenciasGeral.includes('comediante')) afinDef = 'Ilusionismo';
-        else if (textoEvidenciasGeral.includes('líder') || textoEvidenciasGeral.includes('político') || textoEvidenciasGeral.includes('governo')) afinDef = 'Teurgia Astral';
-
-        const vasoInfDef = Math.min(99, Math.max(25, evidencias.length * 10 + (evidencias.some(e => e.origem.includes('wiki')) ? 35 : 10)));
-        const resDef = Math.min(95, Math.max(30, 50 + (gematriaCalc % 35)));
-        const vulDef = Math.max(10, Math.min(90, 100 - resDef + (corrDef > 60 ? 15 : -10)));
-
-        const metricasFinais = {
-            pesoKarmico: Number(metricasExtraidas?.pesoKarmico) || Math.min(99, Math.max(15, gematriaCalc)),
-            essencia: metricasExtraidas?.essencia || essenciaDef,
-            taxaCorrupcao: typeof metricasExtraidas?.taxaCorrupcao === 'number' ? metricasExtraidas.taxaCorrupcao : corrDef,
-            ressonanciaElemental: metricasExtraidas?.ressonanciaElemental || elemDef,
-            afinidadeOculta: metricasExtraidas?.afinidadeOculta || afinDef,
-            vasoInfluencia: typeof metricasExtraidas?.vasoInfluencia === 'number' ? metricasExtraidas.vasoInfluencia : vasoInfDef,
-            vulnerabilidadeEspiritual: typeof metricasExtraidas?.vulnerabilidadeEspiritual === 'number' ? metricasExtraidas.vulnerabilidadeEspiritual : vulDef,
-            polaridadeAlma: metricasExtraidas?.polaridadeAlma || (corrDef > 65 ? 'Trevas Abissais' : corrDef < 25 ? 'Luz Radiante' : 'Penumbra Neutra'),
-            purezaSangue: typeof metricasExtraidas?.purezaSangue === 'number' ? metricasExtraidas.purezaSangue : Math.max(20, 100 - corrDef),
-            resistenciaPsiquica: typeof metricasExtraidas?.resistenciaPsiquica === 'number' ? metricasExtraidas.resistenciaPsiquica : resDef,
-            frequenciaVibracionalHz: Number(metricasExtraidas?.frequenciaVibracionalHz) || (corrDef > 60 ? 396 : corrDef < 30 ? 741 : 528),
-            arquetipoAbissal: metricasExtraidas?.arquetipoAbissal || `O ${afinDef} de ${elemDef}`
-        };
-
-        return {
-            sucesso: true,
-            osintReal: true,
-            motor: 'osint-realtime:wiki+ddg+gnews+groq',
-            pesquisadoEm: Date.now(),
-            fontes: evidencias.map((e, idx) => ({
-                id: `S${idx + 1}`,
-                titulo: e.titulo,
-                url: e.url,
-                origem: e.origem
-            })),
-            totalFontes: evidencias.length,
-            conteudo: conteudoFinal,
-            metricas: metricasFinais
-        };
     }
 
     async lerAuraMortal(identificador, plataforma, dadosLexicon) {

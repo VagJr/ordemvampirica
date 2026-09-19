@@ -968,6 +968,142 @@
         }
         .nosf-action-btn:hover { background: #2a0040; border-color: var(--magia); }
 
+        /* NOSFERATU EXTENDED OSINT & 4-SPHERE ACTIONS */
+        .nosf-grid-metricas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .nosf-metric-card {
+            background: rgba(15, 0, 25, 0.7);
+            border: 1px solid rgba(147, 51, 234, 0.25);
+            border-radius: 4px;
+            padding: 7px 9px;
+        }
+        .nosf-metric-title {
+            font-size: 0.7em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        .nosf-metric-val {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #e0b0ff;
+            font-family: 'Cinzel', serif;
+        }
+        .nosf-state-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.72em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .badge-vigilia { background: rgba(147, 51, 234, 0.15); border: 1px solid #9333ea; color: #d080ff; }
+        .badge-bencao { background: rgba(0, 255, 136, 0.15); border: 1px solid #00ff88; color: #00ff88; box-shadow: 0 0 10px rgba(0,255,136,0.25); }
+        .badge-enfeiticado { background: rgba(255, 105, 180, 0.15); border: 1px solid #ff69b4; color: #ff99cc; }
+        .badge-onirica { background: rgba(0, 191, 255, 0.15); border: 1px solid #00bfff; color: #80dfff; }
+        .badge-atormentado { background: rgba(255, 51, 51, 0.2); border: 1px solid #ff3333; color: #ff7777; animation: pulseRed 2s infinite; }
+        .badge-limbo { background: rgba(40, 0, 60, 0.9); border: 1px solid #a855f7; color: #c084fc; box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); animation: pulseLimbo 2.5s infinite; }
+        .badge-tartaro { background: rgba(60, 0, 0, 0.9); border: 1px solid #ef4444; color: #fca5a5; box-shadow: 0 0 20px rgba(239, 68, 68, 0.7); animation: pulseRed 1.5s infinite; }
+
+        @keyframes pulseLimbo {
+            0% { box-shadow: 0 0 8px rgba(168, 85, 247, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.8); }
+            100% { box-shadow: 0 0 8px rgba(168, 85, 247, 0.3); }
+        }
+
+        .nosf-esfera-tabs {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .nosf-tab-btn {
+            flex: 1;
+            min-width: 85px;
+            padding: 6px 8px;
+            background: #0d0018;
+            border: 1px solid #331045;
+            color: #999;
+            font-size: 0.72em;
+            font-family: 'Cinzel', serif;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .nosf-tab-btn.active {
+            background: #250040;
+            color: #fff;
+            border-color: var(--magia);
+            box-shadow: 0 0 10px rgba(147, 51, 234, 0.4);
+        }
+        .nosf-acoes-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .btn-acao-karmica {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            font-size: 0.8em;
+            transition: all 0.2s;
+            text-align: left;
+            border: 1px solid transparent;
+            width: 100%;
+        }
+        .btn-acao-carinhosa {
+            background: rgba(255, 105, 180, 0.07);
+            border-color: rgba(255, 105, 180, 0.25);
+            color: #ffb3d9;
+        }
+        .btn-acao-carinhosa:hover {
+            background: rgba(255, 105, 180, 0.2);
+            border-color: #ff69b4;
+            box-shadow: 0 0 12px rgba(255, 105, 180, 0.4);
+        }
+        .btn-acao-influencia {
+            background: rgba(0, 191, 255, 0.07);
+            border-color: rgba(0, 191, 255, 0.25);
+            color: #99e6ff;
+        }
+        .btn-acao-influencia:hover {
+            background: rgba(0, 191, 255, 0.2);
+            border-color: #00bfff;
+            box-shadow: 0 0 12px rgba(0, 191, 255, 0.4);
+        }
+        .btn-acao-malefica {
+            background: rgba(255, 51, 51, 0.08);
+            border-color: rgba(255, 51, 51, 0.3);
+            color: #ff9999;
+        }
+        .btn-acao-malefica:hover {
+            background: rgba(255, 51, 51, 0.22);
+            border-color: #ff3333;
+            box-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
+        }
+        .btn-acao-limbo {
+            background: rgba(147, 51, 234, 0.12);
+            border-color: rgba(147, 51, 234, 0.4);
+            color: #d8b4fe;
+        }
+        .btn-acao-limbo:hover {
+            background: rgba(147, 51, 234, 0.28);
+            border-color: #c084fc;
+            box-shadow: 0 0 18px rgba(147, 51, 234, 0.6);
+        }
+
     </style>
 </head>
 <body>
@@ -6086,6 +6222,10 @@ function usarHabilidadeCustom(habilidadeId) {
         const btnNosf = document.getElementById('btn-subnav-nosferatu');
         if (btnNosf) {
             btnNosf.style.display = (meuVampiro.admin || meuVampiro.geracao === 1 || meuVampiro.nivel >= 99) ? 'inline-block' : 'none';
+            if (meuVampiro.alvosNosferatu && Array.isArray(meuVampiro.alvosNosferatu)) {
+                alvosNosferatuCache = meuVampiro.alvosNosferatu;
+                renderizarAlvosNosferatu();
+            }
         }
 
         renderizarCompendioCompleto();
@@ -7779,10 +7919,27 @@ if(meuVampiro.geracao === 1) safeSet('alvo-osint-admin', document.getElementById
     }
 
     // ==========================================
-    // PORTAL NOSFERATU — OSINT FUNCTIONS
+    // ==========================================
+    // PORTAL NOSFERATU — OSINT & EMANAÇÕES ASTRAIS
     // ==========================================
     let alvosNosferatuCache = [];
+    let esferaAtivaAlvo = {};
 
+    function obterBadgeEstadoAstral(estado) {
+        if (!estado) estado = 'Vigília Mundana';
+        if (estado.includes('Lilith')) return '<span class="nosf-state-badge badge-bencao">💖 ' + estado + '</span>';
+        if (estado.includes('Enfeitiçado')) return '<span class="nosf-state-badge badge-enfeiticado">💘 ' + estado + '</span>';
+        if (estado.includes('Onírica') || estado.includes('Kármico')) return '<span class="nosf-state-badge badge-onirica">⚡ ' + estado + '</span>';
+        if (estado.includes('Atormentado')) return '<span class="nosf-state-badge badge-atormentado">🩸 ' + estado + '</span>';
+        if (estado.includes('Limbo')) return '<span class="nosf-state-badge badge-limbo">🕳️ ' + estado + '</span>';
+        if (estado.includes('Tártaro')) return '<span class="nosf-state-badge badge-tartaro">🔥 ' + estado + '</span>';
+        return '<span class="nosf-state-badge badge-vigilia">👁️ ' + estado + '</span>';
+    }
+
+    function obterIconeElemento(el) {
+        const icones = { 'Fogo': '🔥', 'Água': '💧', 'Terra': '🌿', 'Ar': '💨', 'Éter': '🪐', 'Vácuo': '🕳️' };
+        return (icones[el] || '🌌') + ' ' + (el || 'Éter');
+    }
 
     async function rasgarVeuNosferatu() {
         if (!meuVampiro || (!meuVampiro.admin && meuVampiro.geracao !== 1 && meuVampiro.nivel < 99)) {
@@ -7802,10 +7959,10 @@ if(meuVampiro.geracao === 1) safeSet('alvo-osint-admin', document.getElementById
         const container = document.getElementById('nosf-dossie-conteudo');
         const resultBox = document.getElementById('nosf-resultado');
         resultBox.style.display = 'block';
-        container.innerHTML = '<div style="padding:12px;color:#aaa;">A Mente Abissal está pesquisando fontes públicas reais...</div>';
+        container.innerHTML = '<div style="padding:15px;color:#d080ff;text-align:center;"><div style="animation:pulseRed 1.5s infinite;font-size:1.1em;font-family:\'Cinzel\',serif;">🕸️ A MENTE ABISSAL ESTÁ VASCULHANDO O ÉTER...</div><div style="font-size:0.8em;color:#888;margin-top:5px;">Consultando Wikipedia, DuckDuckGo, Notícias Globais e sintetizando qualidades no Groq...</div></div>';
 
         playSfx('magia');
-        showJuiceNotif("VÉU RASGANDO", "Pesquisa pública real em andamento...");
+        showJuiceNotif("VÉU RASGANDO", "Pesquisa pública real e forja de qualidades em andamento...");
 
         try {
             const res = await fetch('/api/nosferatu/rasgar_veu', {
@@ -7821,26 +7978,80 @@ if(meuVampiro.geracao === 1) safeSet('alvo-osint-admin', document.getElementById
             const raw = await res.text();
             let dados = {};
             try { dados = raw ? JSON.parse(raw) : {}; }
-            catch (_) { dados = { erro: `Resposta inválida do servidor (HTTP ${res.status}).` }; }
+            catch (_) { dados = { erro: "Resposta inválida do servidor (HTTP " + res.status + ")." }; }
 
             if (!res.ok || dados.erro) {
-                const mensagem = dados.erro || `Falha HTTP ${res.status}`;
-                const detalhe = dados.detalhe ? `\n${dados.detalhe}` : '';
-                container.innerHTML = `<div style="padding:12px;color:#ff7788;white-space:pre-wrap;">${mensagem}${detalhe}</div>`;
+                const mensagem = dados.erro || ("Falha HTTP " + res.status);
+                const detalhe = dados.detalhe ? ("\n" + dados.detalhe) : '';
+                container.innerHTML = '<div style="padding:12px;color:#ff7788;white-space:pre-wrap;">' + mensagem + detalhe + '</div>';
                 ocultoAlert(mensagem);
                 return;
             }
 
+            const d = dados.dossie;
             container.innerHTML = `
-                <div class="nosf-stat"><span class="nosf-stat-label">Nome Astral</span><span class="nosf-stat-value">${dados.dossie.nomeAstral || nomeReal}</span></div>
-                <div class="nosf-stat"><span class="nosf-stat-label">Peso Kármico (Gematria)</span><span class="nosf-stat-value">${dados.dossie.pesoKarmico}</span></div>
-                <div class="nosf-stat"><span class="nosf-stat-label">Qualidade da Alma</span><span class="nosf-stat-value" style="color:${dados.dossie.corAlma || '#d080ff'}">${dados.dossie.essencia}</span></div>
-                <div class="nosf-stat"><span class="nosf-stat-label">Taxa de Corrupção</span><span class="nosf-stat-value">${dados.dossie.taxaCorrupcao}%</span></div>
-                <div class="nosf-stat"><span class="nosf-stat-label">Sigilo Astral</span><span class="nosf-stat-value" style="font-family:monospace;font-size:0.8em;">${dados.dossie.sigilo}</span></div>
-                <div class="nosf-stat"><span class="nosf-stat-label">Pesquisa</span><span class="nosf-stat-value">${dados.dossie.motorPesquisa || 'web'}</span></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #3a1060; padding-bottom:8px; margin-bottom:12px;">
+                    <div>
+                        <h4 style="color:#fff; font-family:'Cinzel',serif; margin:0; font-size:1.15em;">${d.nomeAstral || nomeReal}</h4>
+                        <div style="font-size:0.8em; color:#d080ff; font-style:italic;">${d.arquetipoAbissal || 'O Viajante do Véu'}</div>
+                    </div>
+                    <div>${obterBadgeEstadoAstral(d.estadoAstral)}</div>
+                </div>
+
+                <div class="nosf-grid-metricas">
+                    <div class="nosf-metric-card">
+                        <div class="nosf-metric-title">⚖️ Peso Kármico</div>
+                        <div class="nosf-metric-val">${d.pesoKarmico} / 100</div>
+                    </div>
+                    <div class="nosf-metric-card">
+                        <div class="nosf-metric-title">🕯️ Alma</div>
+                        <div class="nosf-metric-val" style="color:${d.corAlma || '#d080ff'}; font-size:0.82em;">${d.essencia}</div>
+                    </div>
+                    <div class="nosf-metric-card">
+                        <div class="nosf-metric-title">🩸 Corrupção</div>
+                        <div class="nosf-metric-val" style="color:${d.taxaCorrupcao > 60 ? '#ff4444' : '#00ff88'}">${d.taxaCorrupcao}%</div>
+                    </div>
+                    <div class="nosf-metric-card">
+                        <div class="nosf-metric-title">🌌 Elemento</div>
+                        <div class="nosf-metric-val">${obterIconeElemento(d.ressonanciaElemental)}</div>
+                    </div>
+                    <div class="nosf-metric-card">
+                        <div class="nosf-metric-title">🔮 Afinidade</div>
+                        <div class="nosf-metric-val" style="font-size:0.82em;">${d.afinidadeOculta || 'Magnetismo'}</div>
+                    </div>
+                    <div class="nosf-metric-card">
+                        <div class="nosf-metric-title">👑 Vaso Influência</div>
+                        <div class="nosf-metric-val">${d.vasoInfluencia || 50}%</div>
+                    </div>
+                    <div class="nosf-metric-card">
+                        <div class="nosf-metric-title">🛡️ Resist. Psíquica</div>
+                        <div class="nosf-metric-val">${d.resistenciaPsiquica || 50}%</div>
+                    </div>
+                    <div class="nosf-metric-card">
+                        <div class="nosf-metric-title">👁️ Vulnerabilidade</div>
+                        <div class="nosf-metric-val">${d.vulnerabilidadeEspiritual || 50}%</div>
+                    </div>
+                    <div class="nosf-metric-card">
+                        <div class="nosf-metric-title">☯️ Polaridade</div>
+                        <div class="nosf-metric-val" style="font-size:0.82em;">${d.polaridadeAlma || 'Penumbra'}</div>
+                    </div>
+                    <div class="nosf-metric-card">
+                        <div class="nosf-metric-title">🩸 Pureza Sangue</div>
+                        <div class="nosf-metric-val">${d.purezaSangue || 50}%</div>
+                    </div>
+                    <div class="nosf-metric-card">
+                        <div class="nosf-metric-title">🎵 Frequência</div>
+                        <div class="nosf-metric-val">${d.frequenciaVibracionalHz || 528} Hz</div>
+                    </div>
+                    <div class="nosf-metric-card">
+                        <div class="nosf-metric-title">🔒 Sigilo Astral</div>
+                        <div class="nosf-metric-val" style="font-size:0.75em; font-family:monospace;">${d.sigilo ? d.sigilo.substring(0, 10) + '...' : 'N/A'}</div>
+                    </div>
+                </div>
+
                 <div style="margin-top:15px;padding:12px;background:#0a0015;border-left:3px solid var(--magia);border-radius:3px;">
                     <div style="color:var(--magia);font-weight:bold;margin-bottom:5px;font-family:'Cinzel',serif;">📖 Análise da Mente Abissal</div>
-                    <div style="color:#bbb;line-height:1.6;white-space:pre-wrap;">${dados.dossie.analiseIA}</div>
+                    <div style="color:#bbb;line-height:1.6;white-space:pre-wrap;font-size:0.92em;">${d.analiseIA}</div>
                 </div>
             `;
 
@@ -7850,53 +8061,225 @@ if(meuVampiro.geracao === 1) safeSet('alvo-osint-admin', document.getElementById
             document.getElementById('nosf-url-perfil').value = '';
             document.getElementById('nosf-notas').value = '';
 
-            if (dados.dossie.alvoId) {
-                alvosNosferatuCache.push(dados.dossie);
+            if (d.alvoId) {
+                const idx = alvosNosferatuCache.findIndex(x => x.alvoId === d.alvoId || x.nomeAstral.toLowerCase() === d.nomeAstral.toLowerCase());
+                if (idx >= 0) alvosNosferatuCache[idx] = d;
+                else alvosNosferatuCache.push(d);
                 renderizarAlvosNosferatu();
             }
         } catch (e) {
-            container.innerHTML = `<div style="padding:12px;color:#ff7788;">Falha de rede: ${e?.message || 'erro desconhecido'}</div>`;
+            container.innerHTML = '<div style="padding:12px;color:#ff7788;">Falha de rede: ' + (e?.message || 'erro desconhecido') + '</div>';
             ocultoAlert("A pesquisa externa falhou. Veja o erro no painel.");
         }
+    }
+
+    function trocarEsferaAcao(alvoId, esfera) {
+        esferaAtivaAlvo[alvoId] = esfera;
+        renderizarAlvosNosferatu();
+    }
+
+    function toggleDetalhesAlvo(idEl) {
+        const el = document.getElementById(idEl);
+        if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
     }
 
     function renderizarAlvosNosferatu() {
         const lista = document.getElementById('nosf-lista-alvos');
         if (!lista) return;
-        if (alvosNosferatuCache.length === 0) {
-            lista.innerHTML = '<p style="color:#555; font-style:italic; text-align:center;">Nenhum alvo rasgado do Véu ainda...</p>';
+        if (!alvosNosferatuCache || alvosNosferatuCache.length === 0) {
+            lista.innerHTML = '<p style="color:#555; font-style:italic; text-align:center; padding:15px;">Nenhum alvo rasgado do Véu ainda...</p>';
             return;
         }
-        lista.innerHTML = alvosNosferatuCache.map(a => `
-            <div class="nosf-alvo-card">
-                <div>
-                    <strong style="color:#d080ff;">${a.nomeAstral || 'Desconhecido'}</strong>
-                    <div style="font-size:0.75em; color:#888;">Peso: ${a.pesoKarmico} | ${a.essencia}</div>
+
+        lista.innerHTML = alvosNosferatuCache.map((a, i) => {
+            const esfera = esferaAtivaAlvo[a.alvoId] || 'carinhosa';
+            const idPainel = 'nosf-detalhe-' + i;
+            const idHist = 'nosf-hist-' + i;
+            const idDossie = 'nosf-dossie-box-' + i;
+
+            return `
+                <div style="background:#090014; border:1px solid rgba(147,51,234,0.3); border-radius:6px; padding:12px; margin-bottom:14px; box-shadow:0 0 15px rgba(0,0,0,0.6);">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                        <div>
+                            <span style="font-size:1.1em; font-weight:bold; color:#fff; font-family:'Cinzel',serif;">${a.nomeAstral}</span>
+                            <span style="font-size:0.8em; color:#d080ff; font-style:italic; margin-left:6px;">• ${a.arquetipoAbissal || 'O Viajante'}</span>
+                            <div style="font-size:0.75em; color:#888; margin-top:2px;">
+                                Elemento: ${obterIconeElemento(a.ressonanciaElemental)} | Afinidade: ${a.afinidadeOculta || 'Magnetismo'} | Peso: ${a.pesoKarmico} | Corrupção: ${a.taxaCorrupcao}%
+                            </div>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            ${obterBadgeEstadoAstral(a.estadoAstral)}
+                            <button class="nosf-action-btn" onclick="toggleDetalhesAlvo('${idPainel}')" style="padding:4px 8px;" title="Ver/Ocultar Métricas e Ações">⚡ Ações</button>
+                            <button class="nosf-action-btn" onclick="toggleDetalhesAlvo('${idDossie}')" style="padding:4px 8px;" title="Ver Dossiê">📖 Dossiê</button>
+                            <button class="nosf-action-btn" onclick="toggleDetalhesAlvo('${idHist}')" style="padding:4px 8px;" title="Histórico de Ritos">📜 Histórico</button>
+                        </div>
+                    </div>
+
+                    <!-- PAINEL EXPANSÍVEL DE AÇÕES & MÉTRICAS -->
+                    <div id="${idPainel}" style="display:block; margin-top:12px; border-top:1px solid #200035; padding-top:10px;">
+                        <div class="nosf-grid-metricas">
+                            <div class="nosf-metric-card">
+                                <div class="nosf-metric-title">👑 Vaso Influência</div>
+                                <div class="nosf-metric-val">${a.vasoInfluencia || 50}%</div>
+                            </div>
+                            <div class="nosf-metric-card">
+                                <div class="nosf-metric-title">🛡️ Resist. Psíquica</div>
+                                <div class="nosf-metric-val">${a.resistenciaPsiquica || 50}%</div>
+                            </div>
+                            <div class="nosf-metric-card">
+                                <div class="nosf-metric-title">👁️ Vulnerabilidade</div>
+                                <div class="nosf-metric-val">${a.vulnerabilidadeEspiritual || 50}%</div>
+                            </div>
+                            <div class="nosf-metric-card">
+                                <div class="nosf-metric-title">🎵 Frequência</div>
+                                <div class="nosf-metric-val">${a.frequenciaVibracionalHz || 528} Hz</div>
+                            </div>
+                        </div>
+
+                        <!-- ABAS DAS 4 ESFERAS -->
+                        <div class="nosf-esfera-tabs">
+                            <button class="nosf-tab-btn ${esfera === 'carinhosa' ? 'active' : ''}" onclick="trocarEsferaAcao('${a.alvoId}', 'carinhosa')">💖 Bênçãos</button>
+                            <button class="nosf-tab-btn ${esfera === 'influencia' ? 'active' : ''}" onclick="trocarEsferaAcao('${a.alvoId}', 'influencia')">⚡ Influências</button>
+                            <button class="nosf-tab-btn ${esfera === 'malefica' ? 'active' : ''}" onclick="trocarEsferaAcao('${a.alvoId}', 'malefica')">🩸 Maléficas</button>
+                            <button class="nosf-tab-btn ${esfera === 'limbo' ? 'active' : ''}" onclick="trocarEsferaAcao('${a.alvoId}', 'limbo')">🕳️ Limbo</button>
+                        </div>
+
+                        <!-- CAMPO DE INTENÇÃO PERSONALIZADA -->
+                        <div style="margin-bottom:8px;">
+                            <input type="text" id="nosf-intencao-${a.alvoId}" placeholder="Intenção oculta personalizada para este rito (opcional)..." style="width:100%; background:#06000d; border:1px solid #331045; color:#d080ff; padding:7px 10px; font-size:0.8em; border-radius:3px;">
+                        </div>
+
+                        <!-- BOTÕES DA ESFERA SELECIONADA -->
+                        <div class="nosf-acoes-grid">
+                            ${esfera === 'carinhosa' ? `
+                                <button class="btn-acao-karmica btn-acao-carinhosa" onclick="executarAcaoKarmica('${a.alvoId}', 'toque_seda')">
+                                    <span>🌸 Toque de Seda Astral <small style="display:block; font-size:0.75em; opacity:0.8;">Acalma a mente, restaura serenidade e sono reparador (+15% Resistência)</small></span>
+                                    <span style="font-weight:bold; color:#ff99cc;">300 Gts</span>
+                                </button>
+                                <button class="btn-acao-karmica btn-acao-carinhosa" onclick="executarAcaoKarmica('${a.alvoId}', 'bencao_lilith')">
+                                    <span>🛡️ Manto Protetor de Lilith <small style="display:block; font-size:0.75em; opacity:0.8;">Escudo áurico contra inveja e ataques astrais externos (Abençoado)</small></span>
+                                    <span style="font-weight:bold; color:#ff99cc;">600 Gts</span>
+                                </button>
+                                <button class="btn-acao-karmica btn-acao-carinhosa" onclick="executarAcaoKarmica('${a.alvoId}', 'flor_sangue')">
+                                    <span>🌹 Flor de Sangue (Magnetismo Afetivo) <small style="display:block; font-size:0.75em; opacity:0.8;">Desperta súbita onda de calor, ternura e empatia pelo Mestre</small></span>
+                                    <span style="font-weight:bold; color:#ff99cc;">500 Gts</span>
+                                </button>
+                                <button class="btn-acao-karmica btn-acao-carinhosa" onclick="executarAcaoKarmica('${a.alvoId}', 'musa_noturna')">
+                                    <span>✨ Musa das Trevas (Iluminação Criativa) <small style="display:block; font-size:0.75em; opacity:0.8;">Inspiração artística visceral, lampejos intuitivos e 741Hz</small></span>
+                                    <span style="font-weight:bold; color:#ff99cc;">400 Gts</span>
+                                </button>
+                            ` : ''}
+
+                            ${esfera === 'influencia' ? `
+                                <button class="btn-acao-karmica btn-acao-influencia" onclick="executarAcaoKarmica('${a.alvoId}', 'sugestao_onirica')">
+                                    <span>💤 Sugestão Onírica Direcionada <small style="display:block; font-size:0.75em; opacity:0.8;">Injeta ideia durante o sono; o mortal crê que partiu dele</small></span>
+                                    <span style="font-weight:bold; color:#80dfff;">700 Gts</span>
+                                </button>
+                                <button class="btn-acao-karmica btn-acao-influencia" onclick="executarAcaoKarmica('${a.alvoId}', 'eco_egregora')">
+                                    <span>🔔 Eco da Egrégora (Sincronicidades) <small style="display:block; font-size:0.75em; opacity:0.8;">Números repetidos (333, 666), déjà vu e chamado invisível</small></span>
+                                    <span style="font-weight:bold; color:#80dfff;">500 Gts</span>
+                                </button>
+                                <button class="btn-acao-karmica btn-acao-influencia" onclick="executarAcaoKarmica('${a.alvoId}', 'espelho_ilusorio')">
+                                    <span>🪞 Espelho Ilusório (Distorção) <small style="display:block; font-size:0.75em; opacity:0.8;">Faz o mortal duvidar de certezas mundanas e desconfiar da realidade</small></span>
+                                    <span style="font-weight:bold; color:#80dfff;">650 Gts</span>
+                                </button>
+                                <button class="btn-acao-karmica btn-acao-influencia" onclick="executarAcaoKarmica('${a.alvoId}', 'laco_obsessao')">
+                                    <span>🔗 Laço de Obsessão Astral <small style="display:block; font-size:0.75em; opacity:0.8;">Fio de prata kármico: pensamentos do alvo fixam-se no Mestre</small></span>
+                                    <span style="font-weight:bold; color:#80dfff;">900 Gts</span>
+                                </button>
+                            ` : ''}
+
+                            ${esfera === 'malefica' ? `
+                                <button class="btn-acao-karmica btn-acao-malefica" onclick="executarAcaoKarmica('${a.alvoId}', 'pesadelo_abissal')">
+                                    <span>👁️ Invasão de Pesadelos (Paralisia) <small style="display:block; font-size:0.75em; opacity:0.8;">Paralisia noturna, sombras nos cantos e pavor gelado</small></span>
+                                    <span style="font-weight:bold; color:#ff7777;">800 Gts</span>
+                                </button>
+                                <button class="btn-acao-karmica btn-acao-malefica" onclick="executarAcaoKarmica('${a.alvoId}', 'drenagem_voraz')">
+                                    <span>🩸 Drenagem Voraz de Alma <small style="display:block; font-size:0.75em; opacity:0.8;">Suga a vitalidade do alvo e CONVERTE em +1000 Gts de Sangue para o Mestre!</small></span>
+                                    <span style="font-weight:bold; color:#00ff88;">+1000 Gts</span>
+                                </button>
+                                <button class="btn-acao-karmica btn-acao-malefica" onclick="executarAcaoKarmica('${a.alvoId}', 'olho_seth')">
+                                    <span>⚡ Olho de Seth (Desfortuna & Ruína) <small style="display:block; font-size:0.75em; opacity:0.8;">Semeia entropia negativa: quebra de aparelhos, atrasos e discórdia</small></span>
+                                    <span style="font-weight:bold; color:#ff7777;">1000 Gts</span>
+                                </button>
+                                <button class="btn-acao-karmica btn-acao-malefica" onclick="executarAcaoKarmica('${a.alvoId}', 'acoite_sombra')">
+                                    <span>🗡️ Açoite de Sangue Negro <small style="display:block; font-size:0.75em; opacity:0.8;">Ruptura da blindagem áurica, fadiga instantânea e dor fantasma</small></span>
+                                    <span style="font-weight:bold; color:#ff7777;">1200 Gts</span>
+                                </button>
+                            ` : ''}
+
+                            ${esfera === 'limbo' ? `
+                                <button class="btn-acao-karmica btn-acao-limbo" onclick="executarAcaoKarmica('${a.alvoId}', 'banir_ao_limbo')">
+                                    <span>🕳️ Banimento ao Limbo Astral <small style="display:block; font-size:0.75em; opacity:0.8;">Arrasta o duplo para o Vazio Cinzento; congela sua aura e anula resistências</small></span>
+                                    <span style="font-weight:bold; color:#c084fc;">2000 Gts</span>
+                                </button>
+                                <button class="btn-acao-karmica btn-acao-limbo" onclick="executarAcaoKarmica('${a.alvoId}', 'condenar_ao_tartaro')">
+                                    <span>🔥 Condenação ao Tártaro Cósmico <small style="display:block; font-size:0.75em; opacity:0.8;">A pena capital: acorrenta a alma no poço ardente de Tiamat</small></span>
+                                    <span style="font-weight:bold; color:#ef4444;">3000 Gts</span>
+                                </button>
+                                <button class="btn-acao-karmica btn-acao-limbo" onclick="executarAcaoKarmica('${a.alvoId}', 'resgatar_do_limbo')">
+                                    <span>🕊️ Resgate & Absolvição Soberana <small style="display:block; font-size:0.75em; opacity:0.8;">Misericórdia do Mestre: resgata a alma de volta à Vigília e purifica o carma</small></span>
+                                    <span style="font-weight:bold; color:#00ff88;">500 Gts</span>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- DOSSIÊ DA MENTE ABISSAL -->
+                    <div id="${idDossie}" style="display:none; margin-top:10px; border-top:1px dashed #300045; padding-top:8px; font-size:0.85em; color:#bbb; line-height:1.5; max-height:220px; overflow-y:auto; white-space:pre-wrap;">
+                        ${a.analiseIA || 'Nenhuma análise detalhada armazenada.'}
+                    </div>
+
+                    <!-- HISTÓRICO DE AÇÕES DESTE ALVO -->
+                    <div id="${idHist}" style="display:none; margin-top:10px; border-top:1px dashed #300045; padding-top:8px; font-size:0.8em;">
+                        <strong style="color:var(--magia); font-family:'Cinzel',serif;">📜 Histórico de Emanações Astrais:</strong>
+                        <div style="max-height:160px; overflow-y:auto; margin-top:6px;">
+                            ${(!a.historicoAcoes || a.historicoAcoes.length === 0) 
+                                ? '<div style="color:#666; font-style:italic;">Nenhum rito emitido ainda.</div>'
+                                : a.historicoAcoes.map(h => `
+                                    <div style="padding:4px 0; border-bottom:1px solid #1a0025;">
+                                        <span style="color:#888;">[${new Date(h.data).toLocaleTimeString()}]</span>
+                                        <strong style="color:#d080ff;">${h.nome || h.acao}</strong>
+                                        <div style="color:#bbb; font-size:0.9em;">${h.relato}</div>
+                                    </div>
+                                `).join('')}
+                        </div>
+                    </div>
                 </div>
-                <div style="display:flex; gap:4px;">
-                    <button class="nosf-action-btn" onclick="executarAcaoKarmica('${a.alvoId}', 'sussurro_veu')" title="Sussurrar">👁️</button>
-                    <button class="nosf-action-btn" onclick="executarAcaoKarmica('${a.alvoId}', 'drenar_vitalidade')" title="Drenar">🩸</button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     async function executarAcaoKarmica(alvoId, acao) {
         if (!meuVampiro) return;
+        
+        const inputIntencao = document.getElementById('nosf-intencao-' + alvoId);
+        const intencaoPersonalizada = inputIntencao ? inputIntencao.value.trim() : '';
+
         playSfx('magia');
         try {
             const res = await fetch('/api/nosferatu/acao_karmica', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ adminId: meuVampiro.id, alvoId, acao })
+                body: JSON.stringify({ adminId: meuVampiro.id, alvoId, acao, intencaoPersonalizada })
             });
             const dados = await res.json();
             if (dados.erro) return ocultoAlert(dados.erro);
 
+            if (inputIntencao) inputIntencao.value = '';
+
+            // Atualiza alvo no cache
+            if (dados.alvo) {
+                const idx = alvosNosferatuCache.findIndex(x => x.alvoId === dados.alvo.alvoId || x.nomeAstral.toLowerCase() === dados.alvo.nomeAstral.toLowerCase());
+                if (idx >= 0) alvosNosferatuCache[idx] = dados.alvo;
+                renderizarAlvosNosferatu();
+            }
+
             abismoVoid();
-            showJuiceNotif("KARMA ATIVADO", dados.relato || "A ação kármica ressoou nas dimensões.");
-            sussurroDemonioBrasil(dados.relato || "O karma foi invocado. As forças do véu respondem.");
+            showJuiceNotif("EMANATION RITUAL", dados.relato || "A ação kármica ressoou nas dimensões.");
+            sussurroDemonioBrasil(dados.relato || "O karma foi invocado.");
             ocultoAlert(dados.relato);
+            syncStatus();
         } catch(e) {
             ocultoAlert("O Véu rejeitou a ação kármica.");
         }
