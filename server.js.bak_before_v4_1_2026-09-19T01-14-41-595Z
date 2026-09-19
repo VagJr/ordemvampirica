@@ -440,6 +440,7 @@ app.post('/api/admin/consagrar_mestre', (req, res) => {
 // PORTAL NOSFERATU — INTELIGÊNCIA OCULTA (OSINT)
 // ==========================================
 
+
 app.post('/api/nosferatu/rasgar_veu', async (req, res) => {
     try {
         const { adminId, nomeReal, instagram, twitter, urlPerfil, notas } = req.body;
@@ -541,7 +542,8 @@ app.post('/api/nosferatu/rasgar_veu', async (req, res) => {
     }
 });
 
-app.post('/api/nosferatu/acao_karmica', async (req, res) => {
+
+app.post('/api/nosferatu/acao_karmica'app.post('/api/nosferatu/acao_karmica'app.post('/api/nosferatu/acao_karmica', async (req, res) => {
     try {
         const { adminId, alvoId, acao } = req.body;
         const admin = core.vampiros[adminId];

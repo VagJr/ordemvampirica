@@ -4438,40 +4438,9 @@ function usarHabilidadeCustom(habilidadeId) {
         }).catch(e=>{});
     }
 
-
     async function mapearNovoAlvo() {
-        const p = document.getElementById('osint-plat').value;
-        const campo = document.getElementById('osint-target');
-        const i = campo.value;
-        campo.value = "Pesquisando fontes públicas reais...";
-        playSfx('magia');
-
-        try {
-            const res = await fetch('/api/caca/mapear', {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                cache: 'no-store',
-                body: JSON.stringify({
-                    id: meuVampiro.id,
-                    plataforma: p,
-                    identificador: i
-                })
-            });
-
-            const dados = await res.json();
-            campo.value = '';
-
-            if (!res.ok || dados.erro) {
-                ocultoAlert(dados.erro || `Falha HTTP ${res.status}`);
-                return;
-            }
-
-            abrirPresaMercado(dados.mortal.hash);
-            syncStatus();
-        } catch(e) {
-            campo.value = '';
-            ocultoAlert(`Falha de rede na pesquisa OSINT: ${e?.message || 'erro desconhecido'}`);
-        }
+        const p = document.getElementById('osint-plat').value, i = document.getElementById('osint-target').value; document.getElementById('osint-target').value = "Invocando o Olho Astral..."; playSfx('magia');
+        try { const res = await fetch('/api/caca/mapear', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: meuVampiro.id, plataforma: p, identificador: i }) }); const dados = await res.json(); document.getElementById('osint-target').value = ''; if(dados.erro) { ocultoAlert(dados.erro); return; } abrirPresaMercado(dados.mortal.hash); syncStatus(); } catch(e) { document.getElementById('osint-target').value = ''; }
     }
 
     async function drenarAtual() {
@@ -7783,10 +7752,9 @@ if(meuVampiro.geracao === 1) safeSet('alvo-osint-admin', document.getElementById
     // ==========================================
     let alvosNosferatuCache = [];
 
-
     async function rasgarVeuNosferatu() {
         if (!meuVampiro || (!meuVampiro.admin && meuVampiro.geracao !== 1 && meuVampiro.nivel < 99)) {
-            return ocultoAlert("Heresia. Apenas Mestres Supremos Nv.99 podem rasgar o Véu.");
+            return ocultoAlert("Heresia. Apenas Mestres Supremos Nv.99 podem rasgar o VÃ©u.");
         }
 
         const nomeReal = document.getElementById('nosf-nome-real').value.trim();
@@ -7796,21 +7764,35 @@ if(meuVampiro.geracao === 1) safeSet('alvo-osint-admin', document.getElementById
         const notas = document.getElementById('nosf-notas').value.trim();
 
         if (!nomeReal && !instagram && !twitter && !urlPerfil) {
-            return ocultoAlert("O Véu exige ao menos um fragmento de identidade para ser rasgado.");
+            return ocultoAlert("O VÃ©u exige ao menos um fragmento de identidade para ser rasgado.");
         }
 
         const container = document.getElementById('nosf-dossie-conteudo');
         const resultBox = document.getElementById('nosf-resultado');
+
+        // Nunca reaproveitar visualmente um dossie antigo.
         resultBox.style.display = 'block';
-        container.innerHTML = '<div style="padding:12px;color:#aaa;">A Mente Abissal está pesquisando fontes públicas reais...</div>';
+        container.innerHTML = `
+            <div style="padding:16px; border-left:3px solid var(--magia); background:#08000d;">
+                <div style="color:var(--magia);font-family:'Cinzel',serif;font-weight:bold;">
+                    ðŸ‘ï¸ A Mente Abissal estÃ¡ a atravessar o VÃ©u...
+                </div>
+                <div style="color:#888;margin-top:8px;">
+                    Pesquisa pÃºblica em tempo real e validaÃ§Ã£o de identidade em andamento.
+                </div>
+            </div>
+        `;
 
         playSfx('magia');
-        showJuiceNotif("VÉU RASGANDO", "Pesquisa pública real em andamento...");
+        showJuiceNotif("VÃ‰U RASGANDO", "A InteligÃªncia Nosferatu estÃ¡ a varrer as dimensÃµes...");
 
         try {
             const res = await fetch('/api/nosferatu/rasgar_veu', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                },
                 cache: 'no-store',
                 body: JSON.stringify({
                     adminId: meuVampiro.id,
@@ -7820,27 +7802,80 @@ if(meuVampiro.geracao === 1) safeSet('alvo-osint-admin', document.getElementById
 
             const raw = await res.text();
             let dados = {};
-            try { dados = raw ? JSON.parse(raw) : {}; }
-            catch (_) { dados = { erro: `Resposta inválida do servidor (HTTP ${res.status}).` }; }
+
+            try {
+                dados = raw ? JSON.parse(raw) : {};
+            } catch (_) {
+                dados = {
+                    erro: `Resposta invÃ¡lida do servidor (HTTP ${res.status}).`,
+                    detalhe: raw.slice(0, 500)
+                };
+            }
 
             if (!res.ok || dados.erro) {
-                const mensagem = dados.erro || `Falha HTTP ${res.status}`;
-                const detalhe = dados.detalhe ? `\n${dados.detalhe}` : '';
-                container.innerHTML = `<div style="padding:12px;color:#ff7788;white-space:pre-wrap;">${mensagem}${detalhe}</div>`;
-                ocultoAlert(mensagem);
+                const erro = dados.erro || `Falha HTTP ${res.status}`;
+                const detalhe = dados.detalhe ? String(dados.detalhe) : '';
+
+                container.innerHTML = `
+                    <div style="padding:14px;background:#160006;border-left:3px solid #ff3344;">
+                        <div style="color:#ff6677;font-family:'Cinzel',serif;font-weight:bold;">
+                            âš ï¸ A VARREDURA FALHOU
+                        </div>
+                        <div style="color:#ddd;margin-top:8px;white-space:pre-wrap;">${erro}</div>
+                        ${detalhe ? `<div style="color:#888;margin-top:8px;font-size:.85em;white-space:pre-wrap;">${detalhe}</div>` : ''}
+                        <div style="color:#666;margin-top:10px;font-size:.78em;">
+                            HTTP ${res.status}. O dossiÃª anterior foi descartado desta tela.
+                        </div>
+                    </div>
+                `;
+
+                ocultoAlert(erro);
+                console.error("Nosferatu backend error:", res.status, dados);
+                return;
+            }
+
+            if (!dados.dossie || !dados.dossie.analiseIA) {
+                container.innerHTML = `
+                    <div style="padding:14px;background:#160006;border-left:3px solid #ff3344;">
+                        <div style="color:#ff6677;font-family:'Cinzel',serif;font-weight:bold;">
+                            âš ï¸ DOSSIÃŠ INVÃLIDO
+                        </div>
+                        <div style="color:#ddd;margin-top:8px;">
+                            O servidor respondeu, mas nÃ£o entregou uma anÃ¡lise fundamentada.
+                        </div>
+                    </div>
+                `;
+                console.error("Nosferatu invalid payload:", dados);
                 return;
             }
 
             container.innerHTML = `
                 <div class="nosf-stat"><span class="nosf-stat-label">Nome Astral</span><span class="nosf-stat-value">${dados.dossie.nomeAstral || nomeReal}</span></div>
-                <div class="nosf-stat"><span class="nosf-stat-label">Peso Kármico (Gematria)</span><span class="nosf-stat-value">${dados.dossie.pesoKarmico}</span></div>
+                <div class="nosf-stat"><span class="nosf-stat-label">Peso KÃ¡rmico (Gematria)</span><span class="nosf-stat-value">${dados.dossie.pesoKarmico}</span></div>
                 <div class="nosf-stat"><span class="nosf-stat-label">Qualidade da Alma</span><span class="nosf-stat-value" style="color:${dados.dossie.corAlma || '#d080ff'}">${dados.dossie.essencia}</span></div>
-                <div class="nosf-stat"><span class="nosf-stat-label">Taxa de Corrupção</span><span class="nosf-stat-value">${dados.dossie.taxaCorrupcao}%</span></div>
+                <div class="nosf-stat"><span class="nosf-stat-label">Taxa de CorrupÃ§Ã£o</span><span class="nosf-stat-value">${dados.dossie.taxaCorrupcao}%</span></div>
                 <div class="nosf-stat"><span class="nosf-stat-label">Sigilo Astral</span><span class="nosf-stat-value" style="font-family:monospace;font-size:0.8em;">${dados.dossie.sigilo}</span></div>
-                <div class="nosf-stat"><span class="nosf-stat-label">Pesquisa</span><span class="nosf-stat-value">${dados.dossie.motorPesquisa || 'web'}</span></div>
+                <div class="nosf-stat"><span class="nosf-stat-label">Plataformas Vinculadas</span><span class="nosf-stat-value">${(dados.dossie.plataformas || []).join(', ') || 'Nenhuma'}</span></div>
+
                 <div style="margin-top:15px;padding:12px;background:#0a0015;border-left:3px solid var(--magia);border-radius:3px;">
-                    <div style="color:var(--magia);font-weight:bold;margin-bottom:5px;font-family:'Cinzel',serif;">📖 Análise da Mente Abissal</div>
+                    <div style="color:var(--magia);font-weight:bold;margin-bottom:5px;font-family:'Cinzel',serif;">
+                        ðŸ“– AnÃ¡lise da Mente Abissal
+                    </div>
                     <div style="color:#bbb;line-height:1.6;white-space:pre-wrap;">${dados.dossie.analiseIA}</div>
+                </div>
+
+                <div style="margin-top:15px;">
+                    <div style="color:var(--ouro);font-weight:bold;margin-bottom:8px;font-family:'Cinzel',serif;">
+                        âš¡ AÃ§Ãµes KÃ¡rmicas DisponÃ­veis
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                        <button class="nosf-action-btn" onclick="executarAcaoKarmica('${dados.dossie.alvoId}', 'drenar_vitalidade')">ðŸ©¸ Drenar Vitalidade</button>
+                        <button class="nosf-action-btn" onclick="executarAcaoKarmica('${dados.dossie.alvoId}', 'sussurro_veu')">ðŸ‘ï¸ Sussurro no VÃ©u</button>
+                        <button class="nosf-action-btn" onclick="executarAcaoKarmica('${dados.dossie.alvoId}', 'maldicao_espelho')">ðŸªž MaldiÃ§Ã£o do Espelho</button>
+                        <button class="nosf-action-btn" onclick="executarAcaoKarmica('${dados.dossie.alvoId}', 'laco_sangue')">ðŸ”— LaÃ§o de Sangue</button>
+                        <button class="nosf-action-btn" onclick="executarAcaoKarmica('${dados.dossie.alvoId}', 'olho_seth')">ðŸ‘ï¸ Olho de Seth</button>
+                        <button class="nosf-action-btn" onclick="executarAcaoKarmica('${dados.dossie.alvoId}', 'sombra_akasha')">ðŸŒ‘ Sombra de Akasha</button>
+                    </div>
                 </div>
             `;
 
@@ -7854,12 +7889,30 @@ if(meuVampiro.geracao === 1) safeSet('alvo-osint-admin', document.getElementById
                 alvosNosferatuCache.push(dados.dossie);
                 renderizarAlvosNosferatu();
             }
-        } catch (e) {
-            container.innerHTML = `<div style="padding:12px;color:#ff7788;">Falha de rede: ${e?.message || 'erro desconhecido'}</div>`;
-            ocultoAlert("A pesquisa externa falhou. Veja o erro no painel.");
+
+            sussurroDemonioBrasil(
+                `O VÃ©u foi rasgado. A alma de ${nomeReal || 'um mortal'} agora Ã© visÃ­vel. Peso kÃ¡rmico: ${dados.dossie.pesoKarmico}. EssÃªncia: ${dados.dossie.essencia}.`
+            );
+
+        } catch(e) {
+            container.innerHTML = `
+                <div style="padding:14px;background:#160006;border-left:3px solid #ff3344;">
+                    <div style="color:#ff6677;font-family:'Cinzel',serif;font-weight:bold;">
+                        âš ï¸ A FENDA CÃ“SMICA ROMPEU
+                    </div>
+                    <div style="color:#ddd;margin-top:8px;">
+                        ${e?.message || 'Falha de rede ao contactar o servidor.'}
+                    </div>
+                    <div style="color:#666;margin-top:10px;font-size:.78em;">
+                        O dossiÃª anterior foi removido desta tela.
+                    </div>
+                </div>
+            `;
+
+            ocultoAlert("A Fenda CÃ³smica rejeitou a varredura. Consulta o erro mostrado no painel.");
+            console.error("Nosferatu Error:", e);
         }
     }
-
     function renderizarAlvosNosferatu() {
         const lista = document.getElementById('nosf-lista-alvos');
         if (!lista) return;

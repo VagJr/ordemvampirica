@@ -636,7 +636,7 @@ FONTES PUBLICAS CONSULTADAS
         };
     }
 
-    async vozDoDemonio(nomeDemonio, contexto, detalhes) {
+    async vozDoDemonio(    async vozDoDemonio(nomeDemonio, contexto, detalhes) {
         if (!this.apiKey) return `[${nomeDemonio} ruge das profundezas]`;
         try {
             const promptContexto = `Demônio invocado: [${nomeDemonio}]. CONTEXTO: ${contexto}. DETALHE: ${detalhes}. Grita com os jogadores! 1 FRASE brutal.`;
@@ -3167,7 +3167,7 @@ class ShadowCore {
         };
     }
 
-    comprometerMortal(vampiroId, hashMortal) {
+    comprometerMortal(    comprometerMortal(vampiroId, hashMortal) {
         const vampiro = this.vampiros[vampiroId]; const mortal = this.rebanho[hashMortal];
         if (!vampiro || !mortal) return { erro: "As brumas escondem o alvo." };
         if (vampiro.sangue < 800) return { erro: "Exige 800 Gts de Sacrifício." };

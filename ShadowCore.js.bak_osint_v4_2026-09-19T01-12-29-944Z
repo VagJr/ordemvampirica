@@ -446,194 +446,45 @@ async forjarMagiaCombateUnica(iniciado) {
         } catch(e) { return detalhes; }
     }
 
-
-    async pesquisarIdentidadePublica(dados = {}) {
-        if (!this.apiKey || !this.groq) {
-            return {
-                sucesso: false,
-                erro: "GROQ_API_KEY ausente no servidor.",
-                osintReal: false
-            };
-        }
-
-        const plataforma = String(dados.plataforma || '').trim().toLowerCase();
-        const identificador = String(dados.identificador || '').trim();
-        const nome = String(dados.nome || '').trim();
-        const instagram = String(dados.instagram || '').trim();
-        const twitter = String(dados.twitter || '').trim();
-        const urlPerfil = String(dados.urlPerfil || '').trim();
-        const notas = String(dados.notas || '').trim();
-
-        const pareceTelefone = /^\+?[\d\s().-]{8,}$/.test(identificador);
-        if (plataforma === 'whatsapp' || pareceTelefone) {
-            return {
-                sucesso: false,
-                erro: "Identificadores telefonicos privados nao sao usados para varredura publica. Use nome publico, @handle ou URL publica.",
-                osintReal: false
-            };
-        }
-
-        const handle = identificador.replace(/^@/, '');
-        const urlPublica =
-            urlPerfil ||
-            (plataforma === 'instagram' && handle ? `https://www.instagram.com/${handle}/` : '') ||
-            ((plataforma === 'twitter' || plataforma === 'x') && handle ? `https://x.com/${handle}` : '') ||
-            (plataforma === 'tiktok' && handle ? `https://www.tiktok.com/@${handle}` : '') ||
-            (plataforma === 'telegram' && handle ? `https://t.me/${handle}` : '');
-
-        const fragmentos = [
-            nome ? `Nome informado: ${nome}` : null,
-            identificador ? `Identificador informado: ${identificador}` : null,
-            plataforma ? `Plataforma informada: ${plataforma}` : null,
-            instagram ? `Instagram informado: ${instagram}` : null,
-            twitter ? `Twitter/X informado: ${twitter}` : null,
-            urlPublica ? `URL publica informada/construida: ${urlPublica}` : null,
-            notas ? `Contexto fornecido pelo operador (apenas pista, nao fato): ${notas}` : null
-        ].filter(Boolean).join('\n');
-
-        if (!fragmentos) {
-            return {
-                sucesso: false,
-                erro: "Nenhum identificador publico foi fornecido para pesquisa.",
-                osintReal: false
-            };
-        }
-
-        const prompt = `
-Voce e o motor de pesquisa publica da Mente Abissal do jogo Ordem Vampirica.
-ESTA ETAPA E OSINT REAL: pesquise a web antes de responder.
-
-ALVO:
-${fragmentos}
-
-PROCEDIMENTO OBRIGATORIO:
-1. Use browser search de verdade.
-2. Pesquise o nome exato entre aspas quando houver nome.
-3. Pesquise o @handle exato, com e sem @.
-4. Quando houver rede social, faca tambem busca especifica pelo dominio correspondente.
-5. Quando houver URL publica, tente cruza-la com outros resultados publicos.
-6. Cruze identificadores. Nao misture homonimos.
-7. Para atribuir um fato a pessoa, exija correspondencia razoavel de nome/handle/contexto.
-8. Se houver pouca evidencia publica, diga "EVIDENCIA PUBLICA INSUFICIENTE". Nao complete lacunas por imaginacao.
-9. Nao alegue hacking e nao use cold reading como fato.
-10. Nao revele endereco residencial, telefone, email privado, documentos, localizacao precisa ou credenciais.
-11. Nao infira saude, religiao, orientacao sexual, etnia, opiniao politica, diagnostico psicologico ou outros atributos sensiveis.
-12. Qualidades e pontos de atencao so podem vir de comportamento PUBLICO observavel: trabalhos, projetos, entrevistas, posts publicos, competicoes, publicacoes ou resultados documentados.
-13. Cite as fontes no texto e termine com FONTES PUBLICAS CONSULTADAS, preferencialmente com URLs completas.
-14. Mantenha a ficcao vampirica SOMENTE na secao LEITURA DO VEU. Os fatos devem ficar claramente separados.
-
-FORMATO:
-IDENTIDADE PUBLICA ENCONTRADA
-EVIDENCIAS DE CORRESPONDENCIA
-PRESENCA DIGITAL PUBLICA
-ATIVIDADES E TRAJETORIA PUBLICAS
-QUALIDADES OBSERVAVEIS E EVIDENCIAS
-PONTOS DE ATENCAO OBSERVAVEIS E EVIDENCIAS
-LACUNAS / INCERTEZAS
-LEITURA DO VEU - NARRATIVA DO JOGO
-CONFIANCA DA IDENTIFICACAO: BAIXA, MEDIA ou ALTA
-FONTES PUBLICAS CONSULTADAS
-`;
-
-        const primaryModel = process.env.GROQ_OSINT_BROWSER_MODEL || 'openai/gpt-oss-120b';
-
-        try {
-            const resposta = await this.groq.chat.completions.create({
-                model: primaryModel,
-                messages: [{ role: 'user', content: prompt }],
-                tools: [{ type: 'browser_search' }],
-                tool_choice: 'required',
-                reasoning_effort: 'low',
-                temperature: 0.2,
-                max_completion_tokens: 2600
-            });
-
-            const conteudo = resposta?.choices?.[0]?.message?.content?.trim();
-            if (!conteudo) throw new Error('Browser Search retornou resposta vazia.');
-
-            return {
-                sucesso: true,
-                osintReal: true,
-                motor: `browser_search:${primaryModel}`,
-                pesquisadoEm: Date.now(),
-                conteudo
-            };
-        } catch (erroBrowser) {
-            console.error('[OSINT] Browser Search falhou:', erroBrowser?.message || erroBrowser);
-
-            try {
-                const fallback = await this.groq.chat.completions.create({
-                    model: process.env.GROQ_OSINT_FALLBACK_MODEL || 'groq/compound',
-                    messages: [{
-                        role: 'user',
-                        content: prompt + '\nFACA PELO MENOS UMA PESQUISA WEB ANTES DE RESPONDER.'
-                    }],
-                    compound_custom: {
-                        tools: {
-                            enabled_tools: ['web_search']
-                        }
-                    },
-                    citation_options: 'enabled',
-                    search_settings: { country: 'brazil' },
-                    temperature: 0.2,
-                    max_completion_tokens: 2600
-                });
-
-                const msg = fallback?.choices?.[0]?.message;
-                const conteudo = msg?.content?.trim();
-                const ferramentas = Array.isArray(msg?.executed_tools) ? msg.executed_tools : [];
-
-                if (!conteudo || ferramentas.length === 0) {
-                    throw new Error('Compound nao executou pesquisa web verificavel.');
-                }
-
-                return {
-                    sucesso: true,
-                    osintReal: true,
-                    motor: 'groq/compound:web_search',
-                    pesquisadoEm: Date.now(),
-                    conteudo
-                };
-            } catch (erroFallback) {
-                console.error('[OSINT] Fallback Compound falhou:', erroFallback?.message || erroFallback);
-
-                return {
-                    sucesso: false,
-                    osintReal: false,
-                    erro: `Pesquisa externa indisponivel. Browser Search: ${erroBrowser?.message || 'falha'} | Fallback: ${erroFallback?.message || 'falha'}`
-                };
-            }
-        }
-    }
-
     async lerAuraMortal(identificador, plataforma, dadosLexicon) {
-        const pesquisa = await this.pesquisarIdentidadePublica({
-            identificador,
-            plataforma
-        });
-
-        if (!pesquisa.sucesso) {
-            return {
-                fama: false,
-                multiplicador: 1,
-                aura: pesquisa.erro,
-                osintReal: false,
-                erro: pesquisa.erro
-            };
+        if (!this.apiKey) return { fama: false, multiplicador: 1, aura: "Aura mundana. Acesso negado à Malha." };
+        try {
+            // Transformamos o prompt num motor de Cold Reading (Leitura Fria) e OSINT
+            const prompt = `
+            ATUE COMO UM PROFILER DE OSINT E MAGIA NEGRA.
+            O jogador invocou a identidade real do mundo físico: "${identificador}" na plataforma "${plataforma}".
+            A Matriz Criptográfica (Lexicon) já julgou esta alma com os seguintes dados:
+            - Qualidade da Alma: ${dadosLexicon.essencia}
+            - Taxa de Corrupção/Pecado: ${dadosLexicon.taxaCorrupcao}%
+            - Peso Espiritual: ${dadosLexicon.pesoEspiritual}
+            
+            MISSÃO:
+            Faça uma leitura de aura ASSUSTADORA e PRECISA. 
+            Se o nome for de uma pessoa famosa, cite características reais dela.
+            Se for um utilizador comum ou número, use psicologia sombria (cold reading) para deduzir os seus medos, segredos digitais e o que eles escondem nas redes sociais.
+            FINJA QUE HACKEOU E LEU A INTERNET EM TEMPO REAL. Seja poético, invasivo e cruel. MÁXIMO 3 FRASES.
+            
+            RETORNE APENAS UM JSON EXATO (NADA ALÉM DO JSON): 
+            { 
+                "fama": true/false (true apenas se for figura pública real mundial), 
+                "multiplicador": (1 a 5 baseado na fama ou peso da alma), 
+                "aura": "Texto assustador da leitura" 
+            }`;
+            
+            const resposta = await this.groq.chat.completions.create({ 
+                messages: [
+                    { role: "system", content: "JSON ESTRITO. És o olho da Dark Web e do Abismo." }, 
+                    { role: "user", content: prompt }
+                ], 
+                model: this.modelo, // Usamos o modelo mais inteligente para deduções reais
+                temperature: 0.7, 
+                response_format: { type: "json_object" } 
+            });
+            return this._extrairJson(resposta.choices[0].message.content);
+        } catch (e) { 
+            console.error("Erro na Vidência da IA:", e);
+            return { fama: false, multiplicador: 1, aura: "A encriptação do mundo mortal bloqueou o meu Olho. Mas o sangue ainda é quente." }; 
         }
-
-        const ritual = dadosLexicon
-            ? `\n\nLEITURA DO VEU - CAMADA FICCIONAL DO JOGO:\nEssencia ritual: ${dadosLexicon.essencia}. Corrupcao ritual: ${dadosLexicon.taxaCorrupcao}%. Peso espiritual: ${dadosLexicon.pesoEspiritual}. Estes numeros sao ficcao de gameplay e nao fatos sobre a pessoa.`
-            : '';
-
-        return {
-            fama: false,
-            multiplicador: 1,
-            aura: pesquisa.conteudo + ritual,
-            osintReal: true,
-            motor: pesquisa.motor,
-            pesquisadoEm: pesquisa.pesquisadoEm
-        };
     }
 
     async vozDoDemonio(nomeDemonio, contexto, detalhes) {
@@ -3057,115 +2908,80 @@ class ShadowCore {
     // ==========================================
     // 👁️ OSINT / CAÇA EXTREMA (O VÉU RASGADO - GRAU 99)
     // ==========================================
-
     async mapearMortal(vampiroId, plataforma, identificador) {
-        const v = this.vampiros[vampiroId];
-        if (!v) return { erro: "O Abismo nao te reconhece." };
-        if (!v.osintAprovado) return { erro: "A tua mente nao foi preparada pelo Primordial. O Veu queima a tua visao." };
-        if (v.isBot) return { erro: "A Maquina nao interage com o Fio de Prata." };
-        if (v.pontosAcao < 1) return { erro: "O 3o Olho exige 1 Furia para focar a visao." };
+        const v = this.vampiros[vampiroId]; 
+        if (!v) return { erro: "O Abismo não te reconhece." };
+        // SEGREDO TRANCA-PORTAS: Apenas quem foi aprovado acede.
+        if (!v.osintAprovado) return { erro: "A tua mente não foi preparada pelo Primordial. O Véu queima a tua visão." };
+        if (v.isBot) return { erro: "A Máquina não interage com o Fio de Prata." };
+        if (v.pontosAcao < 1) return { erro: "O 3º Olho exige 1 Fúria para focar a visão." };
 
-        if (!identificador || !String(identificador).trim()) {
-            return { erro: "Fornece um nome publico, @handle ou URL publica." };
+        let idLimpo = identificador.trim().toLowerCase();
+        
+        if ((plataforma === 'telegram' || plataforma === 'instagram' || plataforma === 'tiktok') && !idLimpo.startsWith('@')) { 
+            if (isNaN(idLimpo)) { idLimpo = '@' + idLimpo; } 
         }
-
-        let idLimpo = String(identificador).trim().toLowerCase();
-
-        if ((plataforma === 'telegram' || plataforma === 'instagram' || plataforma === 'tiktok') && !idLimpo.startsWith('@')) {
-            if (isNaN(idLimpo)) idLimpo = '@' + idLimpo;
+        if (plataforma === 'whatsapp' && idLimpo.replace(/[^0-9]/g, '').length < 8) {
+            return { erro: "A cifra telefónica está corrompida." };
         }
+        
+        v.pontosAcao -= 1; 
+        this.ganharXP(vampiroId, 5); 
 
-        if (plataforma === 'whatsapp') {
-            return {
-                erro: "WhatsApp/telefone e identificador privado. A pesquisa OSINT real aceita apenas identidades publicas, @handles ou URLs publicas."
-            };
-        }
-
+        // >>> 1. O PODER DO LEXICON: FORJAR A ÂNCORA ASTRAL <<<
         const ancoragem = Lexicon.ForjarSigiloMortal(plataforma, idLimpo);
         const hashAlma = ancoragem.sigilo;
-        const agora = Date.now();
-        const ttlPesquisa = 6 * 60 * 60 * 1000;
 
-        const existente = this.rebanho[hashAlma];
-        if (
-            existente &&
-            existente.osintReal === true &&
-            existente.ultimaVarredura &&
-            (agora - existente.ultimaVarredura) < ttlPesquisa
-        ) {
-            return { sucesso: true, mortal: existente, cacheOsint: true };
-        }
+        if (this.rebanho[hashAlma]) return { sucesso: true, mortal: this.rebanho[hashAlma] };
 
-        v.pontosAcao -= 1;
-
+        // >>> 2. O PODER DO LEXICON: JULGAMENTO DO KHARMA DA VÍTIMA <<<
         const julgamentoDivino = Lexicon.JulgarAlma(idLimpo);
-        let hpBase = (julgamentoDivino.pesoEspiritual * 150) + (v.nivel * 50);
+        
+        let hpBase = (julgamentoDivino.pesoEspiritual * 150) + (v.nivel * 50); 
+        if (plataforma === 'whatsapp') hpBase = Math.floor(hpBase * 1.5);
 
-        const novo = !existente;
-        const mortal = existente || {
-            hash: hashAlma,
-            identificadorVisivel: idLimpo,
-            plataforma,
+        this.rebanho[hashAlma] = { 
+            hash: hashAlma, 
+            identificadorVisivel: idLimpo, 
+            plataforma: plataforma, 
             qualidade: julgamentoDivino.essencia,
             corrupcao: julgamentoDivino.taxaCorrupcao,
-            sangueMax: hpBase,
-            sangueAtual: hpBase,
-            estado: 'Vibrante',
-            maldicaoArcana: null,
-            registroMordidas: []
+            sangueMax: hpBase, 
+            sangueAtual: hpBase, 
+            estado: 'Vibrante', 
+            maldicaoArcana: null, 
+            registroMordidas: [], 
+            leituraAura: "O Olho do Abismo está a hackear a mente desta presa..." 
         };
 
-        mortal.leituraAura = "A Mente Abissal esta pesquisando fontes publicas reais...";
-        mortal.osintReal = false;
-        mortal.osintMotor = null;
-        mortal.ultimaVarreduraTentativa = agora;
-        this.rebanho[hashAlma] = mortal;
+        this._registrarEventoEspecial('caca', 'O VÉU RASGADO', `A identidade física [${idLimpo}] foi vista e amarrada à Matriz Astral por ${v.nome}.`); 
         this._salvarBancoDeDados();
 
-        const dadosIA = await this.oraculo.lerAuraMortal(idLimpo, plataforma, julgamentoDivino);
-
-        if (!dadosIA || !dadosIA.osintReal) {
-            v.pontosAcao += 1;
-
-            if (novo) {
-                delete this.rebanho[hashAlma];
-            } else {
-                mortal.leituraAura = existente.leituraAura || "Pesquisa publica indisponivel.";
+        // >>> 3. O PODER DA MENTE ABISSAL (IA - Tempo Real Simulado) <<<
+        // Agora passamos o julgamento divino para a IA ter "provas" da alma
+        this.oraculo.lerAuraMortal(idLimpo, plataforma, julgamentoDivino).then(dadosIA => {
+            if(this.rebanho[hashAlma]) {
+                this.rebanho[hashAlma].leituraAura = dadosIA.aura; 
+                let mult = dadosIA.multiplicador || 1;
+                
+                if (mult > 1) { 
+                    this.rebanho[hashAlma].sangueMax *= mult; 
+                    this.rebanho[hashAlma].sangueAtual *= mult; 
+                    this.rebanho[hashAlma].qualidade = dadosIA.fama ? `Sangue Real (Notoriedade Nv.${mult})` : `Pecador Denso (Nv.${mult})`; 
+                    this._registrarEventoEspecial('global', 'ALMA MASSIVA', `Uma presa física formidável (Nv.${mult}) foi ancorada à teia.`); 
+                }
+                this._salvarBancoDeDados(); 
+                // Atualiza a tela dos jogadores imediatamente!
+                if (global.io) {
+                    global.io.emit('aura_atualizada', hashAlma);
+                    global.io.emit('sync_geral');
+                }
             }
+        });
 
-            this._salvarBancoDeDados();
-
-            return {
-                erro: dadosIA?.erro || dadosIA?.aura || "A pesquisa OSINT real falhou. Nenhum perfil foi inventado."
-            };
-        }
-
-        mortal.leituraAura = dadosIA.aura;
-        mortal.osintReal = true;
-        mortal.osintMotor = dadosIA.motor || 'browser_search';
-        mortal.ultimaVarredura = dadosIA.pesquisadoEm || Date.now();
-
-        this.ganharXP(vampiroId, 5);
-        this._registrarEventoEspecial(
-            'caca',
-            'O VEU RASGADO',
-            `A identidade publica [${idLimpo}] foi pesquisada em fontes abertas por ${v.nome}.`
-        );
-
-        this._salvarBancoDeDados();
-
-        if (global.io) {
-            global.io.emit('aura_atualizada', hashAlma);
-            global.io.emit('sync_geral');
-        }
-
-        return {
-            sucesso: true,
-            mortal,
-            pesquisaReal: true,
-            motorPesquisa: mortal.osintMotor
-        };
+        return { sucesso: true, mortal: this.rebanho[hashAlma] };
     }
+    
 
     comprometerMortal(vampiroId, hashMortal) {
         const vampiro = this.vampiros[vampiroId]; const mortal = this.rebanho[hashMortal];

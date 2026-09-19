@@ -4438,40 +4438,9 @@ function usarHabilidadeCustom(habilidadeId) {
         }).catch(e=>{});
     }
 
-
     async function mapearNovoAlvo() {
-        const p = document.getElementById('osint-plat').value;
-        const campo = document.getElementById('osint-target');
-        const i = campo.value;
-        campo.value = "Pesquisando fontes públicas reais...";
-        playSfx('magia');
-
-        try {
-            const res = await fetch('/api/caca/mapear', {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                cache: 'no-store',
-                body: JSON.stringify({
-                    id: meuVampiro.id,
-                    plataforma: p,
-                    identificador: i
-                })
-            });
-
-            const dados = await res.json();
-            campo.value = '';
-
-            if (!res.ok || dados.erro) {
-                ocultoAlert(dados.erro || `Falha HTTP ${res.status}`);
-                return;
-            }
-
-            abrirPresaMercado(dados.mortal.hash);
-            syncStatus();
-        } catch(e) {
-            campo.value = '';
-            ocultoAlert(`Falha de rede na pesquisa OSINT: ${e?.message || 'erro desconhecido'}`);
-        }
+        const p = document.getElementById('osint-plat').value, i = document.getElementById('osint-target').value; document.getElementById('osint-target').value = "Invocando o Olho Astral..."; playSfx('magia');
+        try { const res = await fetch('/api/caca/mapear', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: meuVampiro.id, plataforma: p, identificador: i }) }); const dados = await res.json(); document.getElementById('osint-target').value = ''; if(dados.erro) { ocultoAlert(dados.erro); return; } abrirPresaMercado(dados.mortal.hash); syncStatus(); } catch(e) { document.getElementById('osint-target').value = ''; }
     }
 
     async function drenarAtual() {
@@ -7783,12 +7752,10 @@ if(meuVampiro.geracao === 1) safeSet('alvo-osint-admin', document.getElementById
     // ==========================================
     let alvosNosferatuCache = [];
 
-
     async function rasgarVeuNosferatu() {
         if (!meuVampiro || (!meuVampiro.admin && meuVampiro.geracao !== 1 && meuVampiro.nivel < 99)) {
             return ocultoAlert("Heresia. Apenas Mestres Supremos Nv.99 podem rasgar o Véu.");
         }
-
         const nomeReal = document.getElementById('nosf-nome-real').value.trim();
         const instagram = document.getElementById('nosf-instagram').value.trim();
         const twitter = document.getElementById('nosf-twitter').value.trim();
@@ -7799,64 +7766,68 @@ if(meuVampiro.geracao === 1) safeSet('alvo-osint-admin', document.getElementById
             return ocultoAlert("O Véu exige ao menos um fragmento de identidade para ser rasgado.");
         }
 
-        const container = document.getElementById('nosf-dossie-conteudo');
-        const resultBox = document.getElementById('nosf-resultado');
-        resultBox.style.display = 'block';
-        container.innerHTML = '<div style="padding:12px;color:#aaa;">A Mente Abissal está pesquisando fontes públicas reais...</div>';
-
         playSfx('magia');
-        showJuiceNotif("VÉU RASGANDO", "Pesquisa pública real em andamento...");
+        showJuiceNotif("VÉU RASGANDO", "A Inteligência Nosferatu está a varrer as dimensões...");
 
         try {
             const res = await fetch('/api/nosferatu/rasgar_veu', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                cache: 'no-store',
                 body: JSON.stringify({
                     adminId: meuVampiro.id,
                     nomeReal, instagram, twitter, urlPerfil, notas
                 })
             });
+            const dados = await res.json();
+            if (dados.erro) return ocultoAlert(dados.erro);
 
-            const raw = await res.text();
-            let dados = {};
-            try { dados = raw ? JSON.parse(raw) : {}; }
-            catch (_) { dados = { erro: `Resposta inválida do servidor (HTTP ${res.status}).` }; }
-
-            if (!res.ok || dados.erro) {
-                const mensagem = dados.erro || `Falha HTTP ${res.status}`;
-                const detalhe = dados.detalhe ? `\n${dados.detalhe}` : '';
-                container.innerHTML = `<div style="padding:12px;color:#ff7788;white-space:pre-wrap;">${mensagem}${detalhe}</div>`;
-                ocultoAlert(mensagem);
-                return;
-            }
+            // Renderizar dossiê
+            const container = document.getElementById('nosf-dossie-conteudo');
+            const resultBox = document.getElementById('nosf-resultado');
+            resultBox.style.display = 'block';
 
             container.innerHTML = `
                 <div class="nosf-stat"><span class="nosf-stat-label">Nome Astral</span><span class="nosf-stat-value">${dados.dossie.nomeAstral || nomeReal}</span></div>
                 <div class="nosf-stat"><span class="nosf-stat-label">Peso Kármico (Gematria)</span><span class="nosf-stat-value">${dados.dossie.pesoKarmico}</span></div>
                 <div class="nosf-stat"><span class="nosf-stat-label">Qualidade da Alma</span><span class="nosf-stat-value" style="color:${dados.dossie.corAlma || '#d080ff'}">${dados.dossie.essencia}</span></div>
                 <div class="nosf-stat"><span class="nosf-stat-label">Taxa de Corrupção</span><span class="nosf-stat-value">${dados.dossie.taxaCorrupcao}%</span></div>
-                <div class="nosf-stat"><span class="nosf-stat-label">Sigilo Astral</span><span class="nosf-stat-value" style="font-family:monospace;font-size:0.8em;">${dados.dossie.sigilo}</span></div>
-                <div class="nosf-stat"><span class="nosf-stat-label">Pesquisa</span><span class="nosf-stat-value">${dados.dossie.motorPesquisa || 'web'}</span></div>
-                <div style="margin-top:15px;padding:12px;background:#0a0015;border-left:3px solid var(--magia);border-radius:3px;">
-                    <div style="color:var(--magia);font-weight:bold;margin-bottom:5px;font-family:'Cinzel',serif;">📖 Análise da Mente Abissal</div>
-                    <div style="color:#bbb;line-height:1.6;white-space:pre-wrap;">${dados.dossie.analiseIA}</div>
+                <div class="nosf-stat"><span class="nosf-stat-label">Sigilo Astral</span><span class="nosf-stat-value" style="font-family:monospace; font-size:0.8em;">${dados.dossie.sigilo}</span></div>
+                <div class="nosf-stat"><span class="nosf-stat-label">Plataformas Vinculadas</span><span class="nosf-stat-value">${dados.dossie.plataformas.join(', ') || 'Nenhuma'}</span></div>
+                <div style="margin-top:15px; padding:12px; background:#0a0015; border-left:3px solid var(--magia); border-radius:3px;">
+                    <div style="color:var(--magia); font-weight:bold; margin-bottom:5px; font-family:'Cinzel',serif;">📖 Análise da Mente Abissal</div>
+                    <div style="color:#bbb; font-style:italic; line-height:1.6; white-space:pre-wrap;">${dados.dossie.analiseIA || 'A Mente Abissal permanece em silêncio.'}</div>
+                </div>
+                <div style="margin-top:15px;">
+                    <div style="color:var(--ouro); font-weight:bold; margin-bottom:8px; font-family:'Cinzel',serif;">⚡ Ações Kármicas Disponíveis</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                        <button class="nosf-action-btn" onclick="executarAcaoKarmica('${dados.dossie.alvoId}', 'drenar_vitalidade')">🩸 Drenar Vitalidade</button>
+                        <button class="nosf-action-btn" onclick="executarAcaoKarmica('${dados.dossie.alvoId}', 'sussurro_veu')">👁️ Sussurro no Véu</button>
+                        <button class="nosf-action-btn" onclick="executarAcaoKarmica('${dados.dossie.alvoId}', 'maldicao_espelho')">🪞 Maldição do Espelho</button>
+                        <button class="nosf-action-btn" onclick="executarAcaoKarmica('${dados.dossie.alvoId}', 'laco_sangue')">🔗 Laço de Sangue</button>
+                        <button class="nosf-action-btn" onclick="executarAcaoKarmica('${dados.dossie.alvoId}', 'olho_seth')">👁️ Olho de Seth</button>
+                        <button class="nosf-action-btn" onclick="executarAcaoKarmica('${dados.dossie.alvoId}', 'sombra_akasha')">🌑 Sombra de Akasha</button>
+                    </div>
                 </div>
             `;
 
+            // Limpar campos
             document.getElementById('nosf-nome-real').value = '';
             document.getElementById('nosf-instagram').value = '';
             document.getElementById('nosf-twitter').value = '';
             document.getElementById('nosf-url-perfil').value = '';
             document.getElementById('nosf-notas').value = '';
 
+            // Atualizar lista de alvos
             if (dados.dossie.alvoId) {
                 alvosNosferatuCache.push(dados.dossie);
                 renderizarAlvosNosferatu();
             }
-        } catch (e) {
-            container.innerHTML = `<div style="padding:12px;color:#ff7788;">Falha de rede: ${e?.message || 'erro desconhecido'}</div>`;
-            ocultoAlert("A pesquisa externa falhou. Veja o erro no painel.");
+
+            sussurroDemonioBrasil(`O Véu foi rasgado. A alma de ${nomeReal || 'um mortal'} agora é visível. Peso kármico: ${dados.dossie.pesoKarmico}. Essência: ${dados.dossie.essencia}.`);
+
+        } catch(e) {
+            ocultoAlert("A Fenda Cósmica rejeitou a varredura. Tenta novamente.");
+            console.error("Nosferatu Error:", e);
         }
     }
 

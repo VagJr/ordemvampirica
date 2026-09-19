@@ -439,35 +439,32 @@ app.post('/api/admin/consagrar_mestre', (req, res) => {
 // ==========================================
 // PORTAL NOSFERATU — INTELIGÊNCIA OCULTA (OSINT)
 // ==========================================
-
 app.post('/api/nosferatu/rasgar_veu', async (req, res) => {
     try {
         const { adminId, nomeReal, instagram, twitter, urlPerfil, notas } = req.body;
         const admin = core.vampiros[adminId];
-
         if (!admin || (!admin.admin && admin.geracao !== 1 && admin.nivel < 99)) {
-            return res.status(403).json({ erro: "Heresia. Apenas Mestres Supremos Nv.99 podem rasgar o Veu." });
+            return res.status(403).json({ erro: "Heresia. Apenas Mestres Supremos Nv.99 podem rasgar o Véu." });
         }
 
+        // Gerar Dossiê Criptográfico via LexiconSanguinis
         const nomeAlvo = nomeReal || instagram || twitter || 'Desconhecido';
         const alvoId = `nosf_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-
+        
         let sigilo = { sigilo: 'N/A', pesoOculto: 0, revelacao: '' };
         let julgamento = { pesoEspiritual: 0, taxaCorrupcao: 0, essencia: 'Desconhecido' };
         let gematria = 0;
-
+        
         try {
             if (instagram) sigilo = Lexicon.ForjarSigiloMortal('instagram', instagram);
             else if (twitter) sigilo = Lexicon.ForjarSigiloMortal('twitter', twitter);
             else sigilo = Lexicon.ForjarSigiloMortal('nome', nomeAlvo);
-
+            
             julgamento = Lexicon.JulgarAlma(nomeAlvo);
             gematria = Lexicon.CalcularGematria(nomeAlvo);
-        } catch (e) {
-            const GEMATRIA = {
-                a:1,i:1,j:1,q:1,y:1,b:2,k:2,r:2,c:3,g:3,l:3,s:3,
-                d:4,m:4,t:4,e:5,h:5,n:5,x:5,u:6,v:6,w:6,o:7,z:7,f:8,p:8
-            };
+        } catch(e) {
+            // Lexicon pode não estar inicializado, calcular manualmente
+            const GEMATRIA = {'a':1,'i':1,'j':1,'q':1,'y':1,'b':2,'k':2,'r':2,'c':3,'g':3,'l':3,'s':3,'d':4,'m':4,'t':4,'e':5,'h':5,'n':5,'x':5,'u':6,'v':6,'w':6,'o':7,'z':7,'f':8,'p':8};
             gematria = nomeAlvo.toLowerCase().replace(/[^a-z]/g, '').split('').reduce((s, c) => s + (GEMATRIA[c] || 0), 0) || 13;
             const corr = (gematria * Date.now()) % 100;
             let qual = 'Humano Mundano';
@@ -475,42 +472,175 @@ app.post('/api/nosferatu/rasgar_veu', async (req, res) => {
             else if (corr < 5) qual = 'Sangue Puro (Inocente)';
             else if (gematria % 11 === 0) qual = 'Alma Fragmentada';
             julgamento = { pesoEspiritual: gematria, taxaCorrupcao: corr, essencia: qual };
-
+            
             const crypto = require('crypto');
-            sigilo = {
-                sigilo: crypto.createHash('sha256').update(nomeAlvo + Date.now()).digest('hex').substring(0, 40),
-                pesoOculto: gematria
-            };
+            sigilo = { sigilo: crypto.createHash('sha256').update(nomeAlvo + Date.now()).digest('hex').substring(0, 40), pesoOculto: gematria };
         }
 
+        // Identificar plataformas vinculadas
         const plataformas = [];
         if (instagram) plataformas.push(`Instagram: ${instagram}`);
         if (twitter) plataformas.push(`Twitter/X: ${twitter}`);
         if (urlPerfil) plataformas.push(`Perfil: ${urlPerfil}`);
 
-        const pesquisa = await core.oraculo.pesquisarIdentidadePublica({
-            nome: nomeReal,
-            instagram,
-            twitter,
-            urlPerfil,
-            notas
-        });
-
-        if (!pesquisa.sucesso) {
-            return res.status(502).json({
-                erro: "A pesquisa publica real da Mente Abissal falhou.",
-                detalhe: pesquisa.erro || "Erro externo desconhecido."
+        // Gerar Análise de IA via Groq
+        const groqKey = process.env.GROQ_API_KEY;
+        if (!groqKey) {
+            console.error('[NOSFERATU] GROQ_API_KEY ausente no ambiente.');
+            return res.status(503).json({
+                erro: 'A Mente Abissal estÃ¡ sem ligaÃ§Ã£o ao OrÃ¡culo (GROQ_API_KEY ausente).'
             });
         }
 
-        const analiseIA = pesquisa.conteudo +
-            `\n\nLEITURA RITUAL DO JOGO:\nPeso de Gematria: ${gematria}. Essencia ritual: ${julgamento.essencia}. Corrupcao ritual: ${julgamento.taxaCorrupcao}%. Estes valores sao ficcao de gameplay e nao fatos sobre a pessoa.`;
+        let analiseIA = '';
+        try {
+            const identidadePublica = [
+                nomeReal ? `Nome informado: ${nomeReal}` : null,
+                instagram ? `Instagram informado: ${instagram}` : null,
+                twitter ? `Twitter/X informado: ${twitter}` : null,
+                urlPerfil ? `URL de perfil informada: ${urlPerfil}` : null,
+                notas ? `Notas do operador: ${notas}` : null
+            ].filter(Boolean).join('\n');
 
-        let corAlma = '#d080ff';
+            const promptOSINT = `
+TU Ã‰S A MENTE ABISSAL do jogo ORDEM VAMPÃRICA. Esta tarefa exige PESQUISA PÃšBLICA REAL E VERIFICÃVEL.
+
+ALVO INFORMADO:
+${identidadePublica}
+
+DADOS RITUAIS DO JOGO â€” sÃ£o ficÃ§Ã£o narrativa, nÃ£o evidÃªncia factual:
+- Peso de Gematria: ${gematria}
+- EssÃªncia ritual: ${julgamento.essencia}
+- CorrupÃ§Ã£o ritual: ${julgamento.taxaCorrupcao}%
+
+REGRAS:
+1. Usa pesquisa web em tempo real antes de responder.
+2. Se houver URL pÃºblica, visita-a quando tecnicamente acessÃ­vel.
+3. NÃ£o mistures homÃ³nimos. Se nÃ£o for possÃ­vel confirmar a identidade, diz isso explicitamente.
+4. Usa somente informaÃ§Ã£o pÃºblica e verificÃ¡vel.
+5. NÃ£o inventes, nÃ£o faÃ§as cold reading como se fosse facto e nÃ£o alegues ter hackeado nada.
+6. NÃ£o exponhas morada, telefone, e-mail privado, documentos ou localizaÃ§Ã£o precisa.
+7. NÃ£o infiras atributos sensÃ­veis como saÃºde, religiÃ£o, orientaÃ§Ã£o sexual, etnia, polÃ­tica, finanÃ§as ou diagnÃ³sticos psicolÃ³gicos.
+8. Qualidades e limitaÃ§Ãµes sÃ³ podem ser descritas quando houver evidÃªncias pÃºblicas concretas.
+9. MantÃ©m o tom vampÃ­rico somente na camada "LEITURA DO VÃ‰U".
+10. Termina com FONTES CONSULTADAS contendo as principais URLs realmente usadas.
+
+FORMATO:
+IDENTIDADE VERIFICADA
+PRESENÃ‡A DIGITAL PÃšBLICA
+ATIVIDADES / TRAJETÃ“RIA
+QUALIDADES OBSERVÃVEIS
+LIMITAÃ‡Ã•ES / PONTOS DE ATENÃ‡ÃƒO OBSERVÃVEIS
+LEITURA DO VÃ‰U â€” NARRATIVA DO JOGO
+GRAU DE CONFIANÃ‡A DA IDENTIFICAÃ‡ÃƒO
+FONTES CONSULTADAS
+`;
+
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 60000);
+
+            let groqRes;
+            try {
+                groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${groqKey}`,
+                        'Content-Type': 'application/json',
+                        'Groq-Model-Version': 'latest'
+                    },
+                    body: JSON.stringify({
+                        model: process.env.GROQ_OSINT_MODEL || 'groq/compound',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'Ã‰s um investigador OSINT com estÃ©tica vampÃ­rica. Nunca transformes inferÃªncia em facto. Pesquisa antes de responder e cita fontes pÃºblicas.'
+                            },
+                            { role: 'user', content: promptOSINT }
+                        ],
+                        citation_options: 'enabled',
+                        compound_custom: {
+                            tools: {
+                                enabled_tools: ['web_search', 'visit_website']
+                            }
+                        },
+                        max_completion_tokens: 1800
+                    }),
+                    signal: controller.signal
+                });
+            } finally {
+                clearTimeout(timeout);
+            }
+
+            const rawGroq = await groqRes.text();
+
+            let groqData = {};
+            try {
+                groqData = rawGroq ? JSON.parse(rawGroq) : {};
+            } catch (_) {
+                groqData = {};
+            }
+
+            if (!groqRes.ok) {
+                const detalhe = groqData?.error?.message || rawGroq || `HTTP ${groqRes.status}`;
+                console.error(`[NOSFERATU] Groq HTTP ${groqRes.status}:`, detalhe);
+
+                return res.status(502).json({
+                    erro: `A Mente Abissal alcanÃ§ou o OrÃ¡culo, mas a varredura externa falhou (Groq HTTP ${groqRes.status}).`,
+                    detalhe: String(detalhe).slice(0, 350)
+                });
+            }
+
+            const mensagemGroq = groqData?.choices?.[0]?.message;
+            analiseIA = mensagemGroq?.content?.trim() || '';
+
+            const ferramentas = Array.isArray(mensagemGroq?.executed_tools)
+                ? mensagemGroq.executed_tools
+                : [];
+
+            if (!analiseIA) {
+                console.error(
+                    '[NOSFERATU] Groq respondeu sem conteÃºdo.',
+                    JSON.stringify(groqData).slice(0, 1200)
+                );
+
+                return res.status(502).json({
+                    erro: 'A Mente Abissal contactou as dimensÃµes exteriores, mas voltou sem qualquer leitura.'
+                });
+            }
+
+            if (ferramentas.length === 0) {
+                console.warn(
+                    '[NOSFERATU] Resposta sem executed_tools. DossiÃª rejeitado para evitar anÃ¡lise nÃ£o fundamentada.'
+                );
+
+                return res.status(502).json({
+                    erro: 'A Mente Abissal respondeu, mas nÃ£o executou a varredura web exigida. O dossiÃª nÃ£o foi gravado.'
+                });
+            }
+
+            console.log(
+                `[NOSFERATU] Varredura real concluÃ­da. Ferramentas externas usadas: ${ferramentas.length}.`
+            );
+
+        } catch (e) {
+            const expirou = e?.name === 'AbortError';
+
+            console.error('[NOSFERATU] Falha na varredura Groq Compound:', e);
+
+            return res.status(expirou ? 504 : 502).json({
+                erro: expirou
+                    ? 'A varredura da Mente Abissal excedeu 60 segundos.'
+                    : 'A Mente Abissal nÃ£o conseguiu concluir a pesquisa externa.',
+                detalhe: e?.message || 'Erro desconhecido'
+            });
+        }
+
+let corAlma = '#d080ff';
         if (julgamento.essencia.includes('Negro')) corAlma = '#ff3333';
         else if (julgamento.essencia.includes('Puro')) corAlma = '#00ff88';
         else if (julgamento.essencia.includes('Fragmentada')) corAlma = '#ff8800';
 
+        // Construir dossiê congelado
         const dossie = {
             alvoId,
             nomeAstral: nomeAlvo,
@@ -521,23 +651,18 @@ app.post('/api/nosferatu/rasgar_veu', async (req, res) => {
             plataformas,
             analiseIA,
             corAlma,
-            dataVarredura: Date.now(),
-            pesquisaReal: true,
-            motorPesquisa: pesquisa.motor,
-            pesquisadoEm: pesquisa.pesquisadoEm
+            dataVarredura: Date.now()
         };
 
+        // Persistir no vampiro admin
         if (!admin.alvosNosferatu) admin.alvosNosferatu = [];
         admin.alvosNosferatu.push(dossie);
         core._salvarBancoDeDados();
 
         res.json({ sucesso: true, dossie });
-    } catch (e) {
-        console.error('Nosferatu Rasgar Veu Error:', e);
-        res.status(500).json({
-            erro: "A Fenda Cosmica rejeitou a varredura.",
-            detalhe: e?.message || "Erro desconhecido."
-        });
+    } catch(e) {
+        console.error('Nosferatu Rasgar Véu Error:', e);
+        res.status(500).json({ erro: "A Fenda Cósmica rejeitou a varredura." });
     }
 });
 

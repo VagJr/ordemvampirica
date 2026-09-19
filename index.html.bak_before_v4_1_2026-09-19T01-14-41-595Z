@@ -4474,7 +4474,7 @@ function usarHabilidadeCustom(habilidadeId) {
         }
     }
 
-    async function drenarAtual() {
+    async function drenarAtual() {    async function drenarAtual() {
         const local = document.getElementById('local-mordida').value;
         try {
             const res = await fetch('/api/caca/drenar', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: meuVampiro.id, hash: hashAlvoAtual, local }) }); const dados = await res.json();
@@ -7860,7 +7860,7 @@ if(meuVampiro.geracao === 1) safeSet('alvo-osint-admin', document.getElementById
         }
     }
 
-    function renderizarAlvosNosferatu() {
+    function renderizarAlvosNosferatu() {    function renderizarAlvosNosferatu() {
         const lista = document.getElementById('nosf-lista-alvos');
         if (!lista) return;
         if (alvosNosferatuCache.length === 0) {

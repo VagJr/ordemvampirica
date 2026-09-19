@@ -606,6 +606,166 @@ FONTES PUBLICAS CONSULTADAS
         }
     }
 
+
+    async pesquisarIdentidadePublica(dados = {}) {
+        if (!this.apiKey || !this.groq) {
+            return {
+                sucesso: false,
+                erro: "GROQ_API_KEY ausente no servidor.",
+                osintReal: false
+            };
+        }
+
+        const plataforma = String(dados.plataforma || '').trim().toLowerCase();
+        const identificador = String(dados.identificador || '').trim();
+        const nome = String(dados.nome || '').trim();
+        const instagram = String(dados.instagram || '').trim();
+        const twitter = String(dados.twitter || '').trim();
+        const urlPerfil = String(dados.urlPerfil || '').trim();
+        const notas = String(dados.notas || '').trim();
+
+        const pareceTelefone = /^\+?[\d\s().-]{8,}$/.test(identificador);
+        if (plataforma === 'whatsapp' || pareceTelefone) {
+            return {
+                sucesso: false,
+                erro: "Identificadores telefonicos privados nao sao usados para varredura publica. Use nome publico, @handle ou URL publica.",
+                osintReal: false
+            };
+        }
+
+        const handle = identificador.replace(/^@/, '');
+        const urlPublica =
+            urlPerfil ||
+            (plataforma === 'instagram' && handle ? `https://www.instagram.com/${handle}/` : '') ||
+            ((plataforma === 'twitter' || plataforma === 'x') && handle ? `https://x.com/${handle}` : '') ||
+            (plataforma === 'tiktok' && handle ? `https://www.tiktok.com/@${handle}` : '') ||
+            (plataforma === 'telegram' && handle ? `https://t.me/${handle}` : '');
+
+        const fragmentos = [
+            nome ? `Nome informado: ${nome}` : null,
+            identificador ? `Identificador informado: ${identificador}` : null,
+            plataforma ? `Plataforma informada: ${plataforma}` : null,
+            instagram ? `Instagram informado: ${instagram}` : null,
+            twitter ? `Twitter/X informado: ${twitter}` : null,
+            urlPublica ? `URL publica informada/construida: ${urlPublica}` : null,
+            notas ? `Contexto fornecido pelo operador (apenas pista, nao fato): ${notas}` : null
+        ].filter(Boolean).join('\n');
+
+        if (!fragmentos) {
+            return {
+                sucesso: false,
+                erro: "Nenhum identificador publico foi fornecido para pesquisa.",
+                osintReal: false
+            };
+        }
+
+        const prompt = `
+Voce e o motor de pesquisa publica da Mente Abissal do jogo Ordem Vampirica.
+ESTA ETAPA E OSINT REAL: pesquise a web antes de responder.
+
+ALVO:
+${fragmentos}
+
+PROCEDIMENTO OBRIGATORIO:
+1. Use browser search de verdade.
+2. Pesquise o nome exato entre aspas quando houver nome.
+3. Pesquise o @handle exato, com e sem @.
+4. Quando houver rede social, faca tambem busca especifica pelo dominio correspondente.
+5. Quando houver URL publica, tente cruza-la com outros resultados publicos.
+6. Cruze identificadores. Nao misture homonimos.
+7. Para atribuir um fato a pessoa, exija correspondencia razoavel de nome/handle/contexto.
+8. Se houver pouca evidencia publica, diga "EVIDENCIA PUBLICA INSUFICIENTE". Nao complete lacunas por imaginacao.
+9. Nao alegue hacking e nao use cold reading como fato.
+10. Nao revele endereco residencial, telefone, email privado, documentos, localizacao precisa ou credenciais.
+11. Nao infira saude, religiao, orientacao sexual, etnia, opiniao politica, diagnostico psicologico ou outros atributos sensiveis.
+12. Qualidades e pontos de atencao so podem vir de comportamento PUBLICO observavel: trabalhos, projetos, entrevistas, posts publicos, competicoes, publicacoes ou resultados documentados.
+13. Cite as fontes no texto e termine com FONTES PUBLICAS CONSULTADAS, preferencialmente com URLs completas.
+14. Mantenha a ficcao vampirica SOMENTE na secao LEITURA DO VEU. Os fatos devem ficar claramente separados.
+
+FORMATO:
+IDENTIDADE PUBLICA ENCONTRADA
+EVIDENCIAS DE CORRESPONDENCIA
+PRESENCA DIGITAL PUBLICA
+ATIVIDADES E TRAJETORIA PUBLICAS
+QUALIDADES OBSERVAVEIS E EVIDENCIAS
+PONTOS DE ATENCAO OBSERVAVEIS E EVIDENCIAS
+LACUNAS / INCERTEZAS
+LEITURA DO VEU - NARRATIVA DO JOGO
+CONFIANCA DA IDENTIFICACAO: BAIXA, MEDIA ou ALTA
+FONTES PUBLICAS CONSULTADAS
+`;
+
+        const primaryModel = process.env.GROQ_OSINT_BROWSER_MODEL || 'openai/gpt-oss-120b';
+
+        try {
+            const resposta = await this.groq.chat.completions.create({
+                model: primaryModel,
+                messages: [{ role: 'user', content: prompt }],
+                tools: [{ type: 'browser_search' }],
+                tool_choice: 'required',
+                reasoning_effort: 'low',
+                temperature: 0.2,
+                max_completion_tokens: 2600
+            });
+
+            const conteudo = resposta?.choices?.[0]?.message?.content?.trim();
+            if (!conteudo) throw new Error('Browser Search retornou resposta vazia.');
+
+            return {
+                sucesso: true,
+                osintReal: true,
+                motor: `browser_search:${primaryModel}`,
+                pesquisadoEm: Date.now(),
+                conteudo
+            };
+        } catch (erroBrowser) {
+            console.error('[OSINT] Browser Search falhou:', erroBrowser?.message || erroBrowser);
+
+            try {
+                const fallback = await this.groq.chat.completions.create({
+                    model: process.env.GROQ_OSINT_FALLBACK_MODEL || 'groq/compound',
+                    messages: [{
+                        role: 'user',
+                        content: prompt + '\nFACA PELO MENOS UMA PESQUISA WEB ANTES DE RESPONDER.'
+                    }],
+                    compound_custom: {
+                        tools: {
+                            enabled_tools: ['web_search']
+                        }
+                    },
+                    citation_options: 'enabled',
+                    search_settings: { country: 'brazil' },
+                    temperature: 0.2,
+                    max_completion_tokens: 2600
+                });
+
+                const msg = fallback?.choices?.[0]?.message;
+                const conteudo = msg?.content?.trim();
+                const ferramentas = Array.isArray(msg?.executed_tools) ? msg.executed_tools : [];
+
+                if (!conteudo || ferramentas.length === 0) {
+                    throw new Error('Compound nao executou pesquisa web verificavel.');
+                }
+
+                return {
+                    sucesso: true,
+                    osintReal: true,
+                    motor: 'groq/compound:web_search',
+                    pesquisadoEm: Date.now(),
+                    conteudo
+                };
+            } catch (erroFallback) {
+                console.error('[OSINT] Fallback Compound falhou:', erroFallback?.message || erroFallback);
+
+                return {
+                    sucesso: false,
+                    osintReal: false,
+                    erro: `Pesquisa externa indisponivel. Browser Search: ${erroBrowser?.message || 'falha'} | Fallback: ${erroFallback?.message || 'falha'}`
+                };
+            }
+        }
+    }
+
     async lerAuraMortal(identificador, plataforma, dadosLexicon) {
         const pesquisa = await this.pesquisarIdentidadePublica({
             identificador,
@@ -636,7 +796,7 @@ FONTES PUBLICAS CONSULTADAS
         };
     }
 
-    async vozDoDemonio(nomeDemonio, contexto, detalhes) {
+    async vozDoDemonio(    async vozDoDemonio(    async vozDoDemonio(nomeDemonio, contexto, detalhes) {
         if (!this.apiKey) return `[${nomeDemonio} ruge das profundezas]`;
         try {
             const promptContexto = `Demônio invocado: [${nomeDemonio}]. CONTEXTO: ${contexto}. DETALHE: ${detalhes}. Grita com os jogadores! 1 FRASE brutal.`;
@@ -3058,6 +3218,7 @@ class ShadowCore {
     // 👁️ OSINT / CAÇA EXTREMA (O VÉU RASGADO - GRAU 99)
     // ==========================================
 
+
     async mapearMortal(vampiroId, plataforma, identificador) {
         const v = this.vampiros[vampiroId];
         if (!v) return { erro: "O Abismo nao te reconhece." };
@@ -3167,7 +3328,7 @@ class ShadowCore {
         };
     }
 
-    comprometerMortal(vampiroId, hashMortal) {
+    comprometerMortal(    comprometerMortal(    comprometerMortal(vampiroId, hashMortal) {
         const vampiro = this.vampiros[vampiroId]; const mortal = this.rebanho[hashMortal];
         if (!vampiro || !mortal) return { erro: "As brumas escondem o alvo." };
         if (vampiro.sangue < 800) return { erro: "Exige 800 Gts de Sacrifício." };
