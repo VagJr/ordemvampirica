@@ -218,6 +218,7 @@ async function inicializarServidor() {
             const db = client.db('sanguinis_db');
             core.mongoClient = client;
             core.collection = db.collection('registos_akashicos');
+            mongoConectado = true;
             const doc = await core.collection.findOne({ _id: 'MATRIZ_PRINCIPAL' });
             
             if (doc && Object.keys(doc.vampiros || {}).length > 0) {
@@ -243,8 +244,25 @@ async function inicializarServidor() {
                 if (typeof core._construirFuncoesCustomizadas === 'function' && core.grimorioCustomizado) {
                     Object.assign(core.grimorio, core._construirFuncoesCustomizadas(core.grimorioCustomizado));
                 }
+
+                // CURA E IMORTALIDADE PRIMORDIAL DOS MESTRES / ADMINS (vex, Destruidor7, etc.)
+                for (let k in core.vampiros) {
+                    const v = core.vampiros[k];
+                    const isMestre = v.isAdmin || v.role === 'admin' || v.role === 'mestre' || v.nivel >= 99 || v.nome === 'vex' || v.nome === 'Destruidor7';
+                    if (isMestre) {
+                        v.estado = 'Ativo';
+                        v.status = 'Ativo';
+                        v.isAdmin = true;
+                        v.role = 'mestre';
+                        v.hpMax = Math.max(v.hpMax || 50000, 50000);
+                        v.hpAtual = v.hpMax;
+                        v.sangue = Math.max(v.sangue || 0, 500000);
+                        console.log(`👑 [IMORTALIDADE PRIMORDIAL]: Mestre/Admin ${v.nome} restaurado com sucesso.`);
+                    }
+                }
                 salvarBancoLocal();
-                console.log(`🦇 [MONGODB ATLAS] Base viva carregada da escuridão do Atlas! (${Object.keys(core.vampiros).length} vampiros ativos)`);
+                await core.collection.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: { vampiros: core.vampiros } });
+                console.log(`🦇 [MONGODB ATLAS] Base viva carregada da escuridão do Atlas e sincronizada! (${Object.keys(core.vampiros).length} vampiros ativos)`);
             } else {
                 console.log("🌑 [MONGODB ATLAS] Monólito inicial vazio. Realizando seeding dos dados locais para o Atlas...");
                 const seedData = {
@@ -1328,7 +1346,21 @@ app.post('/api/auth', async (req, res) => {
         // [FUSÃO DE MEMÓRIA]: Sincroniza a RAM com a DB para evitar o bug de morte fantasma em servidores Fly.io
         if (core.collection) {
             const doc = await core.collection.findOne({ _id: 'MATRIZ_PRINCIPAL' });
-            if (doc && doc.vampiros) core.vampiros = doc.vampiros;
+            if (doc && doc.vampiros) {
+                core.vampiros = doc.vampiros;
+                for (let k in core.vampiros) {
+                    const v = core.vampiros[k];
+                    if (v && (v.isAdmin || v.role === 'admin' || v.role === 'mestre' || v.nivel >= 99 || v.nome === 'vex' || v.nome === 'Destruidor7')) {
+                        v.estado = 'Ativo';
+                        v.status = 'Ativo';
+                        v.isAdmin = true;
+                        v.role = 'mestre';
+                        v.hpMax = Math.max(v.hpMax || 50000, 50000);
+                        v.hpAtual = v.hpMax;
+                        v.sangue = Math.max(v.sangue || 0, 500000);
+                    }
+                }
+            }
         }
 
         const { tgId, tgUsername, nomeSombrio, senha, inviteCode, raca } = req.body;
@@ -2976,6 +3008,22 @@ class SimuladorDeAlmas {
 
     async cicloDeVida() {
         this.verificarOuCriarContas(); 
+
+        // Salvaguarda Primordial dos Mestres e Administradores
+        for (let id in this.core.vampiros) {
+            const v = this.core.vampiros[id];
+            if (v && (v.isAdmin || v.role === 'admin' || v.role === 'mestre' || v.nivel >= 99 || v.geracao <= 2)) {
+                if (v.estado === 'Banido' || v.estado === 'Torpor' || v.hpAtual <= 0 || v.status === 'Cinzas') {
+                    v.estado = 'Ativo';
+                    v.status = 'Ativo';
+                    v.isAdmin = true;
+                    v.role = 'mestre';
+                    v.hpMax = Math.max(v.hpMax || 50000, 50000);
+                    v.hpAtual = v.hpMax;
+                    v.sangue = Math.max(v.sangue || 0, 500000);
+                }
+            }
+        }
 
         for (let b of this.botsAtivos) {
             const bot = this.core.vampiros[b.id];

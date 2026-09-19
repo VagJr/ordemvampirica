@@ -1586,10 +1586,7 @@
         .btn-flee .btn-u-sub { color: #aaa !important; }
         
         .slash-effect { position: absolute; width: 150px; height: 3px; background: #fff; box-shadow: 0 0 15px #fff, 0 0 30px var(--sangue); transform: rotate(-45deg); z-index: 10003; pointer-events: none; animation: slashAnim 0.2s ease-out forwards; }
-        /* Feedback Visual Suave e Fluido (Zero Flicker / Zero Inversão / 60 FPS) */
-        .parry-flash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.3) 0%, transparent 70%); z-index: 10000; pointer-events: none; animation: flashFade 0.25s ease-out forwards; }
-        .rit-glow-magia { box-shadow: inset 0 0 40px #000, 0 0 40px var(--magia) !important; transition: box-shadow 0.3s ease !important; }
-        .rit-glow-sangue { box-shadow: inset 0 0 40px #000, 0 0 25px #8a0303 !important; transition: box-shadow 0.3s ease !important; }
+        .parry-flash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255, 255, 255, 0.8); z-index: 10000; pointer-events: none; animation: flashFade 0.3s forwards; mix-blend-mode: overlay;}
         .dano-text { position: absolute; font-size: 2.5rem; font-weight: bold; color: #ff1e2f; text-shadow: 2px 2px 0 #000, 0 0 10px #000; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 100010; font-family: 'Cinzel', serif;}
         @keyframes slashAnim { 0% { width: 0; opacity: 1; } 100% { width: 250px; opacity: 0; transform: rotate(-45deg) translate(80px, -80px); } }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-80px) scale(1.5); } }
@@ -1597,7 +1594,7 @@
         @keyframes pulsePurple { 0% { box-shadow: 0 0 5px #d080ff; } 50% { box-shadow: 0 0 30px #d080ff; } 100% { box-shadow: 0 0 5px #d080ff; } }
         @keyframes pulseCyan { 0% { box-shadow: 0 0 5px #0ff; } 50% { box-shadow: 0 0 20px #0ff; } 100% { box-shadow: 0 0 5px #0ff; } }
         @keyframes pulseRed { 0% { box-shadow: 0 0 5px #f0f; } 50% { box-shadow: 0 0 20px #f0f; } 100% { box-shadow: 0 0 5px #f0f; } }
-        .void-flash { position: fixed; top: 0; left: 0; pointer-events: none; width: 100vw; height: 100vh; background: radial-gradient(circle at 50% 50%, rgba(147, 51, 234, 0.35) 0%, transparent 75%); z-index: 9999; animation: flashFade 0.4s ease-out forwards; }
+        .void-flash { position: fixed; top: 0; left: 0; pointer-events: none; width: 100vw; height: 100vh; background: rgba(128, 0, 128, 0.4); z-index: 9999; animation: flashFade 1s forwards; filter: invert(1); }
         .shake-screen { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-8px, 0, 0); } 40%, 60% { transform: translate3d(8px, 0, 0); } }
 
@@ -2502,8 +2499,8 @@
         }
 
         @keyframes visceralPulseGlow {
-            0% { box-shadow: 0 0 8px rgba(255, 30, 47, 0.5); border-color: #ff1e2f; }
-            100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 30, 47, 0.7); border-color: #d4af37; }
+            0% { box-shadow: 0 0 10px rgba(255, 30, 47, 0.6); border-color: #ff1e2f; }
+            100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.9), 0 0 50px rgba(255, 30, 47, 0.8); border-color: #d4af37; transform: scale(1.02); }
         }
 
         .screen-shake {
@@ -6574,41 +6571,8 @@ socket.on('boss_coop_update', (dados) => {
             console.error("A Mente Abissal tentou travar a saída:", e);
         }
     };
-    let _ultimoSplashSangue = 0;
-    function jorrarSangue() {
-        playSfx('sangue');
-        const agora = Date.now();
-        if (agora - _ultimoSplashSangue < 350) return;
-        _ultimoSplashSangue = agora;
-
-        const existente = document.querySelector('.blood-splash, .claw-splash');
-        if (existente) existente.remove();
-
-        const s = document.createElement('div');
-        if (meuVampiro && meuVampiro.raca === 'lycan') {
-            s.className = 'claw-splash';
-            document.body.appendChild(s);
-            setTimeout(() => s.remove(), 600);
-        } else {
-            s.className = 'blood-splash';
-            document.body.appendChild(s);
-            setTimeout(() => s.remove(), 600);
-        }
-    } 
-    function abismoVoid() {
-        playSfx('magia');
-        const s = document.createElement('div');
-        s.className = 'void-flash';
-        document.body.appendChild(s);
-        setTimeout(() => s.remove(), 400);
-
-        const arena = document.getElementById('arena-acao');
-        const targetShake = (arena && !arena.classList.contains('oculto')) ? arena : document.getElementById('ritual-camara');
-        if (targetShake && !targetShake.classList.contains('oculto')) {
-            targetShake.classList.add('screen-shake');
-            setTimeout(() => targetShake.classList.remove('screen-shake'), 350);
-        }
-    }
+    function jorrarSangue() { playSfx('sangue'); if (meuVampiro && meuVampiro.raca === 'lycan') { const s = document.createElement('div'); s.className = 'claw-splash'; document.body.appendChild(s); setTimeout(() => s.remove(), 1000); } else { const s = document.createElement('div'); s.className = 'blood-splash'; document.body.appendChild(s); setTimeout(() => s.remove(), 1500); } } 
+    function abismoVoid() { playSfx('magia'); const s = document.createElement('div'); s.className = 'void-flash'; document.body.appendChild(s); document.body.classList.add('shake-screen'); setTimeout(() => { s.remove(); document.body.classList.remove('shake-screen'); }, 1000); }
 function usarHabilidadeCustom(habilidadeId) {
         if(!combateAtivo || isSyncing) return;
         const hab = meuVampiro.habilidadesAtivas.find(h => h.id === habilidadeId);
@@ -8262,16 +8226,10 @@ function usarHabilidadeCustom(habilidadeId) {
 
             if (ritPressaoAtual >= 40 && ritPressaoAtual <= 60) {
                 ritProgresso += 1.0; 
-                if (sg && !sg.classList.contains('rit-glow-magia')) {
-                    sg.classList.remove('rit-glow-sangue');
-                    sg.classList.add('rit-glow-magia');
-                }
+                if(sg) sg.style.boxShadow = "inset 0 0 40px #000, 0 0 50px var(--magia)"; 
             } else {
                 ritProgresso -= 0.3; 
-                if (sg && !sg.classList.contains('rit-glow-sangue')) {
-                    sg.classList.remove('rit-glow-magia');
-                    sg.classList.add('rit-glow-sangue');
-                }
+                if(sg) sg.style.boxShadow = "inset 0 0 40px #000, 0 0 30px #8a0303";
             }
         } else if (tipo === "ritmo") {
             ritPonteiroRitmoPos += 3; 
@@ -9441,16 +9399,8 @@ function usarHabilidadeCustom(habilidadeId) {
         dispararCombateConclave('herege', bossName, "bounty", 15000, true);
     }
 	
-    socket.on('sync_geral', () => {
-        // Blindagem de performance: Não processar reflows pesados durante combate ativo ou minigame de ritual
-        if (typeof combateAtivo !== 'undefined' && combateAtivo) return;
-        if (typeof ritAtivo !== 'undefined' && ritAtivo) return;
-        carregarMercado(); carregarLeilao(); carregarBiblioteca(); atualizarConclave(); carregarReinos(); 
-        if (meuVampiro) syncStatus(); 
-    });
+    socket.on('sync_geral', () => { carregarMercado(); carregarLeilao(); carregarBiblioteca(); atualizarConclave(); carregarReinos(); if(meuVampiro) syncStatus(); });
     socket.on('tick', () => {
-        if (typeof combateAtivo !== 'undefined' && combateAtivo) return;
-        if (typeof ritAtivo !== 'undefined' && ritAtivo) return;
         forcarSyncVisualRapido(); 
     });
 
