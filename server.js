@@ -132,11 +132,18 @@ function salvarBancoLocal() {
             mercadoItens: core.mercadoItens || [],
             mercadoIdCounter: core.mercadoIdCounter || 1,
             social: core.social ? core.social.salvarEstado() : null,
+            ordensData: core.ordensCore ? core.ordensCore.salvarEstado() : null,
             ultimaGravacao: new Date().toISOString()
         };
         const tempPath = DB_FILE_PATH + '.tmp';
         fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
-        fs.renameSync(tempPath, DB_FILE_PATH);
+        try {
+            if (fs.existsSync(DB_FILE_PATH)) fs.unlinkSync(DB_FILE_PATH);
+            fs.renameSync(tempPath, DB_FILE_PATH);
+        } catch (renErr) {
+            fs.copyFileSync(tempPath, DB_FILE_PATH);
+            try { fs.unlinkSync(tempPath); } catch (e) {}
+        }
     } catch (e) {
         console.error("❌ Falha ao salvar banco de dados integrado local:", e.message);
     }
@@ -184,6 +191,7 @@ function carregarBancoLocal() {
                 if (doc.mercadoItens) core.mercadoItens = doc.mercadoItens;
                 if (doc.mercadoIdCounter) core.mercadoIdCounter = doc.mercadoIdCounter;
                 if (doc.social && core.social) core.social.carregarEstado(doc.social);
+                if (doc.ordensData && core.ordensCore) core.ordensCore.carregarEstado(doc.ordensData);
                 if (typeof core._construirFuncoesCustomizadas === 'function' && core.grimorioCustomizado) {
                     Object.assign(core.grimorio, core._construirFuncoesCustomizadas(core.grimorioCustomizado));
                 }
@@ -1555,7 +1563,321 @@ app.post('/api/combate/action', async (req, res) => {
     } catch(e){ res.status(500).json({erro:"O Juiz Abissal rejeitou."}); }
 });
 
-// --- INVENTÁRIO, MAGIA E AVALIAÇÃO ---
+// ==========================================
+// ROTAS DE ORDENS INICIÁTICAS & BIBLIOTECA OCULTA
+// ==========================================
+app.get('/api/ordem/graus', (req, res) => {
+    try {
+        const { GRAUS_INICIATICOS } = require('./OrdemMagicaCore.js');
+        res.json({ sucesso: true, graus: GRAUS_INICIATICOS });
+    } catch(e) { res.status(500).json({ erro: "Falha ao consultar graus iniciáticos." }); }
+});
+
+app.get('/api/ordem/listar', (req, res) => {
+    try {
+        res.json(core.ordensCore.listarOrdens());
+    } catch(e) { res.status(500).json({ erro: "Falha ao listar ordens místicas." }); }
+});
+
+app.get('/api/ordem/minha/:id', (req, res) => {
+    try {
+        const v = core.vampiros[req.params.id] || core.ordensCore._resolverVampiro(req.params.id);
+        if (!v) return res.status(404).json({ erro: "Iniciado não encontrado." });
+        
+        let ordemMembro = null;
+        let grauAtual = 0;
+        let membroData = null;
+
+        if (v.ordemId && core.ordensCore.ordens[v.ordemId]) {
+            ordemMembro = core.ordensCore.ordens[v.ordemId];
+            membroData = ordemMembro.membros?.[v.id] || null;
+            grauAtual = membroData?.grau || v.grauOrdem || 0;
+        }
+
+        const { GRAUS_INICIATICOS, SANTUARIO_TIERS, CARGOS_CONSELHO } = require('./OrdemMagicaCore.js');
+        const dadosGrau = GRAUS_INICIATICOS[Math.min(grauAtual, GRAUS_INICIATICOS.length - 1)];
+        const ritoAtivo = ordemMembro ? core.ordensCore.obterRitoAtivo(ordemMembro.id) : { ativo: false };
+        const efeitosAtivos = core.ordensCore.obterEfeitosAtivos(req.params.id);
+        const nosMatriz = ordemMembro ? Object.keys(ordemMembro.matrizMagica || {}).length : 0;
+
+        res.json({
+            sucesso: true,
+            ordem: ordemMembro,
+            grau: grauAtual,
+            dadosGrau,
+            todosGraus: GRAUS_INICIATICOS,
+            membroCargo: membroData?.cargo || null,
+            santuarioTier: ordemMembro?.santuarioTier || 1,
+            santuarioTiers: SANTUARIO_TIERS,
+            cargosConselho: CARGOS_CONSELHO,
+            ritoAtivo,
+            efeitosAtivos,
+            nosMatriz
+        });
+    } catch(e) { res.status(500).json({ erro: "Falha ao carregar ordem pessoal." }); }
+});
+
+
+app.post('/api/ordem/criar', async (req, res) => {
+    try {
+        const { id, nome, lema, sigiloPrimordial, juramentoSangue } = req.body;
+        const result = await core.ordensCore.criarOrdem(id, { nome, lema, sigiloPrimordial, juramentoSangue });
+        if (result.sucesso) {
+            forcarSyncJogador(id);
+            io.emit('sync_geral');
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao fundar a Ordem Mística." }); }
+});
+
+app.post('/api/ordem/iniciar_neofito', (req, res) => {
+    try {
+        const { id, ordemId, juramentoSangue } = req.body;
+        const result = core.ordensCore.iniciarNeofito(id, ordemId, juramentoSangue);
+        if (result.sucesso) {
+            forcarSyncJogador(id);
+            io.emit('sync_geral');
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha na iniciação do Neófito." }); }
+});
+
+app.post('/api/ordem/promover_grau', (req, res) => {
+    try {
+        const { id, ordemId, membroId } = req.body;
+        const result = core.ordensCore.promoverGrau(id, ordemId, membroId);
+        if (result.sucesso) {
+            forcarSyncJogador(membroId);
+            io.emit('sync_geral');
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao ascender de grau na Ordem." }); }
+});
+
+app.post('/api/ordem/doar_egregora', (req, res) => {
+    try {
+        const { id, ordemId, quantiaVitae } = req.body;
+        const result = core.ordensCore.doarEgregora(id, ordemId, quantiaVitae);
+        if (result.sucesso) {
+            forcarSyncJogador(id);
+            io.emit('sync_geral');
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao doar à Egrégora." }); }
+});
+
+app.post('/api/ordem/decretar', (req, res) => {
+    try {
+        const { id, ordemId, tituloDecreto, textoDecreto } = req.body;
+        const result = core.ordensCore.proclamarDecreto(id, ordemId, tituloDecreto, textoDecreto);
+        if (result.sucesso) {
+            io.emit('sync_geral');
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao proclamar decreto." }); }
+});
+
+// ==========================================
+// ROTAS DA GRANDE BIBLIOTECA OCULTA & ESTUDOS
+// ==========================================
+app.get('/api/biblioteca/listar', (req, res) => {
+    try {
+        const esfera = req.query.esfera;
+        res.json(core.ordensCore.listarBiblioteca(esfera));
+    } catch(e) { res.status(500).json({ erro: "Falha ao listar biblioteca." }); }
+});
+
+app.post('/api/biblioteca/submeter_tese', async (req, res) => {
+    try {
+        const { id, titulo, esfera, corpoTexto } = req.body;
+        const result = await core.ordensCore.submeterTese(id, titulo, esfera, corpoTexto);
+        if (result.sucesso) {
+            forcarSyncJogador(id);
+            io.emit('sync_geral');
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao submeter tese à Biblioteca." }); }
+});
+
+app.post('/api/biblioteca/estudar_tomo', (req, res) => {
+    try {
+        const { id, tomoId } = req.body;
+        const result = core.ordensCore.estudarTomo(id, tomoId);
+        if (result.sucesso) {
+            forcarSyncJogador(id);
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao estudar tomo." }); }
+});
+
+// ==========================================
+// ROTAS DE MAGIA EM CÓDIGO (SAFE CODE-MAGIC SANDBOX)
+// ==========================================
+app.get('/api/magia_codigo/operadores', (req, res) => {
+    res.json({
+        sucesso: true,
+        operadores: [
+            { op: 'TRANSMUTAR', formato: 'TRANSMUTAR("origem", "destino", quantia);', desc: 'Converte materiais com base na Gnose e atributos.' },
+            { op: 'CANALIZAR_EGREGORA', formato: 'CANALIZAR_EGREGORA(multiplicador);', desc: 'Extrai poder místico do Templo da sua Ordem, concedendo Escudo e Fúria.' },
+            { op: 'DOBRA_ASTRAL', formato: 'DOBRA_ASTRAL("tipo_anomalia", raio);', desc: 'Cria uma anomalia mágica espacial na coordenada atual do Mundo 2D.' },
+            { op: 'MALDICAO_VAMPIRICA', formato: 'MALDICAO_VAMPIRICA("alvoId", "tipo");', desc: 'Lança um selo cármico perturbador num rival de clã ou herege.' },
+            { op: 'INVOCAR_FORJA_VIVA', formato: 'INVOCAR_FORJA_VIVA("tipo_item");', desc: 'Materializa um artefato vivo no inventário através de éter puro.' },
+            { op: 'RESONANCIA_COSMICA', formato: 'RESONANCIA_COSMICA("esfera", intensidade);', desc: 'Alinha as marés cósmicas conferindo bônus temporário de atributos.' }
+        ]
+    });
+});
+
+app.get('/api/magia_codigo/minhas/:id', (req, res) => {
+    try {
+        res.json(core.ordensCore.listarFeiticos(req.params.id));
+    } catch(e) { res.status(500).json({ erro: "Falha ao listar feitiços em código." }); }
+});
+
+app.post('/api/magia_codigo/validar', (req, res) => {
+    try {
+        const { formula } = req.body;
+        res.json(core.ordensCore.codeEngine.validarFormula(formula));
+    } catch(e) { res.status(500).json({ erro: "Falha ao validar sintaxe mágica." }); }
+});
+
+app.post('/api/magia_codigo/forjar', (req, res) => {
+    try {
+        const { id, nome, esfera, custoSangue, custoFuria, codigoFormula, descricao } = req.body;
+        const result = core.ordensCore.forjarFeiticoEmCodigo(id, { nome, esfera, custoSangue, custoFuria, codigoFormula, descricao });
+        if (result.sucesso) forcarSyncJogador(id);
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao forjar feitiço em código." }); }
+});
+
+app.post('/api/magia_codigo/executar', async (req, res) => {
+    try {
+        const { id, feiticoId, contexto } = req.body;
+        const result = await core.ordensCore.conjurarFeiticoEmCodigo(id, feiticoId, contexto || {});
+        if (result.sucesso) {
+            forcarSyncJogador(id);
+            io.emit('sync_geral');
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao executar feitiço em código." }); }
+});
+
+// ==========================================
+// ROTAS LAPIDADAS: SANTUÁRIO, CONSELHO, PROVAÇÕES, RITOS & MATRIZ MÁGICA
+// ==========================================
+app.get('/api/ordem/santuario/:ordemId', (req, res) => {
+    try { res.json(core.ordensCore.obterInfoSantuario(req.params.ordemId)); }
+    catch(e) { res.status(500).json({ erro: "Falha ao consultar santuário." }); }
+});
+
+app.post('/api/ordem/evoluir_santuario', (req, res) => {
+    try {
+        const result = core.ordensCore.evoluirSantuario(req.body.id);
+        if (result.sucesso) { forcarSyncJogador(req.body.id); io.emit('sync_geral'); }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao evoluir santuário." }); }
+});
+
+app.get('/api/ordem/conselho/:ordemId', (req, res) => {
+    try { res.json(core.ordensCore.obterConselho(req.params.ordemId)); }
+    catch(e) { res.status(500).json({ erro: "Falha ao obter conselho." }); }
+});
+
+app.post('/api/ordem/nomear_cargo', (req, res) => {
+    try {
+        const { id, membroAlvoId, cargo } = req.body;
+        const result = core.ordensCore.nomearCargo(id, membroAlvoId, cargo);
+        if (result.sucesso) { io.emit('sync_geral'); }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao nomear cargo." }); }
+});
+
+app.post('/api/ordem/requerer_provacao', async (req, res) => {
+    try {
+        const result = await core.ordensCore.requererProvacao(req.body.id);
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao requerer provação." }); }
+});
+
+app.post('/api/ordem/responder_provacao', async (req, res) => {
+    try {
+        const result = await core.ordensCore.responderProvacao(req.body.id, req.body.resposta);
+        if (result.sucesso && result.aprovado) { forcarSyncJogador(req.body.id); io.emit('sync_geral'); }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao responder provação." }); }
+});
+
+app.post('/api/ordem/rito_coletivo', (req, res) => {
+    try {
+        const result = core.ordensCore.iniciarRitoColetivo(req.body.id, req.body.tipoRito);
+        if (result.sucesso) { io.emit('sync_geral'); }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao iniciar rito coletivo." }); }
+});
+
+app.get('/api/ordem/rito/:ordemId', (req, res) => {
+    try { res.json(core.ordensCore.obterRitoAtivo(req.params.ordemId)); }
+    catch(e) { res.status(500).json({ erro: "Falha ao consultar rito." }); }
+});
+
+app.post('/api/ordem/canalizar_matriz_ia', async (req, res) => {
+    try {
+        const { id, tradicao, intencao, vinculoTipo } = req.body;
+        const result = await core.ordensCore.canalizarMagiaParaOrdem(id, { tradicao, intencao, vinculoTipo });
+        if (result.sucesso) { forcarSyncJogador(id); io.emit('sync_geral'); }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao canalizar na Matriz." }); }
+});
+
+app.post('/api/ordem/sintonizar_no', (req, res) => {
+    try {
+        const result = core.ordensCore.sintonizarNo(req.body.id, req.body.noId);
+        if (result.sucesso) { forcarSyncJogador(req.body.id); }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao sintonizar nó." }); }
+});
+
+app.get('/api/ordem/matriz/:ordemId', (req, res) => {
+    try { res.json(core.ordensCore.obterMatriz(req.params.ordemId)); }
+    catch(e) { res.status(500).json({ erro: "Falha ao obter matriz." }); }
+});
+
+app.get('/api/ordem/efeitos_ativos/:id', (req, res) => {
+    try { res.json(core.ordensCore.obterEfeitosAtivos(req.params.id)); }
+    catch(e) { res.status(500).json({ erro: "Falha ao obter efeitos." }); }
+});
+
+app.get('/api/ordem/tradicoes', (req, res) => {
+    try {
+        const { TRADICOES_ANCESTRAIS, VINCULOS_MAGICOS, SANTUARIO_TIERS, CARGOS_CONSELHO } = require('./OrdemMagicaCore.js');
+        res.json({ sucesso: true, tradicoes: TRADICOES_ANCESTRAIS, vinculos: VINCULOS_MAGICOS, tiers: SANTUARIO_TIERS, cargos: CARGOS_CONSELHO });
+    } catch(e) { res.status(500).json({ erro: "Falha ao listar tradições." }); }
+});
+
+app.post('/api/ordem/pesquisa_arcana', async (req, res) => {
+    try {
+        const { id, tema, tradicao } = req.body;
+        const v = core.vampiros[id] || core.ordensCore._resolverVampiro(id);
+        if (!v) return res.status(404).json({ erro: "Iniciado não encontrado." });
+        if (!tema || String(tema).trim().length < 3) return res.status(400).json({ erro: "Tema muito curto para pesquisa esotérica." });
+
+        const resultado = await core.oraculo.pesquisarEstudoArcano(v, String(tema).trim(), tradicao || 'hermetismo');
+        res.json(resultado);
+    } catch(e) { 
+        console.error("Erro em /api/ordem/pesquisa_arcana:", e);
+        res.status(500).json({ erro: "Falha na pesquisa arcana." }); 
+    }
+});
+
+app.get('/api/oraculo/status', (req, res) => {
+    try {
+        if (!core.oraculo) return res.status(503).json({ erro: "Oráculo inativo." });
+        res.json(core.oraculo.obterStatusModelos());
+    } catch(e) {
+        res.status(500).json({ erro: "Falha ao obter status do Oráculo." });
+    }
+});
+
+
 // --- INVENTÁRIO, MAGIA E AVALIAÇÃO ---
 app.post('/api/atributos/distribuir', (req, res) => { try { const r = core.distribuirAtributos(req.body.id, req.body.atributo); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.post('/api/inventario/equipar', (req, res) => { try { const r = core.equiparReliquia(req.body.id, req.body.reliquiaId, req.body.slot); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
@@ -2702,7 +3024,7 @@ class SimuladorDeAlmas {
             }
 
             if (this.core.oraculo.apiKey && Math.random() < 0.20) {
-                if (Date.now() - this.ultimoChatBot > 180000) {
+                if (Date.now() - this.ultimoChatBot > 360000) {
                     this.ultimoChatBot = Date.now();
                     await this.falarNoChat(bot);
                 }
@@ -2858,19 +3180,39 @@ class SimuladorDeAlmas {
     }
 
     async falarNoChat(bot) {
-        const historico = this.core.historicoChat.global;
-        const ultimasFormatadas = historico.slice(-3).map(m => `${m.autor}: ${m.texto}`).join('\n');
-        const promptContexto = `Aja como um jogador real num MMORPG Dark Fantasy (Sanguinis). Teu Nick: ${bot.nome}. Última ação: "${bot.ultimaAcaoLembrete}". Histórico: ${ultimasFormatadas}\nFale algo curto, sombrio ou gabando-se. Máximo 1 frase. Não use aspas.`;
+        const frasesProntas = [
+            "O cheiro a cinzas e sangue fresco paira na Catedral...",
+            "Mais um mortal drenado até a última gota.",
+            "As sombras da Meia-Noite não perdoam os hesitantes.",
+            "Quem ousará desafiar a minha lâmina no Umbral?",
+            "A Egrégora alimenta-se das nossas vitórias.",
+            "Sinto a pulsação do Vazio nas catacumbas."
+        ];
 
-        try {
-            const resposta = await this.core.oraculo.groq.chat.completions.create({
-                messages: [{ role: "user", content: promptContexto }],
-                model: this.core.oraculo.modelo || "openai/gpt-oss-120b"
-            });
-            let txt = resposta.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
-            const msgObjeto = { autor: `[${bot.tituloAtual}] ${bot.nome}`, texto: txt, hora: new Date().toLocaleTimeString(), canal: 'global' };
+        // 50% das vezes usa fala rápida pré-moldada para poupar cota da API
+        if (Math.random() < 0.5) {
+            const txt = frasesProntas[Math.floor(Math.random() * frasesProntas.length)];
+            const msgObjeto = { autor: `[${bot.tituloAtual || 'Sombra'}] ${bot.nome}`, texto: txt, hora: new Date().toLocaleTimeString(), canal: 'global' };
             this.core.historicoChat.global.push(msgObjeto);
             this.io.to('global').emit('nova_mensagem', msgObjeto);
+            return;
+        }
+
+        const historico = this.core.historicoChat.global;
+        const ultimasFormatadas = historico.slice(-2).map(m => `${m.autor}: ${m.texto}`).join('\n');
+        const promptContexto = `Aja como jogador vampiro no MMORPG Sanguinis. Nick: ${bot.nome}. Ação: "${bot.ultimaAcaoLembrete || 'Caçando'}". Chat: ${ultimasFormatadas}\nFale 1 frase curta sombria. Máximo 10 palavras. Sem aspas.`;
+
+        try {
+            const resposta = await this.core.oraculo.chamarLLMResiliente([
+                { role: "user", content: promptContexto }
+            ], { maxTokens: 35, temperature: 0.8 });
+            
+            if (resposta) {
+                let txt = resposta.trim().replace(/^["']|["']$/g, '').slice(0, 120);
+                const msgObjeto = { autor: `[${bot.tituloAtual || 'Sombra'}] ${bot.nome}`, texto: txt, hora: new Date().toLocaleTimeString(), canal: 'global' };
+                this.core.historicoChat.global.push(msgObjeto);
+                this.io.to('global').emit('nova_mensagem', msgObjeto);
+            }
         } catch(e) {}
     }
 }

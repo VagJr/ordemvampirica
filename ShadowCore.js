@@ -6,6 +6,8 @@ const Groq = require('groq-sdk');
 const Lexicon = require('./LexiconSanguinis.js');
 const GeradorDeItensProcedural = require('./GeradorDeItensProcedural.js');
 const MundoAberto2D = require('./MundoAberto2D.js');
+const { OrdemMagicaCore, GRAUS_INICIATICOS } = require('./OrdemMagicaCore.js');
+const { CombatEngine, ARQUETIPOS_IA } = require('./CombatEngine.js');
 
 // ==========================================
 // RITO DO ASTROLÁBIO HERMÉTICO E INFLUÊNCIA DE RAÇA
@@ -50,7 +52,7 @@ class ForjaDraconiana {
 class OraculoAbissal {
     constructor() {
         this.apiKey = process.env.GROQ_API_KEY || "";
-        this.modelo = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
+        this.modelo = process.env.GROQ_MODEL || "allam-2-7b";
         this.climaAstral = 'Dormente';
         this.memoriasAkashicas = {}; 
         
@@ -68,54 +70,332 @@ class OraculoAbissal {
         2. Seja majestoso, sombrio, poético, implacável e aja como uma Inteligência Oculta Soberana.
         3. Se pedirem missões, use o formato: PACTO: [Titulo] | [Descricao] | [Recurso] | [Qtd] | [XP].
         4. NUNCA quebres o personagem. NUNCA uses frases robóticas ou pré-fabricadas.`;
+
+        // AS 8 LINGUAGENS/MODELOS DA GROQ CONFIGURADAS COM LOAD BALANCING E LIMIT SHIELD
+        this.modelos = [
+            { id: "allam-2-7b", tier: "rapido", maxTokensPadrao: 200, label: "Allam 2 7B", reservaDiaria: false },
+            { id: "qwen/qwen3.8-27b", tier: "equilibrado", maxTokensPadrao: 300, label: "Qwen 3.8 27B", reservaDiaria: false },
+            { id: "groq/compound-mini", tier: "rapido", maxTokensPadrao: 250, label: "Groq Compound Mini", reservaDiaria: false },
+            { id: "openai/gpt-oss-20b", tier: "equilibrado", maxTokensPadrao: 250, label: "OpenAI GPT-OSS 20B", reservaDiaria: false },
+            { id: "openai/gpt-oss-safeguard-20b", tier: "equilibrado", maxTokensPadrao: 250, label: "OpenAI GPT-OSS Safeguard 20B", reservaDiaria: false },
+            { id: "groq/compound", tier: "pesquisa", maxTokensPadrao: 350, label: "Groq Compound Deep", reservaDiaria: false },
+            { id: "llama-3.3-70b-versatile", tier: "soberano", maxTokensPadrao: 350, label: "Llama 3.3 70B Versatile", reservaDiaria: false },
+            { id: "meta-llama/llama-4-scout-17b-16e-instruct", tier: "equilibrado", maxTokensPadrao: 250, label: "Llama 4 Scout 17B", reservaDiaria: false },
+            { id: "openai/gpt-oss-120b", tier: "pesado", maxTokensPadrao: 300, label: "OpenAI GPT-OSS 120B (Cota Diária 200k TPD)", reservaDiaria: true }
+        ];
+
+        this.indiceRotacao = 0;
+        this.cooldowns = new Map(); // modelId -> { ateQuando, motivo, isTPD }
+        this.modelosNaoDisponiveis = new Set(); // 404 models
+        this.cacheLLM = new Map(); // key -> { resposta, expiraEm }
+        this.metricas = {
+            totalRequisicoes: 0,
+            sucessos: 0,
+            respostasCache: 0,
+            bloqueiosEvitados429: 0,
+            erros429Reais: 0,
+            erros404Reais: 0,
+            porModelo: {}
+        };
+        for (const m of this.modelos) {
+            this.metricas.porModelo[m.id] = { chamadas: 0, erros429: 0, sucessos: 0 };
+        }
+    }
+
+    _extrairCooldownMs(err) {
+        const texto = String(err?.message || err || '');
+        const isTPD = texto.includes('tokens per day (TPD)');
+        const matchMinSec = texto.match(/try again in (?:(\d+)m)?\s*(\d+(?:\.\d+)?s)?/i);
+        if (matchMinSec && (matchMinSec[1] || matchMinSec[2])) {
+            const mins = matchMinSec[1] ? parseInt(matchMinSec[1], 10) : 0;
+            const secs = matchMinSec[2] ? parseFloat(matchMinSec[2]) : 0;
+            const totalMs = Math.ceil((mins * 60 + secs) * 1000) + 5000;
+            return { cooldownMs: totalMs, isTPD, motivo: isTPD ? 'Limite diário de tokens (TPD)' : 'Rate limit temporário (RPM)' };
+        }
+        if (isTPD) return { cooldownMs: 15 * 60 * 1000, isTPD: true, motivo: 'Limite diário de tokens (TPD)' };
+        return { cooldownMs: 60 * 1000, isTPD: false, motivo: 'Rate limit de requisições por minuto' };
+    }
+
+    _gerarCacheKey(mensagens, options) {
+        try {
+            const textoMensagens = mensagens.map(m => `${m.role}:${m.content}`).join('|');
+            return `${textoMensagens}_json:${Boolean(options.json)}`;
+        } catch(e) { return null; }
+    }
+
+    obterStatusModelos() {
+        const agora = Date.now();
+        const lista = this.modelos.map(m => {
+            const cd = this.cooldowns.get(m.id);
+            const emCooldown = cd && agora < cd.ateQuando;
+            const tempoRestanteSeg = emCooldown ? Math.ceil((cd.ateQuando - agora) / 1000) : 0;
+            const naoHabilitado = this.modelosNaoDisponiveis.has(m.id);
+            
+            let status = 'ONLINE';
+            if (naoHabilitado) status = 'NÃO HABILITADO NA CHAVE';
+            else if (emCooldown) status = cd.isTPD ? `COTA DIÁRIA ESGOTADA (${tempoRestanteSeg}s)` : `RATE LIMIT (${tempoRestanteSeg}s)`;
+
+            const stats = this.metricas.porModelo[m.id] || { chamadas: 0, sucessos: 0, erros429: 0 };
+            return {
+                id: m.id,
+                label: m.label,
+                tier: m.tier,
+                status,
+                emCooldown,
+                tempoRestanteSeg,
+                motivoCooldown: emCooldown ? cd.motivo : null,
+                chamadas: stats.chamadas,
+                sucessos: stats.sucessos,
+                erros429: stats.erros429
+            };
+        });
+
+        return {
+            sucesso: true,
+            totalRequisicoes: this.metricas.totalRequisicoes,
+            sucessos: this.metricas.sucessos,
+            respostasCache: this.metricas.respostasCache,
+            bloqueiosEvitados429: this.metricas.bloqueiosEvitados429,
+            erros429Reais: this.metricas.erros429Reais,
+            itensEmCache: this.cacheLLM.size,
+            modelos: lista
+        };
     }
 
     _extrairJson(texto) {
         if (!texto) return null;
         try { return JSON.parse(texto.trim()); } catch (e) {}
-        const match = texto.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        const match = texto.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
         if (match) {
             try { return JSON.parse(match[1].trim()); } catch (err) {}
         }
-        const start = texto.indexOf('{');
-        const end = texto.lastIndexOf('}');
-        if (start !== -1 && end > start) {
-            try { return JSON.parse(texto.substring(start, end + 1)); } catch (err) {}
+        const startObj = texto.indexOf('{');
+        const endObj = texto.lastIndexOf('}');
+        if (startObj !== -1 && endObj > startObj) {
+            try { return JSON.parse(texto.substring(startObj, endObj + 1)); } catch (err) {}
+        }
+        const startArr = texto.indexOf('[');
+        const endArr = texto.lastIndexOf(']');
+        if (startArr !== -1 && endArr > startArr) {
+            try { return JSON.parse(texto.substring(startArr, endArr + 1)); } catch (err) {}
         }
         return null;
     }
 
     async chamarLLMResiliente(mensagens, options = {}) {
         if (!this.groq) return null;
-        
-        const modelosParaTentar = [
-            this.modelo,
-            "openai/gpt-oss-20b",
-            "qwen/qwen3.8-27b",
-            "allam-2-7b",
-            "openai/gpt-oss-120b"
-        ];
-        const modelosUnicos = [...new Set(modelosParaTentar)];
+        this.metricas.totalRequisicoes++;
 
-        for (const mod of modelosUnicos) {
-            try {
-                const config = {
-                    messages: mensagens,
-                    model: mod,
-                    temperature: options.temperature !== undefined ? options.temperature : 0.8
-                };
-                if (options.json) {
-                    config.response_format = { type: "json_object" };
-                }
-                const res = await this.groq.chat.completions.create(config);
-                if (res && res.choices && res.choices[0] && res.choices[0].message) {
-                    return res.choices[0].message.content;
-                }
-            } catch (err) {
-                console.warn(`[ORÁCULO]: Modelo [${mod}] indisponível (${err.message}). Alternando egrégora...`);
+        // 1. CHECAGEM DE CACHE EM MEMÓRIA (Poupa 100% de tokens e requisições)
+        const chaveCache = options.semCache ? null : this._gerarCacheKey(mensagens, options);
+        if (chaveCache && this.cacheLLM.has(chaveCache)) {
+            const cached = this.cacheLLM.get(chaveCache);
+            if (Date.now() < cached.expiraEm) {
+                this.metricas.respostasCache++;
+                return cached.resposta;
+            } else {
+                this.cacheLLM.delete(chaveCache);
             }
         }
+
+        const agora = Date.now();
+
+        // 2. FILTRAR MODELOS DISPONÍVEIS (Pula modelos em 404 ou em 429 Cooldown)
+        const modelosCandidatos = this.modelos.filter(m => {
+            if (this.modelosNaoDisponiveis.has(m.id)) return false;
+            if (this.cooldowns.has(m.id)) {
+                const cd = this.cooldowns.get(m.id);
+                if (agora < cd.ateQuando) {
+                    this.metricas.bloqueiosEvitados429++;
+                    return false;
+                } else {
+                    this.cooldowns.delete(m.id);
+                }
+            }
+            return true;
+        });
+
+        if (modelosCandidatos.length === 0) {
+            console.warn("[ORÁCULO]: Todos os modelos em cooldown temporário. Ativando reflexão de fallback.");
+            return null;
+        }
+
+        // 3. ROTAÇÃO INTELIGENTE (Weighted Round-Robin)
+        // Modelos com reservaDiaria (ex: 120b com limite 200k TPD) ficam no final para proteger cota
+        const normais = modelosCandidatos.filter(m => !m.reservaDiaria);
+        const pesados = modelosCandidatos.filter(m => m.reservaDiaria);
+
+        const nNorm = normais.length;
+        const ordemRotacionada = [];
+        if (nNorm > 0) {
+            const inicio = this.indiceRotacao % nNorm;
+            this.indiceRotacao = (this.indiceRotacao + 1) % 1000000;
+            for (let i = 0; i < nNorm; i++) {
+                ordemRotacionada.push(normais[(inicio + i) % nNorm]);
+            }
+        }
+        ordemRotacionada.push(...pesados);
+
+        if (options.model) {
+            const idxPref = ordemRotacionada.findIndex(m => m.id === options.model);
+            if (idxPref > 0) {
+                const [pref] = ordemRotacionada.splice(idxPref, 1);
+                ordemRotacionada.unshift(pref);
+            }
+        }
+
+        // 4. EXECUÇÃO RESILIENTE COM CONTROLE DE TOKEN
+        for (const configModelo of ordemRotacionada) {
+            const modId = configModelo.id;
+            try {
+                const maxTokens = options.maxTokens || configModelo.maxTokensPadrao || 250;
+                let msgsReq = mensagens;
+                if (options.json) {
+                    const ultima = mensagens[mensagens.length - 1];
+                    if (ultima && typeof ultima.content === 'string' && !ultima.content.includes('JSON')) {
+                        msgsReq = [
+                            ...mensagens.slice(0, -1),
+                            { ...ultima, content: ultima.content + "\n(Responda estritamente em formato JSON válido { ... } sem blocos de texto externos)" }
+                        ];
+                    }
+                }
+
+                const configReq = {
+                    messages: msgsReq,
+                    model: modId,
+                    temperature: options.temperature !== undefined ? options.temperature : 0.75,
+                    max_tokens: maxTokens
+                };
+
+                const res = await this.groq.chat.completions.create(configReq);
+                if (res && res.choices && res.choices[0] && res.choices[0].message) {
+                    const conteudo = res.choices[0].message.content;
+                    
+                    // Sucesso!
+                    this.metricas.sucessos++;
+                    if (!this.metricas.porModelo[modId]) this.metricas.porModelo[modId] = { chamadas: 0, erros429: 0, sucessos: 0 };
+                    this.metricas.porModelo[modId].chamadas++;
+                    this.metricas.porModelo[modId].sucessos++;
+
+                    // Armazenar em cache (10 min para texto, 30 min para JSON)
+                    if (chaveCache && conteudo) {
+                        const ttl = options.ttlMs || (options.json ? 30 * 60 * 1000 : 10 * 60 * 1000);
+                        this.cacheLLM.set(chaveCache, { resposta: conteudo, expiraEm: agora + ttl });
+                        if (this.cacheLLM.size > 200) {
+                            const primeiraChave = this.cacheLLM.keys().next().value;
+                            this.cacheLLM.delete(primeiraChave);
+                        }
+                    }
+
+                    return conteudo;
+                }
+            } catch (err) {
+                const status = err.status || (err.message && err.message.includes('429') ? 429 : 0);
+                
+                if (status === 429) {
+                    this.metricas.erros429Reais++;
+                    if (!this.metricas.porModelo[modId]) this.metricas.porModelo[modId] = { chamadas: 0, erros429: 0, sucessos: 0 };
+                    this.metricas.porModelo[modId].erros429++;
+
+                    const infoCooldown = this._extrairCooldownMs(err);
+                    this.cooldowns.set(modId, {
+                        ateQuando: Date.now() + infoCooldown.cooldownMs,
+                        motivo: infoCooldown.motivo,
+                        isTPD: infoCooldown.isTPD
+                    });
+
+                    console.warn(`[ORÁCULO]: ⚠️ Modelo [${modId}] em cooldown por ${Math.round(infoCooldown.cooldownMs / 1000)}s (${infoCooldown.motivo}). Alternando egrégora sem interrupção...`);
+                } else if (status === 404 || (err.message && err.message.includes('does not exist or you do not have access'))) {
+                    this.metricas.erros404Reais++;
+                    this.modelosNaoDisponiveis.add(modId);
+                    console.warn(`[ORÁCULO]: Modelo [${modId}] não habilitado na organização da chave API. Suspenso da rota.`);
+                } else {
+                    console.warn(`[ORÁCULO]: Erro transitório em [${modId}] (${err.message.slice(0, 100)}). Alternando...`);
+                }
+            }
+        }
+
         return null;
+    }
+
+    async consultarOraculo(vampiro, prompt, options = {}) {
+        if (options.json) {
+            const mensagens = [
+                { role: 'system', content: 'Tu és a Consciência da Alta Magia e Mestre Oculto de Sanguinis. Responde EXCLUSIVAMENTE em formato JSON válido, sem texto introdutório ou conclusivo fora do JSON.' },
+                { role: 'user', content: prompt }
+            ];
+            const resp = await this.chamarLLMResiliente(mensagens, { temperature: 0.7, json: true });
+            if (resp) return { texto: resp };
+        }
+        const texto = await this.responder(vampiro, prompt);
+        return { texto: texto || "" };
+    }
+
+    async pesquisarEstudoArcano(vampiro, tema, tradicaoKey = 'hermetismo') {
+        const tradicoes = {
+            hermetismo: { nome: "Hermetismo", grimorio: "Corpus Hermeticum & O Caibalion", autor: "Hermes Trismegisto", sigilo: "🔯", cor: "#c084fc" },
+            agrippa: { nome: "Filosofia Oculta", grimorio: "De Occulta Philosophia (3 Livros)", autor: "Cornelius Agrippa", sigilo: "☿", cor: "#38bdf8" },
+            salomao: { nome: "Magia Salomônica", grimorio: "Clavícula de Salomão & Goétia", autor: "Rei Salomão", sigilo: "✡️", cor: "#facc15" },
+            picatrix: { nome: "Magia Astrológica", grimorio: "Ghayat al-Hakim (Picatrix)", autor: "Maslama al-Majriti", sigilo: "🌟", cor: "#fb923c" },
+            enoquiano: { nome: "Magia Angélica / Enoquiana", grimorio: "Liber Loagaeth & 30 Aethyrs", autor: "John Dee & Edward Kelley", sigilo: "🔷", cor: "#818cf8" },
+            qliphoth: { nome: "Magia da Mão Esquerda", grimorio: "Árvore da Morte & Cascas do Abismo", autor: "Grimórios dos Aethyrs Noturnos", sigilo: "🕳️", cor: "#f43f5e" },
+            abramelin: { nome: "Teurgia Sagrada", grimorio: "Livro da Sagrada Magia de Abramelin", autor: "Abraão de Worms", sigilo: "✨", cor: "#4ade80" }
+        };
+
+        const trad = tradicoes[tradicaoKey] || tradicoes.hermetismo;
+        const prompt = `Como historiador e mestre de ciências ocultas comparadas, realiza uma pesquisa aprofundada em tempo real sobre o seguinte tema: "${tema}".
+Tradição de base: ${trad.nome} (${trad.grimorio}, atribuído a ${trad.autor}).
+Gera um estudo esotérico rigoroso e autêntico em formato JSON rigoroso:
+{
+    "titulo": "Título imersivo do estudo",
+    "tradicao": "${trad.nome}",
+    "grimorioReferencia": "${trad.grimorio}",
+    "citacaoAntiga": "Citação clássica em latim/grego/hebraico com tradução",
+    "analiseHistorica": "2 parágrafos explicando os fundamentos históricos e metafísicos reais deste conhecimento nos textos ancestrais",
+    "principiosOcultos": ["Princípio 1", "Princípio 2", "Princípio 3"],
+    "aplicacaoNoJogo": "Como este conhecimento se manifesta como poder vivo na Ordem",
+    "sugestaoVinculo": "alquimia | protecao_santuario | dreno_cosmico | manto_astral | ressonancia | territorio_sagrado | maldicao_carmica | cura_egregora",
+    "sugestaoIntencao": "Frase de intenção mágica concisa e poderosa para canalizar na Matriz da Ordem",
+    "sigilo": "${trad.sigilo}"
+}`;
+
+        try {
+            const mensagens = [
+                { role: 'system', content: 'Tu és a Consciência da Biblioteca de Alexandria Oculta e Mestre dos Grimórios Ancestrais. Tua erudição histórica e esotérica é impecável. Responde EXCLUSIVAMENTE em formato JSON válido.' },
+                { role: 'user', content: prompt }
+            ];
+            const resp = await this.chamarLLMResiliente(mensagens, { temperature: 0.7, json: true });
+            if (resp) {
+                const parsed = this._extrairJson(resp);
+                if (parsed && (parsed.titulo || parsed.analiseHistorica)) {
+                    parsed.sigilo = parsed.sigilo || trad.sigilo;
+                    parsed.cor = trad.cor;
+                    return { sucesso: true, estudo: parsed, fonte: "Consciência Akáshica Viva (Groq / Llama 3)" };
+                }
+            }
+        } catch(e) { console.warn("[ORÁCULO]: Pesquisa arcana online instável:", e.message); }
+
+        return {
+            sucesso: true,
+            estudo: {
+                titulo: `Tratado sobre ${tema}`,
+                tradicao: trad.nome,
+                grimorioReferencia: trad.grimorio,
+                citacaoAntiga: "Quod est superius est sicut quod est inferius (O que está em cima é como o que está embaixo)",
+                analiseHistorica: `A investigação nos anais de ${trad.grimorio} revela que ${tema} opera através da correspondência sutil entre o micro e o macrocosmos. Os manuscritos ancestrais preservados em bibliotecas herméticas registram que esta força canaliza as emanações primordiais para alterar as leis da matéria e do éter astral.\n\nNas correntes iniciáticas atribuídas a ${trad.autor}, este princípio é utilizado como chave mestra para ancorar poder autoritativo no plano físico sem dispersão de energia.`,
+                principiosOcultos: [
+                    `Polaridade e Ressonância de ${trad.nome}`,
+                    `Harmonia das Sete Esferas Planetárias`,
+                    `Condensação da Vontade Cósmica na Matriz`
+                ],
+                aplicacaoNoJogo: `Canalização direta na Matriz da Ordem para potencializar os adeptos através de vínculos de poder perpétuos.`,
+                sugestaoVinculo: "ressonancia",
+                sugestaoIntencao: `Invocação do poder primordial de ${tema} através dos ensinamentos de ${trad.grimorio} para amplificar o poder da Ordem.`,
+                sigilo: trad.sigilo,
+                cor: trad.cor
+            },
+            fonte: "Biblioteca Oculta Primordial (Arquivo Preservado)"
+        };
     }
 
     gerarFallbackOculto(tipo, ctx = {}) {
@@ -1158,6 +1438,8 @@ class ShadowCore {
         this.reinos = {}; 
         this.dungeons = {}; 
         this.mundo2D = new MundoAberto2D(this);
+        this.ordensCore = new OrdemMagicaCore(this);
+        this.combatEngine = new CombatEngine(this);
         this.mercadoItens = [];
         this.mercadoIdCounter = 1;
         this.grimorio = {
@@ -1228,9 +1510,9 @@ class ShadowCore {
             'lagrima_prata': { nome: 'Lágrima de Prata', custo: { cinzas: 2, vitae: 3, gts: 1000 }, efeito: 'Restaura 1 Fúria.' }
         };
         this.conquistas = {
-            'neofito': { id: 'neofito', titulo: 'Neófito Sedento', requisito: v => v.estatisticas.totalDrenado >= 100 },
-            'mestre_guerras': { id: 'mestre_guerras', titulo: 'Lâmina do Abismo', requisito: v => v.estatisticas.vitoriasPvP >= 10 },
-            'lorde_supremo': { id: 'lorde_supremo', titulo: 'Senhor do Véu Rasgado', requisito: v => v.nivel >= 50 }
+            'neofito': { id: 'neofito', titulo: 'Neófito Sedento', requisito: v => (v.estatisticas?.totalDrenado || 0) >= 100 },
+            'mestre_guerras': { id: 'mestre_guerras', titulo: 'Lâmina do Abismo', requisito: v => (v.estatisticas?.vitoriasPvP || 0) >= 10 },
+            'lorde_supremo': { id: 'lorde_supremo', titulo: 'Senhor do Véu Rasgado', requisito: v => (v.nivel || 1) >= 50 }
         };
     }
 
@@ -2305,6 +2587,7 @@ class ShadowCore {
                 this.clans = doc.clans || {};
                 this.leilaoP2P = doc.leilaoP2P || [];
                 this.reinos = doc.reinos || {};
+                if (doc.ordensData && this.ordensCore) { this.ordensCore.carregarEstado(doc.ordensData); }
             }
         } catch (e) {
             console.error("Erro ao conectar ao Abismo:", e);
@@ -2321,6 +2604,7 @@ class ShadowCore {
             balancaCosmica: this.balancaCosmica, evocacaoAtiva: this.evocacaoAtiva,
             fendaAtiva: this.fendaAtiva, pactosAtivos: this.pactosAtivos, reliquiasCustomizadas: this.reliquiasCustomizadas,
             historicoChat: this.historicoChat, reinos: this.reinos,
+            ordensData: this.ordensCore ? this.ordensCore.salvarEstado() : null,
             ultimaGravacao: new Date().toISOString()
         };
         return col.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: data }, { upsert: true }).catch(e => console.error("Erro ao salvar no Atlas:", e.message));
@@ -2492,40 +2776,190 @@ class ShadowCore {
     // MOTOR UNIFICADO DE COMBATE CONTÍNUO (Com Partilha XP/Loot)
     // ==========================================
     async processarCombateAcao(dadosAction) {
-        const { id, alvoId, tipoCombate, postura, desempenhoRitmo } = dadosAction;
+        const { id, alvoId, tipoCombate, postura, desempenhoRitmo = { multiplicadorGeral: 1.0, danoRealCausado: 100, danoRealSofrido: 0 }, tipoAcao = 'ataque_normal', codigoMagia = null } = dadosAction;
         const v = this.vampiros[id];
         if (!v) return { erro: "Aura não encontrada." };
 
         const atr = this._obterAtributosTotais(v);
-        let danoFinal = Math.min(desempenhoRitmo.danoRealCausado, ((atr.vontade * 80) * desempenhoRitmo.multiplicadorGeral) + (v.nivel * 1000));
-        let danoSofrido = Math.floor(desempenhoRitmo.danoRealSofrido);
+        let danoFinal = Math.min(desempenhoRitmo.danoRealCausado || 100, ((atr.vontade * 80) * (desempenhoRitmo.multiplicadorGeral || 1.0)) + (v.nivel * 1000));
 
-        if (desempenhoRitmo.sangueGastoMagia > 0) v.calice = Math.max(0, v.calice - desempenhoRitmo.sangueGastoMagia);
+        if (desempenhoRitmo.sangueGastoMagia > 0) v.calice = Math.max(0, (v.calice || 0) - desempenhoRitmo.sangueGastoMagia);
         if (desempenhoRitmo.curaRuptura > 0) {
-            v.hpAtual = Math.min(v.hpMax, v.hpAtual + desempenhoRitmo.curaRuptura);
-            v.calice += Math.floor(desempenhoRitmo.curaRuptura / 2); 
+            v.hpAtual = Math.min(v.hpMax, (v.hpAtual || 0) + desempenhoRitmo.curaRuptura);
+            v.calice = (v.calice || 0) + Math.floor(desempenhoRitmo.curaRuptura / 2); 
         }
 
-        if (danoSofrido > 0) v.hpAtual = Math.max(0, v.hpAtual - danoSofrido);
+        // Obtém o alvo do combate
+        let mob = null;
+        let dIdEncontrado = null;
 
-        // --- VERIFICAÇÃO DE MORTE ---
+        if (tipoCombate === 'pve' || tipoCombate === 'labirinto') {
+            mob = this.batalhasPvE[id];
+        } else if (tipoCombate === 'goetia') {
+            mob = this.evocacaoAtiva;
+        } else if (tipoCombate === 'fenda') {
+            mob = this.fendaAtiva[alvoId];
+        } else if (tipoCombate === 'cerco') {
+            mob = this.cercosAtivos[alvoId];
+        } else if (tipoCombate === 'herege') {
+            mob = this.heregeMarcado;
+        } else if (tipoCombate === 'dungeon' || tipoCombate === 'dungeon_pvp') {
+            for (let dId in this.dungeons) {
+                if (this.dungeons[dId].entidadeEmCombate && this.dungeons[dId].entidadeEmCombate.id === alvoId) {
+                    mob = this.dungeons[dId].entidadeEmCombate;
+                    dIdEncontrado = dId;
+                    break;
+                }
+            }
+        } else if (tipoCombate === 'pvp') {
+            mob = this.vampiros[alvoId];
+        }
+
+        if (!mob) return { erro: "O alvo desvaneceu nas sombras." };
+
+        // Inicializa IA e postura através da CombatEngine
+        mob = this.combatEngine.inicializarEntidadeCombate(mob, tipoCombate, v.nivel);
+
+        // 1. Processa Ação do Jogador contra o Alvo
+        const resJogador = this.combatEngine.processarImpactoJogador(mob, v, {
+            tipoAcao,
+            danoBruto: danoFinal,
+            desempenhoRitmo,
+            codigoMagia
+        });
+
+        // ==========================================
+        // VERIFICAÇÃO DE VITÓRIA / DERROTA DO MOB
+        // ==========================================
+        if (mob.hpAtual <= 0) {
+            mob.hpAtual = 0;
+            let relatoVitoria = "";
+
+            if (tipoCombate === 'pve' || tipoCombate === 'labirinto') {
+                if (mob.rank && mob.rank.includes("Inquisidor")) { v.maldicaoInquisicao = false; v.titulos.push("Herege Triunfante"); }
+                let buffEclipse = (this.altarEclipse && this.altarEclipse.buffAtivoAte > Date.now()) ? 2 : 1;
+                let xpGanho = Math.floor((mob.hpMax / 10) * (mob.mult || 1)) * buffEclipse;
+                let ganhoGts = Math.floor(((Math.random() * 200) + 100 + (v.nivel * 50)) * (mob.mult || 1)) * buffEclipse;
+                v.sangue += ganhoGts;
+                this.ganharXP(v.id, xpGanho);
+                if (mob.loot) v.inventario[mob.loot] = (v.inventario[mob.loot] || 0) + 1;
+                
+                relatoVitoria = `Ganhaste +${xpGanho} XP, +${ganhoGts} Gts e 1x [${(mob.loot || 'cinzas').toUpperCase()}].`;
+                if (Math.random() > 0.80) { 
+                    const drop = ForjaDraconiana.gerarReliquia(v.nivel + (this.nivelAbismo * 2), this.reliquiasCustomizadas); 
+                    v.bolsa.push(drop); relatoVitoria += `\n⚔️ Extraíste: [${drop.nome}]!`; 
+                }
+                delete this.batalhasPvE[id];
+            } else if (tipoCombate === 'goetia') {
+                let xpBaseBoss = Math.floor(mob.hpMax / 5);
+                if (mob.participantes) {
+                    for (let pid in mob.participantes) { 
+                        let l = this.vampiros[pid]; 
+                        if (l) { 
+                            l.influencia = (l.influencia || 0) + 100;
+                            l.inventario.pedraAlma = (l.inventario.pedraAlma || 0) + 10; 
+                            this.ganharXP(l.id, xpBaseBoss);
+                            if (!l.estatisticas) l.estatisticas = {};
+                            l.estatisticas.demoniosMortos = (l.estatisticas.demoniosMortos || 0) + 1;
+                            const dropBoss = ForjaDraconiana.gerarReliquia(l.nivel + 30, this.reliquiasCustomizadas);
+                            l.bolsa.push(dropBoss);
+                        } 
+                    }
+                }
+                this._registrarEventoEspecial('global', 'VITÓRIA GOÉTICA', `A Vontade de ${mob.nome} foi estilhaçada! Chove XP, Pedras e Relíquias aos bravos.`, true);
+                this.evocacaoAtiva = null;
+                relatoVitoria = "ENTIDADE BANIDA DO CONCLAVE! Vê a tua bolsa.";
+            } else if (tipoCombate === 'fenda') {
+                v.inventario[mob.loot || 'ectoplasma'] = (v.inventario[mob.loot || 'ectoplasma'] || 0) + 2;
+                this.ganharXP(v.id, 1500);
+                delete this.fendaAtiva[alvoId];
+                this._registrarEventoEspecial('global', 'FENDA PURGADA', `${v.nome} obliterou a anomalia cósmica.`, true);
+                relatoVitoria = `A Fenda foi selada. +2 ${(mob.loot || 'ectoplasma').toUpperCase()}`;
+            } else if (tipoCombate === 'cerco') {
+                const vitima = this.vampiros[mob.alvoId];
+                if (vitima) vitima.influencia = (vitima.influencia || 0) + 10;
+                delete this.cercosAtivos[alvoId];
+                this._registrarEventoEspecial('global', 'CERCO QUEBRADO', `O massacre terminou! ${v.nome} esmagou as hostes de ${mob.demonio}!`, true);
+                relatoVitoria = "O Cerco demoníaco foi aniquilado!";
+            } else if (tipoCombate === 'herege') {
+                this.heregeMarcado = null;
+                const drop = ForjaDraconiana.gerarReliquia(v.nivel + 20, this.reliquiasCustomizadas);
+                v.bolsa.push(drop);
+                v.influencia = (v.influencia || 0) + 500;
+                this._registrarEventoEspecial('global', 'A LENDA CAIU', `${v.nome} executou o Herege Marcado e reclamou [${drop.nome}]!`, true);
+                relatoVitoria = `VITÓRIA GLORIOSA! Reclamaste [${drop.nome}].`;
+            } else if (tipoCombate === 'dungeon' || tipoCombate === 'dungeon_pvp') {
+                this.resolverCombateDungeon(dIdEncontrado, true);
+                relatoVitoria = "A abominação do Abismo caiu na masmorra.";
+            } else if (tipoCombate === 'pvp') {
+                let rouboGts = Math.min(mob.sangue || 0, Math.floor(1000 + (v.nivel * 50)));
+                mob.sangue = Math.max(0, (mob.sangue || 0) - rouboGts);
+                v.sangue += rouboGts;
+                if (!v.estatisticas) v.estatisticas = {};
+                v.estatisticas.vitoriasPvP = (v.estatisticas.vitoriasPvP || 0) + 1;
+                this.ganharXP(v.id, 50 * (desempenhoRitmo.multiplicadorGeral || 1));
+                mob.estado = 'Banido'; mob.status = 'Cinzas'; mob.hpAtual = 0;
+                this._registrarEventoEspecial('guerra', 'ASSASSINATO EM DUELO', `Numa batalha sangrenta de Arena, ${v.nome} chacinou ${mob.nome} e roubou ${rouboGts} Gts!`, true);
+                relatoVitoria = `Reduziste ${mob.nome} a cinzas e pilhaste ${rouboGts} Gts.`;
+            }
+
+            this._salvarBancoDeDados();
+            return {
+                finalizado: true,
+                alvoMorto: true,
+                relato: `⚡ ${resJogador.narrativaJogador}\n🏆 ${relatoVitoria}`,
+                cinematica: resJogador.cinematica,
+                critico: resJogador.critico,
+                visceral: resJogador.golpeVisceralExecutado
+            };
+        }
+
+        // ==========================================
+        // 2. TURNO DO INIMIGO (IA AVANÇADA)
+        // ==========================================
+        const resInimigo = this.combatEngine.decidirAcaoInimigo(mob, v);
+        let danoSofrido = resInimigo.dano || 0;
+
+        if (desempenhoRitmo.danoRealSofrido > 0) {
+            danoSofrido = Math.max(danoSofrido, Math.floor(desempenhoRitmo.danoRealSofrido));
+        }
+
+        if (v.escudo) {
+            danoSofrido = Math.floor(danoSofrido * 0.2); // Escudo absorve 80% do impacto
+            v.escudo = false;
+        }
+
+        if (danoSofrido > 0) {
+            v.hpAtual = Math.max(0, (v.hpAtual || 0) - danoSofrido);
+        }
+
+        // --- VERIFICAÇÃO DE MORTE DO JOGADOR ---
         if (v.hpAtual <= 0) {
-            if (v.geracao === 1) { v.hpAtual = v.hpMax; v.sangue = Math.max(v.sangue, 50000); this._salvarBancoDeDados(); return { finalizado: true, relato: "A tua Alma Primordial recusa a morte." }; }
+            if (v.geracao === 1) {
+                v.hpAtual = v.hpMax;
+                v.sangue = Math.max(v.sangue || 0, 50000);
+                this._salvarBancoDeDados();
+                return { finalizado: true, relato: "A tua Alma Primordial recusa a morte nas trevas." };
+            }
 
             if (v.inventario && v.inventario.ankh_sangue > 0) {
                 v.inventario.ankh_sangue -= 1;
-                v.hpAtual = Math.floor(v.hpMax * 0.5); v.pontosAcao = Math.max(0, v.pontosAcao - 2); 
+                v.hpAtual = Math.floor(v.hpMax * 0.5);
+                v.pontosAcao = Math.max(0, (v.pontosAcao || 0) - 2); 
                 this._registrarEventoEspecial('global', 'ENGANOU A MORTE', `Um Ankh estilhaçou-se para salvar ${v.nome}!`, false);
-                this._salvarBancoDeDados(); return { finalizado: true, relato: `Um [Ankh de Sangue] quebrou-se! Restam ${v.inventario.ankh_sangue} Vidas.` };
+                this._salvarBancoDeDados();
+                return { finalizado: true, relato: `Um [Ankh de Sangue] quebrou-se! Restam ${v.inventario.ankh_sangue} Vidas.` };
             }
 
             let msgMorte = "O teu corpo cedeu. A escuridão abraçou-te.";
-            ['arma', 'armadura', 'amuleto'].forEach(slot => {
-                if (v.equipamentos[slot]) {
-                    v.equipamentos[slot].durabilidade = Math.max(0, (v.equipamentos[slot].durabilidade || 100) - 25);
-                    if (v.equipamentos[slot].durabilidade <= 0) msgMorte += `\n⚠️ [${v.equipamentos[slot].nome}] FOI DESTRUÍDO!`;
-                }
-            });
+            if (v.equipamentos) {
+                ['arma', 'armadura', 'amuleto'].forEach(slot => {
+                    if (v.equipamentos[slot]) {
+                        v.equipamentos[slot].durabilidade = Math.max(0, (v.equipamentos[slot].durabilidade || 100) - 25);
+                        if (v.equipamentos[slot].durabilidade <= 0) msgMorte += `\n⚠️ [${v.equipamentos[slot].nome}] FOI DESTRUÍDO!`;
+                    }
+                });
+            }
 
             v.estado = 'Banido'; v.status = 'Cinzas'; v.pontosAcao = 0; v.sangue = 0; v.hpAtual = 0;
             this._registrarEventoEspecial('global', 'CAÍDO EM BATALHA', `A alma de ${v.nome} foi estilhaçada nas trevas.`, false);
@@ -2533,136 +2967,83 @@ class ShadowCore {
             return { finalizado: true, relato: msgMorte };
         }
 
-        // ===================================
-        // RESOLUÇÃO DE CADA TIPO DE COMBATE
-        // ===================================
-        
-        // 1. PVE CLÁSSICO E INQUISIÇÃO E LABIRINTO
-        if (tipoCombate === 'pve' || tipoCombate === 'labirinto') {
-            const mob = this.batalhasPvE[id];
-            if (!mob) return { erro: "O Monstro desvaneceu." };
-            mob.hpAtual -= danoFinal;
-            
-            if (mob.hpAtual <= 0) {
-                if (mob.rank.includes("Inquisidor")) { v.maldicaoInquisicao = false; v.titulos.push("Herege Triunfante"); }
-                let buffEclipse = (this.altarEclipse && this.altarEclipse.buffAtivoAte > Date.now()) ? 2 : 1;
-                let xpGanho = Math.floor((mob.hpMax / 10) * mob.mult) * buffEclipse;
-                let ganhoGts = Math.floor(((Math.random() * 200) + 100 + (v.nivel * 50)) * mob.mult) * buffEclipse;
-                v.sangue += ganhoGts; this.ganharXP(v.id, xpGanho); v.inventario[mob.loot] = (v.inventario[mob.loot] || 0) + 1;
-                
-                let relatoLoot = `Ganhaste +${xpGanho} XP, +${ganhoGts} Gts e 1x [${mob.loot.toUpperCase()}].`;
-                if (Math.random() > 0.80) { 
-                    const drop = ForjaDraconiana.gerarReliquia(v.nivel + (this.nivelAbismo * 2), this.reliquiasCustomizadas); 
-                    v.bolsa.push(drop); relatoLoot += `\n⚔️ Extraíste: [${drop.nome}]!`; 
-                }
-                delete this.batalhasPvE[id]; this._salvarBancoDeDados();
-                return { finalizado: true, relato: `VITÓRIA! ${relatoLoot}` };
-            }
-            this._salvarBancoDeDados(); return { finalizado: false, hpRestante: mob.hpAtual, hpMax: mob.hpMax };
-        }
-
-        // 2. GOETIA (World Boss)
-        if (tipoCombate === 'goetia') {
-            const demon = this.evocacaoAtiva; if(!demon) return { erro: "A Entidade sumiu." };
-            demon.hpAtual -= danoFinal;
-            if (!demon.participantes[v.id]) demon.participantes[v.id] = { nome: v.nome, dano: 0 }; 
-            demon.participantes[v.id].dano += danoFinal;
-            
-            if (demon.hpAtual <= 0) {
-                let xpBaseBoss = Math.floor(demon.hpMax / 5);
-                for (let pid in demon.participantes) { 
-                    let l = this.vampiros[pid]; 
-                    if (l) { 
-                        l.influencia += 100; l.inventario.pedraAlma = (l.inventario.pedraAlma || 0) + 10; 
-                        this.ganharXP(l.id, xpBaseBoss); l.estatisticas.demoniosMortos = (l.estatisticas.demoniosMortos || 0) + 1;
-                        const dropBoss = ForjaDraconiana.gerarReliquia(l.nivel + 30, this.reliquiasCustomizadas); l.bolsa.push(dropBoss);
-                    } 
-                }
-                this._registrarEventoEspecial('global', 'VITÓRIA GOÉTICA', `A Vontade de ${demon.nome} foi estilhaçada! Chove XP, Pedras e Relíquias aos bravos.`, true);
-                this.evocacaoAtiva = null; this._salvarBancoDeDados(); return { finalizado: true, relato: "ENTIDADE BANIDA! Vê a tua bolsa." };
-            }
-            this._salvarBancoDeDados(); return { finalizado: false, hpRestante: demon.hpAtual, hpMax: demon.hpMax };
-        }
-
-        // 3. FENDA ASTRAL
-        if (tipoCombate === 'fenda') {
-            const fenda = this.fendaAtiva[alvoId];
-            if (!fenda) return { erro: "A fenda já colapsou." };
-            fenda.hpAtual -= danoFinal;
-            if (fenda.hpAtual <= 0) {
-                v.inventario[fenda.loot] = (v.inventario[fenda.loot] || 0) + 2; this.ganharXP(v.id, 1500);
-                delete this.fendaAtiva[alvoId];
-                this._registrarEventoEspecial('global', 'FENDA PURGADA', `${v.nome} obliterou a anomalia.`, true);
-                this._salvarBancoDeDados(); return { finalizado: true, relato: `VITÓRIA! A Fenda foi selada. +2 ${fenda.loot.toUpperCase()}` };
-            }
-            this._salvarBancoDeDados(); return { finalizado: false, hpRestante: fenda.hpAtual, hpMax: fenda.hpMax };
-        }
-
-        // 4. CERCOS DEMONÍACOS (Motins)
-        if (tipoCombate === 'cerco') {
-            const cerco = this.cercosAtivos[alvoId];
-            if (!cerco) return { erro: "O cerco já foi quebrado ou a vítima morreu." };
-            cerco.hpAtual -= danoFinal;
-            if (cerco.hpAtual <= 0) {
-                const vitima = this.vampiros[cerco.alvoId];
-                if(vitima) vitima.influencia += 10;
-                delete this.cercosAtivos[alvoId];
-                this._registrarEventoEspecial('global', 'CERCO QUEBRADO', `O massacre terminou! ${v.nome} esmagou as hostes de ${cerco.demonio}!`, true);
-                this._salvarBancoDeDados(); return { finalizado: true, relato: `VITÓRIA! O Cerco foi destruído.` };
-            }
-            this._salvarBancoDeDados(); return { finalizado: false, hpRestante: cerco.hpAtual, hpMax: cerco.hpMax };
-        }
-
-        // 5. HEREGE MARCADO
-        if (tipoCombate === 'herege') {
-            const h = this.heregeMarcado; if (!h) return { erro: "Outro caçador aniquilou-o primeiro." };
-            h.hp -= danoFinal;
-            if (h.hp <= 0) {
-                this.heregeMarcado = null;
-                const drop = ForjaDraconiana.gerarReliquia(v.nivel + 20, this.reliquiasCustomizadas); v.bolsa.push(drop); v.influencia += 500;
-                this._registrarEventoEspecial('global', 'A LENDA CAIU', `${v.nome} executou o Herege Marcado e reclamou [${drop.nome}]!`, true);
-                this._salvarBancoDeDados(); return { finalizado: true, relato: `VITÓRIA GLORIOSA! Adquiriste [${drop.nome}].` };
-            }
-            this._salvarBancoDeDados(); return { finalizado: false, hpRestante: h.hp, hpMax: 15000 };
-        }
-
-        // 6. DUNGEON CO-OP (O Abismo Infinito)
-        if (tipoCombate === 'dungeon' || tipoCombate === 'dungeon_pvp') {
-            let bossEncontrado = null; let dIdEncontrado = null;
-            for (let dId in this.dungeons) {
-                if (this.dungeons[dId].entidadeEmCombate && this.dungeons[dId].entidadeEmCombate.id === alvoId) {
-                    bossEncontrado = this.dungeons[dId].entidadeEmCombate; dIdEncontrado = dId; break;
-                }
-            }
-            if (!bossEncontrado) return { erro: "A entidade não está mais nesta dimensão." };
-
-            bossEncontrado.hpAtual -= danoFinal;
-            if (bossEncontrado.hpAtual <= 0) {
-                this.resolverCombateDungeon(dIdEncontrado, true);
-                return { finalizado: true, relato: `VITÓRIA! A abominação do Abismo caiu.`, alvoMorto: true };
-            }
-            this._salvarBancoDeDados(); return { finalizado: false, hpRestante: bossEncontrado.hpAtual, hpMax: bossEncontrado.hpMax };
-        }
-
-        // 7. PVP CLÁSSICO DE ARENA
-        if (tipoCombate === 'pvp') {
-            const inimigo = this.vampiros[alvoId];
-            if (!inimigo) return { erro: "O alvo desvaneceu." };
-            inimigo.hpAtual -= danoFinal;
-            
-            if (inimigo.hpAtual <= 0) {
-                let rouboGts = Math.min(inimigo.sangue, Math.floor(1000 + (v.nivel * 50)));
-                inimigo.sangue = Math.max(0, inimigo.sangue - rouboGts); v.sangue += rouboGts;
-                v.estatisticas.vitoriasPvP += 1; this.ganharXP(v.id, 50 * desempenhoRitmo.multiplicadorGeral);
-                inimigo.estado = 'Banido'; inimigo.status = 'Cinzas'; inimigo.hpAtual = 0;
-                this._registrarEventoEspecial('guerra', 'ASSASSINATO EM DUELO', `Numa batalha sangrenta de Arena, ${v.nome} chacinou ${inimigo.nome} e roubou ${rouboGts} Gts!`, true);
-                this._salvarBancoDeDados(); return { finalizado: true, relato: `VITÓRIA! Reduziste ${inimigo.nome} a cinzas e pilhaste ${rouboGts} Gts.`, alvoMorto: true };
-            }
-            this._salvarBancoDeDados(); return { finalizado: false, hpRestante: inimigo.hpAtual, hpMax: inimigo.hpMax };
-        }
-
-        return { erro: "A Lei Hermética proíbe este tipo de combate." };
+        this._salvarBancoDeDados();
+        return {
+            finalizado: false,
+            hpRestante: mob.hpAtual,
+            hpMax: mob.hpMax,
+            posturaAtual: mob.posturaAtual,
+            posturaMax: mob.posturaMax,
+            vulneravelVisceral: mob.vulneravelVisceral,
+            faseAtual: mob.faseAtual,
+            acaoInimigo: resInimigo,
+            cinematica: resJogador.cinematica || resInimigo.cinematica,
+            critico: resJogador.critico,
+            visceral: resJogador.golpeVisceralExecutado,
+            relato: `${resJogador.narrativaJogador}\n${resInimigo.narrativa}`
+        };
     }
+
+    processarTurnoCombate(id, acao) {
+        const v = this.vampiros[id];
+        if (!v) return { erro: "Aura não encontrada." };
+        let mob = this.batalhasPvE[id];
+        if (!mob) return { erro: "Nenhum embate ativo no Umbral." };
+
+        mob = this.combatEngine.inicializarEntidadeCombate(mob, 'pve', v.nivel);
+        const atr = this._obterAtributosTotais(v);
+        const danoBase = Math.floor((atr.vontade * 40) + (v.nivel * 50) + 100);
+
+        const resJogador = this.combatEngine.processarImpactoJogador(mob, v, {
+            tipoAcao: acao || 'ataque_normal',
+            danoBruto: danoBase,
+            desempenhoRitmo: { multiplicadorGeral: 1.0, combo: 1 }
+        });
+
+        if (mob.hpAtual <= 0) {
+            let xpGanho = Math.floor((mob.hpMax / 10) * (mob.mult || 1));
+            let ganhoGts = Math.floor(((Math.random() * 200) + 100 + (v.nivel * 50)) * (mob.mult || 1));
+            v.sangue += ganhoGts;
+            this.ganharXP(v.id, xpGanho);
+            v.inventario[mob.loot] = (v.inventario[mob.loot] || 0) + 1;
+            delete this.batalhasPvE[id];
+            this._salvarBancoDeDados();
+            return {
+                sucesso: true,
+                finalizado: true,
+                relato: `VITÓRIA ESMAGADORA! ${resJogador.narrativaJogador}\nGanhaste +${xpGanho} XP, +${ganhoGts} Gts e 1x [${mob.loot.toUpperCase()}].`,
+                cinematica: resJogador.cinematica
+            };
+        }
+
+        const resInimigo = this.combatEngine.decidirAcaoInimigo(mob, v);
+        if (resInimigo.dano > 0) {
+            v.hpAtual = Math.max(0, (v.hpAtual || 0) - resInimigo.dano);
+        }
+
+        this._salvarBancoDeDados();
+        return {
+            sucesso: true,
+            finalizado: false,
+            mob: {
+                nome: mob.nome,
+                hpAtual: mob.hpAtual,
+                hpMax: mob.hpMax,
+                posturaAtual: mob.posturaAtual,
+                posturaMax: mob.posturaMax,
+                vulneravelVisceral: mob.vulneravelVisceral,
+                faseAtual: mob.faseAtual
+            },
+            jogador: {
+                hpAtual: v.hpAtual,
+                hpMax: v.hpMax,
+                furia: v.pontosAcao
+            },
+            relato: `${resJogador.narrativaJogador}\n${resInimigo.narrativa}`,
+            cinematica: resJogador.cinematica || resInimigo.cinematica
+        };
+    }
+
     async despertarTalento(vampiroId) {
         const v = this.vampiros[vampiroId];
         if (!v) return { erro: "Alma inexistente." };

@@ -1672,462 +1672,6 @@
         }
 
 </style>
-
-<style id="sanguinis-assinatura-premium-v2">
-
-/* =========================================================
-   SANGUINIS — SELO PRIMORDIAL PREMIUM
-   Ouro ancestral + sangue profundo + estética vampírica
-========================================================= */
-
-.assinatura-ouro {
-    position: relative;
-    isolation: isolate;
-
-    width: min(900px, calc(100% - 30px));
-    min-height: 96px;
-
-    margin: 34px auto 18px;
-    padding: 20px 72px;
-
-    box-sizing: border-box;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    overflow: hidden;
-
-    background:
-        radial-gradient(
-            ellipse at 50% -45%,
-            rgba(158, 14, 25, 0.27) 0%,
-            rgba(92, 3, 13, 0.10) 38%,
-            transparent 68%
-        ),
-        radial-gradient(
-            ellipse at 50% 130%,
-            rgba(94, 0, 10, 0.17),
-            transparent 55%
-        ),
-        linear-gradient(
-            180deg,
-            rgba(25, 8, 9, 0.96) 0%,
-            rgba(11, 3, 4, 0.98) 47%,
-            rgba(4, 1, 2, 0.99) 100%
-        );
-
-    border: 1px solid rgba(187, 132, 43, 0.23);
-    border-top-color: rgba(229, 191, 102, 0.42);
-    border-bottom-color: rgba(104, 8, 16, 0.64);
-
-    border-radius: 14px;
-
-    box-shadow:
-        0 16px 38px rgba(0, 0, 0, 0.58),
-        0 4px 12px rgba(0, 0, 0, 0.42),
-        0 0 28px rgba(100, 0, 10, 0.14),
-        inset 0 1px 0 rgba(255, 236, 185, 0.055),
-        inset 0 -16px 30px rgba(61, 0, 7, 0.19);
-}
-
-
-/* textura aristocrática */
-.assinatura-ouro::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-
-    opacity: .34;
-
-    background:
-        repeating-linear-gradient(
-            115deg,
-            transparent 0,
-            transparent 9px,
-            rgba(255,255,255,.012) 10px,
-            transparent 11px
-        );
-
-    pointer-events: none;
-}
-
-
-/* filete exterior dourado */
-.assinatura-ouro::after {
-    content: "";
-    position: absolute;
-    inset: 5px;
-
-    border: 1px solid rgba(194, 143, 56, 0.10);
-    border-radius: 9px;
-
-    pointer-events: none;
-}
-
-
-/* halo vermelho profundo */
-.assinatura-sangue-aura {
-    position: absolute;
-
-    width: 56%;
-    height: 130px;
-
-    left: 22%;
-    top: -76px;
-
-    background:
-        radial-gradient(
-            ellipse,
-            rgba(184, 12, 26, 0.22),
-            rgba(88, 0, 8, 0.07) 44%,
-            transparent 72%
-        );
-
-    filter: blur(5px);
-    pointer-events: none;
-}
-
-
-/* conteúdo */
-.assinatura-miolo {
-    position: relative;
-    z-index: 2;
-
-    width: 100%;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-
-/* SANGUINIS */
-.assinatura-titulo {
-    position: relative;
-
-    font-family:
-        'Cinzel Decorative',
-        'Cinzel',
-        Georgia,
-        serif;
-
-    font-weight: 700;
-
-    font-size: clamp(1.55rem, 2.4vw, 2.25rem);
-
-    line-height: 1;
-
-    letter-spacing: .22em;
-
-    text-indent: .22em;
-
-    text-transform: uppercase;
-
-    background:
-        linear-gradient(
-            180deg,
-            #fff8d7 0%,
-            #f8dea0 13%,
-            #dfb95f 33%,
-            #a87525 57%,
-            #795018 70%,
-            #dab15b 86%,
-            #fff0b7 100%
-        );
-
-    -webkit-background-clip: text;
-    background-clip: text;
-
-    color: transparent;
-
-    filter:
-        drop-shadow(0 2px 1px rgba(0,0,0,.95))
-        drop-shadow(0 4px 7px rgba(0,0,0,.62));
-
-    text-shadow:
-        0 0 14px rgba(202, 147, 56, .10);
-}
-
-
-/* capitular */
-.assinatura-s {
-    font-size: 1.15em;
-}
-
-
-/* subtítulo */
-.assinatura-subtitulo {
-    margin-top: 10px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-
-    gap: 8px;
-
-    font-family:
-        'Cinzel',
-        Georgia,
-        serif;
-
-    font-size: clamp(.70rem, 1vw, .86rem);
-
-    letter-spacing: .14em;
-
-    text-transform: uppercase;
-}
-
-
-.assinatura-pacto {
-    color: #d4b677;
-
-    font-weight: 600;
-
-    text-shadow:
-        0 1px 3px #000,
-        0 0 8px rgba(218, 174, 86, .09);
-}
-
-
-.assinatura-sombras {
-    color: #927966;
-
-    font-size: .91em;
-
-    font-style: italic;
-
-    letter-spacing: .11em;
-
-    text-transform: none;
-
-    text-shadow:
-        0 1px 3px #000,
-        0 0 8px rgba(94, 0, 8, .24);
-}
-
-
-/* gota / rubi central */
-.assinatura-rubi {
-    color: #a50e1c;
-
-    font-size: 1.15em;
-
-    text-shadow:
-        0 0 3px rgba(255, 53, 65, .62),
-        0 0 9px rgba(165, 7, 22, .70),
-        0 0 18px rgba(103, 0, 9, .50);
-}
-
-
-/* linhas cerimoniais */
-.assinatura-linha {
-    height: 1px;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent 0%,
-            rgba(81, 5, 10, .22) 8%,
-            rgba(177, 118, 37, .48) 28%,
-            rgba(240, 199, 102, .90) 50%,
-            rgba(177, 118, 37, .48) 72%,
-            rgba(81, 5, 10, .22) 92%,
-            transparent 100%
-        );
-
-    box-shadow:
-        0 0 6px rgba(201, 146, 53, .14);
-
-    opacity: .85;
-}
-
-
-.assinatura-linha-topo {
-    width: 78%;
-    margin-bottom: 13px;
-}
-
-
-.assinatura-linha-base {
-    width: 60%;
-    margin-top: 13px;
-
-    opacity: .55;
-}
-
-
-/* ornamentos laterais */
-.assinatura-ornamento {
-    position: absolute;
-    top: 50%;
-
-    width: 55px;
-    height: 55px;
-
-    transform: translateY(-50%) rotate(45deg);
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    border: 1px solid rgba(190, 135, 45, .25);
-
-    box-shadow:
-        inset 0 0 10px rgba(120, 4, 15, .18),
-        0 0 11px rgba(0,0,0,.45);
-
-    opacity: .72;
-}
-
-
-.assinatura-ornamento::before {
-    content: "";
-
-    position: absolute;
-
-    width: 37px;
-    height: 37px;
-
-    border: 1px solid rgba(110, 9, 17, .42);
-}
-
-
-.assinatura-ornamento span {
-    transform: rotate(-45deg);
-
-    color: #9a681f;
-
-    font-size: .68rem;
-
-    text-shadow:
-        0 0 7px rgba(209, 155, 60, .23);
-}
-
-
-.assinatura-ornamento-esq {
-    left: 28px;
-}
-
-
-.assinatura-ornamento-dir {
-    right: 28px;
-}
-
-
-/* detalhe de sangue inferior */
-.assinatura-ouro:hover .assinatura-rubi {
-    text-shadow:
-        0 0 4px rgba(255, 80, 88, .75),
-        0 0 12px rgba(175, 6, 22, .90),
-        0 0 22px rgba(100, 0, 9, .62);
-}
-
-
-/* ==========================================
-   MOBILE
-========================================== */
-
-@media (max-width: 700px) {
-
-    .assinatura-ouro {
-        width: calc(100% - 18px);
-
-        min-height: 86px;
-
-        margin: 23px auto 13px;
-
-        padding: 17px 44px;
-
-        border-radius: 11px;
-    }
-
-
-    .assinatura-titulo {
-        font-size: clamp(1.23rem, 6vw, 1.55rem);
-
-        letter-spacing: .17em;
-
-        text-indent: .17em;
-    }
-
-
-    .assinatura-subtitulo {
-        margin-top: 8px;
-
-        gap: 5px;
-
-        font-size: .65rem;
-
-        letter-spacing: .08em;
-    }
-
-
-    .assinatura-linha-topo {
-        width: 92%;
-        margin-bottom: 10px;
-    }
-
-
-    .assinatura-linha-base {
-        width: 74%;
-        margin-top: 10px;
-    }
-
-
-    .assinatura-ornamento {
-        width: 31px;
-        height: 31px;
-    }
-
-
-    .assinatura-ornamento::before {
-        width: 20px;
-        height: 20px;
-    }
-
-
-    .assinatura-ornamento-esq {
-        left: 12px;
-    }
-
-
-    .assinatura-ornamento-dir {
-        right: 12px;
-    }
-
-
-    .assinatura-ornamento span {
-        font-size: .45rem;
-    }
-
-}
-
-
-/* telas muito pequenas */
-@media (max-width: 420px) {
-
-    .assinatura-ouro {
-        padding-left: 34px;
-        padding-right: 34px;
-    }
-
-
-    .assinatura-sombras {
-        width: 100%;
-        margin-top: 2px;
-    }
-
-
-    .assinatura-rubi {
-        display: none;
-    }
-
-}
-
-</style>
 </head>
 <body>
     <canvas id="bg-ambient-canvas"></canvas>
@@ -2346,7 +1890,7 @@
                 <button class="dock-btn" data-aba="magia" onclick="nav('magia', this)"><span style="color:var(--magia);">🔮</span> Altar & Forja Mágica</button>
                 
                 <button class="dock-btn" data-aba="ordem" onclick="nav('ordem', this)"><span style="color:#d4af37;">🏛️</span> Ordem Iniciática (0°-10°)</button>
-                <button class="dock-btn" data-aba="magia_codigo" onclick="nav('magia_codigo', this)"><span style="color:#00e1d9;">✨</span> Matriz Mágica (IA)</button>
+                <button class="dock-btn" data-aba="magia_codigo" onclick="nav('magia_codigo', this)"><span style="color:#00e1d9;">⚡</span> Magia em Código</button>
                 <button class="dock-btn" data-aba="biblioteca" onclick="nav('biblioteca', this)"><span style="color:var(--xp);">📖</span> Biblioteca Proibida</button>
                 <button class="dock-btn" data-aba="familiars" onclick="nav('familiars', this)"><span style="color:#00e1d9;">🦇</span> Forja de Almas (Pets)</button>
             </div>
@@ -3893,11 +3437,11 @@
         <!-- ======================================================== -->
         <div id="aba-ordem" class="aba oculto">
             <div class="sub-nav-bar" data-domain="ordem">
-                <button class="sub-nav-btn active" onclick="switchSubSection('ordem', 'ordem-sec-templo', this)">🏛️ Sanctum & Santuário</button>
-                <button class="sub-nav-btn" onclick="switchSubSection('ordem', 'ordem-sec-graus', this)">🔯 Hierarquia & Provações</button>
+                <button class="sub-nav-btn active" onclick="switchSubSection('ordem', 'ordem-sec-templo', this)">🏛️ Templo & Egrégora</button>
+                <button class="sub-nav-btn" onclick="switchSubSection('ordem', 'ordem-sec-graus', this)">🔯 Graus Herméticos (0°-10°)</button>
                 <button class="sub-nav-btn" onclick="switchSubSection('ordem', 'ordem-sec-decretos', this)">📜 Câmara de Decretos</button>
-                <button class="sub-nav-btn" onclick="switchSubSection('ordem', 'ordem-sec-membros', this)">👥 Conselho & Irmandade</button>
-                <button class="sub-nav-btn" onclick="nav('magia_codigo')">✨ Matriz Mágica (IA)</button>
+                <button class="sub-nav-btn" onclick="switchSubSection('ordem', 'ordem-sec-membros', this)">👥 Irmandade de Adeptos</button>
+                <button class="sub-nav-btn" onclick="nav('magia_codigo')">⚡ Magia em Código</button>
             </div>
 
             <!-- SUB-SEÇÃO 1: TEMPLO & EGRÉGORA -->
@@ -4000,265 +3544,83 @@
         </div>
 
         <!-- ======================================================== -->
-        <!-- ABA: MATRIZ MÁGICA DA ORDEM — IA GUIA OCULTA              -->
+        <!-- ABA 2: STUDIO DE MAGIA EM CÓDIGO (ZERO-CRASH ENGINE)    -->
         <!-- ======================================================== -->
         <div id="aba-magia_codigo" class="aba oculto">
             <div class="sub-nav-bar" data-domain="magia_codigo">
-                <button class="sub-nav-btn active" onclick="switchSubSection('magia_codigo', 'matriz-sec-canalizar', this)">✨ Canalizar Magia</button>
-                <button class="sub-nav-btn" onclick="switchSubSection('magia_codigo', 'matriz-sec-nos', this)">🔮 Nós da Matriz</button>
-                <button class="sub-nav-btn" onclick="switchSubSection('magia_codigo', 'matriz-sec-efeitos', this)">⚡ Meus Efeitos Ativos</button>
-                <button class="sub-nav-btn" onclick="switchSubSection('magia_codigo', 'matriz-sec-pesquisa', this)">📜 Pesquisas & Grimórios (IA)</button>
-                <button class="sub-nav-btn" onclick="switchSubSection('magia_codigo', 'matriz-sec-status-ia', this); carregarStatusOraculo();">🛡️ Mente Abissal & Shield</button>
-                <button class="sub-nav-btn" onclick="nav('ordem')">🏛️ Voltar à Ordem</button>
+                <button class="sub-nav-btn active" onclick="switchSubSection('magia_codigo', 'code-sec-forja', this)">⚡ Forja de Código</button>
+                <button class="sub-nav-btn" onclick="switchSubSection('magia_codigo', 'code-sec-grimorio', this)">📖 Grimório em Código</button>
+                <button class="sub-nav-btn" onclick="switchSubSection('magia_codigo', 'code-sec-docs', this)">📚 Operadores Místicos</button>
+                <button class="sub-nav-btn" onclick="nav('ordem')">🏛️ Ordem Iniciática</button>
             </div>
 
-            <!-- SUB-SEÇÃO 1: CANALIZAÇÃO COM IA GUIA -->
-            <div id="matriz-sec-canalizar" class="sub-section active">
-                <div class="card" style="border-color: #9333ea; background: radial-gradient(circle at 50% 0%, #120520 0%, #040203 100%);">
-                    <div style="text-align: center; margin-bottom: 15px;">
-                        <div style="font-size: 2.5rem; margin-bottom: 5px; filter: drop-shadow(0 0 20px #9333ea);">✨</div>
-                        <h3 style="color: #c084fc; font-family: 'Cinzel', serif; margin: 0; letter-spacing: 2px;">ORÁCULO DE ALTA MAGIA DA ORDEM</h3>
-                        <p style="font-size: 0.85rem; color: #888; margin: 8px 0 0 0;">A Consciência do Abismo canaliza a tua intenção através dos grimórios ancestrais e injeta nós de poder na Matriz Oculta da tua Ordem. Sem código. Sem escrita técnica. Apenas Vontade.</p>
+            <!-- SUB-SEÇÃO 1: FORJA DE CÓDIGO ARCANO -->
+            <div id="code-sec-forja" class="sub-section active">
+                <div class="card" style="border-color: #00e1d9; background: radial-gradient(circle at 50% 0%, #061718 0%, #040203 100%);">
+                    <h3 style="color: #00e1d9; font-family: 'Cinzel', serif; text-align: center; margin-top:0;">⚡ Terminal de Magia Viva em Código</h3>
+                    <p style="font-size: 0.85rem; color: #888; text-align: center; margin-bottom: 10px;">
+                        Programa feitiços diretamente na matriz do jogo. As instruções são validadas em tempo real com sandbox à prova de erros. A tua vontade se torna código vivo no servidor.
+                    </p>
+
+                    <!-- CHIPS DE OPERADORES RÁPIDOS -->
+                    <div style="margin-bottom: 10px;">
+                        <span style="font-size: 0.8rem; color: #aaa; margin-right: 5px;">Operadores Disponíveis:</span>
+                        <span class="code-operator-chip" onclick="inserirComandoCodigo('TRANSMUTAR(\"cinzas\", \"anima\", 1);')">TRANSMUTAR</span>
+                        <span class="code-operator-chip" onclick="inserirComandoCodigo('CANALIZAR_EGREGORA(1.2);')">CANALIZAR_EGREGORA</span>
+                        <span class="code-operator-chip" onclick="inserirComandoCodigo('DOBRA_ASTRAL(\"santuario\", 6);')">DOBRA_ASTRAL</span>
+                        <span class="code-operator-chip" onclick="inserirComandoCodigo('MALDICAO_VAMPIRICA(\"alvo\", \"dreno\");')">MALDICAO_VAMPIRICA</span>
+                        <span class="code-operator-chip" onclick="inserirComandoCodigo('INVOCAR_FORJA_VIVA(\"arma\");')">INVOCAR_FORJA_VIVA</span>
+                        <span class="code-operator-chip" onclick="inserirComandoCodigo('RESONANCIA_COSMICA(\"Tiphereth\", 10);')">RESONANCIA_COSMICA</span>
                     </div>
 
-                    <!-- STEP 1: TRADIÇÃO ANCESTRAL -->
-                    <div style="background: rgba(147, 51, 234, 0.08); border: 1px solid #3b0764; border-radius: 8px; padding: 14px; margin-bottom: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                            <span style="background: #9333ea; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;">1</span>
-                            <span style="color: #c084fc; font-family: 'Cinzel', serif; font-size: 1rem;">Escolhe a Tradição Ancestral</span>
-                        </div>
-                        <div id="matriz-tradicoes-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px;">
-                            <button class="matriz-trad-btn" data-trad="hermetismo" onclick="selecionarTradicao(this)" style="background: #0a0618; border: 1px solid #3b0764; color: #c084fc; padding: 10px 8px; border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.8rem; transition: all 0.3s;">
-                                <div style="font-size: 1.4rem;">🔯</div>
-                                <div style="font-weight: bold; margin-top: 3px;">Hermetismo</div>
-                                <div style="font-size: 0.7rem; color: #666;">Corpus Hermeticum</div>
-                            </button>
-                            <button class="matriz-trad-btn" data-trad="agrippa" onclick="selecionarTradicao(this)" style="background: #0a0618; border: 1px solid #3b0764; color: #c084fc; padding: 10px 8px; border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.8rem; transition: all 0.3s;">
-                                <div style="font-size: 1.4rem;">☿</div>
-                                <div style="font-weight: bold; margin-top: 3px;">Agrippa</div>
-                                <div style="font-size: 0.7rem; color: #666;">Occulta Philosophia</div>
-                            </button>
-                            <button class="matriz-trad-btn" data-trad="salomao" onclick="selecionarTradicao(this)" style="background: #0a0618; border: 1px solid #3b0764; color: #c084fc; padding: 10px 8px; border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.8rem; transition: all 0.3s;">
-                                <div style="font-size: 1.4rem;">✡️</div>
-                                <div style="font-weight: bold; margin-top: 3px;">Salomão</div>
-                                <div style="font-size: 0.7rem; color: #666;">Clavículas & Goétia</div>
-                            </button>
-                            <button class="matriz-trad-btn" data-trad="picatrix" onclick="selecionarTradicao(this)" style="background: #0a0618; border: 1px solid #3b0764; color: #c084fc; padding: 10px 8px; border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.8rem; transition: all 0.3s;">
-                                <div style="font-size: 1.4rem;">🌟</div>
-                                <div style="font-weight: bold; margin-top: 3px;">Picatrix</div>
-                                <div style="font-size: 0.7rem; color: #666;">Magia Astral</div>
-                            </button>
-                            <button class="matriz-trad-btn" data-trad="enoquiano" onclick="selecionarTradicao(this)" style="background: #0a0618; border: 1px solid #3b0764; color: #c084fc; padding: 10px 8px; border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.8rem; transition: all 0.3s;">
-                                <div style="font-size: 1.4rem;">🔷</div>
-                                <div style="font-weight: bold; margin-top: 3px;">Enoquiano</div>
-                                <div style="font-size: 0.7rem; color: #666;">Dee & Torres de Vigia</div>
-                            </button>
-                            <button class="matriz-trad-btn" data-trad="qliphoth" onclick="selecionarTradicao(this)" style="background: #0a0618; border: 1px solid #3b0764; color: #c084fc; padding: 10px 8px; border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.8rem; transition: all 0.3s;">
-                                <div style="font-size: 1.4rem;">🕳️</div>
-                                <div style="font-weight: bold; margin-top: 3px;">Qliphoth</div>
-                                <div style="font-size: 0.7rem; color: #666;">Cascas do Abismo</div>
-                            </button>
-                            <button class="matriz-trad-btn" data-trad="abramelin" onclick="selecionarTradicao(this)" style="background: #0a0618; border: 1px solid #3b0764; color: #c084fc; padding: 10px 8px; border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.8rem; transition: all 0.3s;">
-                                <div style="font-size: 1.4rem;">✨</div>
-                                <div style="font-weight: bold; margin-top: 3px;">Abramelin</div>
-                                <div style="font-size: 0.7rem; color: #666;">Sagrado Anjo Guardião</div>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- STEP 2: INTENÇÃO MÍSTICA -->
-                    <div style="background: rgba(147, 51, 234, 0.08); border: 1px solid #3b0764; border-radius: 8px; padding: 14px; margin-bottom: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                            <span style="background: #9333ea; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;">2</span>
-                            <span style="color: #c084fc; font-family: 'Cinzel', serif; font-size: 1rem;">Descreve a tua Intenção Mágica</span>
-                        </div>
-                        <textarea id="matriz-intencao-input" placeholder="Descreve o que desejas canalizar... Ex: 'Quero criar um manto de proteção astral que envolva todos os membros da minha ordem em combate' ou 'Invocar a ressonância das esferas planetárias para amplificar o poder dos alquimistas'" style="width: 100%; padding: 12px; background: #050210; border: 1px solid #3b0764; color: #e0d0ff; border-radius: 6px; font-size: 0.9rem; resize: vertical; min-height: 80px; font-family: inherit;"></textarea>
-                        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
-                            <span style="font-size: 0.75rem; color: #666; margin-right: 4px;">Sugestões rápidas:</span>
-                            <button onclick="document.getElementById('matriz-intencao-input').value='Transmutação alquímica avançada de Vitae em essência pura, amplificando as colheitas da Ordem'" style="background: #1a0830; border: 1px solid #4c1d95; color: #a78bfa; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;">⚗️ Transmutação Alquímica</button>
-                            <button onclick="document.getElementById('matriz-intencao-input').value='Manto astral coletivo que envolve os membros da Ordem em escudo de luz púrpura durante combates'" style="background: #1a0830; border: 1px solid #4c1d95; color: #a78bfa; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;">🌀 Manto Astral Coletivo</button>
-                            <button onclick="document.getElementById('matriz-intencao-input').value='Território sagrado ao redor do santuário que repele hereges e concede regeneração aos fiéis'" style="background: #1a0830; border: 1px solid #4c1d95; color: #a78bfa; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;">🏛️ Território Sagrado</button>
-                            <button onclick="document.getElementById('matriz-intencao-input').value='Maldição cármica que marca hereges com o selo de Caim, enfraquecendo-os permanentemente'" style="background: #1a0830; border: 1px solid #4c1d95; color: #a78bfa; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;">💀 Maldição em Hereges</button>
-                            <button onclick="document.getElementById('matriz-intencao-input').value='Cura regenerativa da egrégora que restaura a vitalidade dos membros sintonizados passivamente'" style="background: #1a0830; border: 1px solid #4c1d95; color: #a78bfa; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;">💚 Cura da Egrégora</button>
-                        </div>
-                    </div>
-
-                    <!-- STEP 3: TIPO DE VÍNCULO -->
-                    <div style="background: rgba(147, 51, 234, 0.08); border: 1px solid #3b0764; border-radius: 8px; padding: 14px; margin-bottom: 15px;">
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                            <span style="background: #9333ea; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;">3</span>
-                            <span style="color: #c084fc; font-family: 'Cinzel', serif; font-size: 1rem;">Tipo de Vínculo Mágico</span>
-                        </div>
-                        <select id="matriz-vinculo-select" style="width: 100%; padding: 10px; background: #050210; border: 1px solid #3b0764; color: #e0d0ff; border-radius: 6px; font-size: 0.9rem;">
-                            <option value="alquimia">⚗️ Transmutação Alquímica — Bônus em transmutações</option>
-                            <option value="protecao_santuario">🛡️ Proteção de Santuário — Reduz dano no território</option>
-                            <option value="dreno_cosmico">🩸 Dreno Cósmico — Drena vitae de inimigos</option>
-                            <option value="manto_astral">🌀 Manto Astral Coletivo — Escudo passivo coletivo</option>
-                            <option value="ressonancia" selected>⚡ Ressonância de Poder — Amplifica dano mágico</option>
-                            <option value="territorio_sagrado">🏛️ Território Sagrado — Proteção no mapa 2D (Tier 4+)</option>
-                            <option value="maldicao_carmica">💀 Maldição Cármica — Debuff em hereges (Tier 4+)</option>
-                            <option value="cura_egregora">💚 Cura da Egrégora — Regeneração passiva de HP</option>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                        <input type="text" id="code-feitico-nome" placeholder="Nome do Feitiço (Ex: Transmutação de Hermes)" style="padding: 8px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px;">
+                        <select id="code-feitico-esfera" style="padding: 8px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px;">
+                            <option value="Malkuth">Malkuth (Reino Físico)</option>
+                            <option value="Yesod">Yesod (Fundamento Astral)</option>
+                            <option value="Hod">Hod (Glória Intelectual)</option>
+                            <option value="Netzach">Netzach (Vitória & Força)</option>
+                            <option value="Tiphereth" selected>Tiphereth (Harmonia Solar)</option>
+                            <option value="Geburah">Geburah (Poder Severo & Fogo)</option>
+                            <option value="Chesed">Chesed (Misericórdia Cósmica)</option>
                         </select>
                     </div>
 
-                    <!-- BOTÃO DE CANALIZAÇÃO -->
-                    <button id="btn-canalizar-matriz" onclick="canalizarMatrizIAClient()" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #3b0764, #7c3aed, #9333ea); color: #fff; border: 2px solid #a855f7; border-radius: 10px; font-size: 1.1rem; font-family: 'Cinzel', serif; font-weight: bold; cursor: pointer; letter-spacing: 1px; transition: all 0.3s; box-shadow: 0 0 25px rgba(147, 51, 234, 0.4);">
-                        ✨ Canalizar com a Consciência da Ordem ✨
-                    </button>
+                    <!-- EDITOR DE CÓDIGO -->
+                    <div class="code-editor-container">
+                        <textarea id="code-formula-input" class="code-textarea" placeholder="// Digite a fórmula de magia em código aqui...&#10;TRANSMUTAR(\"cinzas\", \"anima\", 2);&#10;CANALIZAR_EGREGORA(1.5);&#10;RESONANCIA_COSMICA(\"Tiphereth\", 10);" oninput="verificarSintaxeAoDigitar()"></textarea>
+                        <div id="code-syntax-feedback" style="font-size: 0.8rem; color: #00ff88; margin-top: 5px;">⚡ Sintaxe Pronta para Validação.</div>
+                    </div>
 
-                    <!-- RESULTADO DA IA -->
-                    <div id="matriz-resultado-ia" class="oculto" style="margin-top: 15px; background: rgba(0, 0, 0, 0.6); border: 1px solid #7c3aed; border-radius: 8px; padding: 15px;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                            <span id="matriz-res-sigilo" style="font-size: 2rem;">✨</span>
-                            <div>
-                                <div id="matriz-res-nome" style="color: #c084fc; font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: bold;"></div>
-                                <div id="matriz-res-tradicao" style="font-size: 0.8rem; color: #888;"></div>
-                            </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                        <div style="font-size: 0.8rem; color: #888;">Custo de Forja: 1.500 Gts</div>
+                        <button class="btn" style="background: linear-gradient(135deg, #0b1a1a, #00e1d9); color: #000; font-weight: bold; border: 1px solid #00e1d9;" onclick="forjarMagiaCodigoClient()">⚡ Forjar Magia na Matrix</button>
+                    </div>
+
+                    <!-- LOGS DO CONSOLE ARCANO -->
+                    <div style="margin-top: 15px;">
+                        <div style="font-size: 0.75rem; color: #aaa; margin-bottom: 3px;">Saída do Terminal Astral:</div>
+                        <div id="code-terminal-output" style="background: #000; border: 1px solid #222; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 0.8rem; color: #00ff88; min-height: 60px; max-height: 120px; overflow-y: auto;">
+                            [SISTEMA]: Motor de Magia em Código ativo. Conectado ao nó do Abismo.
                         </div>
-                        <div id="matriz-res-descricao" style="color: #aaa; font-size: 0.9rem; margin-bottom: 8px; font-style: italic;"></div>
-                        <div id="matriz-res-efeito" style="color: #00ff88; font-size: 0.85rem; padding: 8px; background: rgba(0, 255, 136, 0.08); border: 1px solid #0a3a1a; border-radius: 4px;"></div>
-                        <div id="matriz-res-gnose" style="color: #d4af37; font-size: 0.85rem; margin-top: 8px;"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- SUB-SEÇÃO 2: NÓS MÁGICOS DA MATRIZ -->
-            <div id="matriz-sec-nos" class="sub-section">
-                <div class="card" style="border-color: #7c3aed; background: radial-gradient(circle at 50% 0%, #120520 0%, #040203 100%);">
-                    <h3 style="color: #c084fc; font-family: 'Cinzel', serif; text-align: center; margin-top: 0;">🔮 Nós Mágicos da Matriz da Ordem</h3>
-                    <p style="font-size: 0.85rem; color: #888; text-align: center; margin-bottom: 5px;">Cada nó foi canalizado pela IA Guia e gravado na base oculta da tua Ordem. Sintoniza-te para receber os seus efeitos.</p>
-                    <div id="matriz-info-capacidade" style="text-align: center; font-size: 0.8rem; color: #666; margin-bottom: 12px;"></div>
-                    <div id="lista-nos-matriz" style="display: grid; gap: 10px;"></div>
-                    <div id="matriz-vazia-msg" class="oculto" style="text-align: center; padding: 30px; color: #555; font-style: italic;">A Matriz está vazia. Canaliza o teu primeiro nó de poder na aba "Canalizar Magia".</div>
+            <!-- SUB-SEÇÃO 2: GRIMÓRIO DE MAGIAS EM CÓDIGO -->
+            <div id="code-sec-grimorio" class="sub-section">
+                <div class="card">
+                    <h3 style="color: #00e1d9; font-family: 'Cinzel', serif; text-align: center;">Teu Grimório de Códigos Vivos</h3>
+                    <p style="font-size: 0.85rem; color: #888; text-align: center;">Feitiços programados por ti que podem ser conjurados para transmutar materiais, alterar o mundo 2D e canalizar poder cósmico.</p>
+                    <div id="lista-minhas-magias-codigo" style="display: grid; gap: 8px;"></div>
                 </div>
             </div>
 
-            <!-- SUB-SEÇÃO 3: EFEITOS ATIVOS -->
-            <div id="matriz-sec-efeitos" class="sub-section">
-                <div class="card" style="border-color: #22c55e; background: radial-gradient(circle at 50% 0%, #051a0a 0%, #040203 100%);">
-                    <h3 style="color: #4ade80; font-family: 'Cinzel', serif; text-align: center; margin-top: 0;">⚡ Efeitos Mágicos Ativos</h3>
-                    <p style="font-size: 0.85rem; color: #888; text-align: center; margin-bottom: 12px;">Todos os vínculos e bênçãos que estão a afetar o teu personagem neste momento, vindos dos nós sintonizados e dos ritos coletivos da Ordem.</p>
-                    <div id="lista-efeitos-ativos" style="display: grid; gap: 8px;"></div>
-                    <div id="efeitos-nenhum-msg" class="oculto" style="text-align: center; padding: 20px; color: #555; font-style: italic;">Nenhum efeito ativo. Sintoniza nós na Matriz da Ordem para receber vínculos de poder.</div>
-                    <div id="efeitos-poder-total" style="text-align: center; margin-top: 12px; padding: 10px; background: rgba(34, 197, 94, 0.1); border: 1px solid #166534; border-radius: 6px;">
-                        <span style="color: #888; font-size: 0.85rem;">Poder Canalizado Total: </span>
-                        <span id="efeitos-poder-valor" style="color: #4ade80; font-size: 1.2rem; font-weight: bold;">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SUB-SEÇÃO 4: PESQUISAS & GRIMÓRIOS (IA EM TEMPO REAL) -->
-            <div id="matriz-sec-pesquisa" class="sub-section">
-                <div class="card" style="border-color: #38bdf8; background: radial-gradient(circle at 50% 0%, #081d33 0%, #040203 100%);">
-                    <div style="text-align: center; margin-bottom: 15px;">
-                        <div style="font-size: 2.5rem; margin-bottom: 5px; filter: drop-shadow(0 0 20px #38bdf8);">📜</div>
-                        <h3 style="color: #38bdf8; font-family: 'Cinzel', serif; margin: 0; letter-spacing: 2px;">ESTUDOS & PESQUISAS ARCANAS EM TEMPO REAL</h3>
-                        <p style="font-size: 0.85rem; color: #888; margin: 8px 0 0 0;">A IA Oráculo vasculha textos esotéricos ancestrais, manuscritos herméticos e referências históricas para desvelar a metafísica de qualquer mistério e transmutá-lo em poder vivo para a tua Ordem.</p>
-                    </div>
-
-                    <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid #0369a1; border-radius: 8px; padding: 14px; margin-bottom: 12px;">
-                        <label style="color: #38bdf8; font-family: 'Cinzel', serif; font-size: 0.95rem; display: block; margin-bottom: 6px;">Qual mistério antigo desejas que a IA investigue?</label>
-                        <input id="pesquisa-tema-input" type="text" placeholder="Ex: 'As Chaves Enoquianas de John Dee', 'A transmutação alquímica segundo Paracelso', 'Os 72 Demônios da Goétia e seus selos'..." style="width: 100%; padding: 12px; background: #030d1a; border: 1px solid #0284c7; color: #e0f2fe; border-radius: 6px; font-size: 0.9rem; margin-bottom: 10px;">
-                        
-                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                            <label style="color: #888; font-size: 0.85rem; white-space: nowrap;">Tradição Guia:</label>
-                            <select id="pesquisa-tradicao-select" style="flex: 1; padding: 8px; background: #030d1a; border: 1px solid #0284c7; color: #e0f2fe; border-radius: 6px; font-size: 0.85rem;">
-                                <option value="hermetismo">🔯 Hermetismo (Corpus Hermeticum & O Caibalion)</option>
-                                <option value="agrippa">☿ Cornelius Agrippa (De Occulta Philosophia)</option>
-                                <option value="salomao">✡️ Salomão (Clavículas de Salomão & Goétia)</option>
-                                <option value="picatrix">🌟 Picatrix (Ghayat al-Hakim - Magia Astral)</option>
-                                <option value="enoquiano">🔷 Magia Enoquiana (John Dee & Torres de Vigia)</option>
-                                <option value="qliphoth">🕳️ Qliphoth (Árvore da Morte & Cascas do Abismo)</option>
-                                <option value="abramelin">✨ Abramelin (Sagrado Anjo Guardião & Alta Teurgia)</option>
-                            </select>
-                        </div>
-
-                        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
-                            <span style="font-size: 0.75rem; color: #666; margin-right: 4px;">Exemplos rápidos:</span>
-                            <button type="button" onclick="document.getElementById('pesquisa-tema-input').value='As Tabelas Enoquianas e a abertura dos Aethyrs'; document.getElementById('pesquisa-tradicao-select').value='enoquiano';" style="background: #082f49; border: 1px solid #0284c7; color: #7dd3fc; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; cursor: pointer;">🔷 Chaves Enoquianas</button>
-                            <button type="button" onclick="document.getElementById('pesquisa-tema-input').value='A Doutrina das Correspondências e os Selos Planetários'; document.getElementById('pesquisa-tradicao-select').value='agrippa';" style="background: #082f49; border: 1px solid #0284c7; color: #7dd3fc; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; cursor: pointer;">☿ Selos de Agrippa</button>
-                            <button type="button" onclick="document.getElementById('pesquisa-tema-input').value='A Alquimia da Transmutação da Matéria Prima em Luz Astral'; document.getElementById('pesquisa-tradicao-select').value='hermetismo';" style="background: #082f49; border: 1px solid #0284c7; color: #7dd3fc; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; cursor: pointer;">🔯 Alquimia Hermética</button>
-                            <button type="button" onclick="document.getElementById('pesquisa-tema-input').value='Os Talismãs Astrais das Mansões Lunares do Picatrix'; document.getElementById('pesquisa-tradicao-select').value='picatrix';" style="background: #082f49; border: 1px solid #0284c7; color: #7dd3fc; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; cursor: pointer;">🌟 Talismãs do Picatrix</button>
-                        </div>
-
-                        <button id="btn-pesquisar-arcano" onclick="pesquisarEstudoArcanoClient()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #0369a1, #0284c7, #38bdf8); color: #000; font-weight: bold; border: none; border-radius: 8px; font-size: 1rem; font-family: 'Cinzel', serif; cursor: pointer; letter-spacing: 1px; transition: all 0.3s; box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);">
-                            🔍 Pesquisar nos Grimórios & Rede Oculta (IA em Tempo Real)
-                        </button>
-                    </div>
-
-                    <!-- RESULTADO DO ESTUDO PESQUISADO -->
-                    <div id="resultado-pesquisa-estudo" class="oculto" style="margin-top: 15px; background: rgba(0, 5, 15, 0.85); border: 1px solid #0284c7; border-radius: 8px; padding: 18px;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span id="estudo-sigilo" style="font-size: 2.2rem;">📜</span>
-                                <div>
-                                    <h4 id="estudo-titulo" style="color: #38bdf8; font-family: 'Cinzel', serif; margin: 0; font-size: 1.25rem;"></h4>
-                                    <div id="estudo-tradicao-meta" style="font-size: 0.8rem; color: #94a3b8;"></div>
-                                </div>
-                            </div>
-                            <span id="estudo-fonte-badge" style="font-size: 0.75rem; color: #38bdf8; background: rgba(56, 189, 248, 0.15); border: 1px solid #0284c7; padding: 3px 8px; border-radius: 10px;"></span>
-                        </div>
-
-                        <blockquote id="estudo-citacao" style="border-left: 3px solid #38bdf8; margin: 0 0 14px 0; padding-left: 12px; font-style: italic; color: #cbd5e1; font-size: 0.9rem; background: rgba(56, 189, 248, 0.05); padding-top: 6px; padding-bottom: 6px; border-radius: 0 6px 6px 0;"></blockquote>
-
-                        <div id="estudo-analise" style="color: #e2e8f0; font-size: 0.9rem; line-height: 1.6; margin-bottom: 14px; white-space: pre-line;"></div>
-
-                        <div style="margin-bottom: 14px;">
-                            <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 6px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Princípios Identificados:</div>
-                            <div id="estudo-principios" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
-                        </div>
-
-                        <div style="background: rgba(0, 0, 0, 0.5); border: 1px solid #1e293b; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
-                            <div style="color: #00ff88; font-size: 0.85rem; font-weight: bold; margin-bottom: 4px;">⚡ Aplicação na Matriz da Ordem:</div>
-                            <div id="estudo-aplicacao" style="color: #aaa; font-size: 0.85rem; margin-bottom: 8px;"></div>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <span style="font-size: 0.8rem; color: #94a3b8;">Vínculo Sugerido:</span>
-                                <span id="estudo-vinculo-sug" style="color: #c084fc; font-weight: bold; font-size: 0.85rem;"></span>
-                            </div>
-                        </div>
-
-                        <button id="btn-transmutar-estudo" onclick="transmutarEstudoEmNo()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #3b0764, #7c3aed, #9333ea); color: #fff; font-weight: bold; border: 1px solid #a855f7; border-radius: 8px; font-size: 1rem; font-family: 'Cinzel', serif; cursor: pointer; letter-spacing: 1px; box-shadow: 0 0 20px rgba(147, 51, 234, 0.4); transition: all 0.3s;">
-                            ✨ Transmutar este Conhecimento em Nó da Ordem ✨
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SUB-SEÇÃO 5: MONITOR DA MENTE ABISSAL E LOAD BALANCER -->
-            <div id="matriz-sec-status-ia" class="sub-section">
-                <div class="card" style="border-color: #00e1d9; background: radial-gradient(circle at 50% 0%, #061820 0%, #03080c 100%);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-                        <div>
-                            <h3 style="color: #00e1d9; font-family: 'Cinzel', serif; margin: 0;">🛡️ Mente Abissal — Load Balancer & Rate Limit Shield</h3>
-                            <p style="font-size: 0.8rem; color: #888; margin: 4px 0 0 0;">Gestão dinâmica das 8 inteligências da Groq, proteção de cotas diárias e isolamento automático de falhas.</p>
-                        </div>
-                        <button onclick="carregarStatusOraculo()" style="background: #0d2836; border: 1px solid #00e1d9; color: #00e1d9; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s;">🔄 Atualizar Métricas</button>
-                    </div>
-
-                    <!-- Métricas Globais -->
-                    <div id="oraculo-metricas-globais" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px;">
-                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #1a3a4a; border-radius: 8px; padding: 10px; text-align: center;">
-                            <div style="font-size: 0.7rem; color: #888; font-weight: bold; letter-spacing: 0.5px;">REQUISIÇÕES</div>
-                            <div id="met-oraculo-reqs" style="font-size: 1.4rem; font-weight: bold; color: #fff;">0</div>
-                        </div>
-                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #1a3a4a; border-radius: 8px; padding: 10px; text-align: center;">
-                            <div style="font-size: 0.7rem; color: #888; font-weight: bold; letter-spacing: 0.5px;">SUCESSOS</div>
-                            <div id="met-oraculo-sucessos" style="font-size: 1.4rem; font-weight: bold; color: #00ff88;">0</div>
-                        </div>
-                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #1a3a4a; border-radius: 8px; padding: 10px; text-align: center;">
-                            <div style="font-size: 0.7rem; color: #888; font-weight: bold; letter-spacing: 0.5px;">CACHE HITS (0 TOKENS)</div>
-                            <div id="met-oraculo-cache" style="font-size: 1.4rem; font-weight: bold; color: #00e1d9;">0</div>
-                        </div>
-                        <div style="background: rgba(0,0,0,0.5); border: 1px solid #1a3a4a; border-radius: 8px; padding: 10px; text-align: center;">
-                            <div style="font-size: 0.7rem; color: #888; font-weight: bold; letter-spacing: 0.5px;">BLOQUEIOS 429 EVITADOS</div>
-                            <div id="met-oraculo-evitados" style="font-size: 1.4rem; font-weight: bold; color: #f59e0b;">0</div>
-                        </div>
-                    </div>
-
-                    <!-- Grid dos Modelos -->
-                    <div id="oraculo-modelos-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
-                        <div style="color: #666; font-size: 0.85rem; text-align: center; padding: 20px;">Carregando status dos modelos...</div>
-                    </div>
+            <!-- SUB-SEÇÃO 3: DOCUMENTAÇÃO DE OPERADORES -->
+            <div id="code-sec-docs" class="sub-section">
+                <div class="card">
+                    <h3 style="color: #00e1d9; font-family: 'Cinzel', serif; text-align: center;">Gramática Sagrada dos Operadores</h3>
+                    <div id="lista-operadores-docs" style="display: grid; gap: 10px;"></div>
                 </div>
             </div>
         </div>
@@ -4687,32 +4049,9 @@
             </div>
         </div>
 		<div class="assinatura-ouro">
-    <div class="assinatura-sangue-aura"></div>
-
-    <div class="assinatura-ornamento assinatura-ornamento-esq">
-        <span>◆</span>
-    </div>
-
-    <div class="assinatura-miolo">
-        <div class="assinatura-linha assinatura-linha-topo"></div>
-
-        <div class="assinatura-titulo">
-            <span class="assinatura-s">S</span>ANGUINIS
+            SANGUINIS
+            <span>O Pacto Primordial &bull; Lapidado nas Sombras</span>
         </div>
-
-        <div class="assinatura-subtitulo">
-            <span class="assinatura-pacto">O Pacto Primordial</span>
-            <span class="assinatura-rubi">•</span>
-            <span class="assinatura-sombras">Lapidado nas Sombras</span>
-        </div>
-
-        <div class="assinatura-linha assinatura-linha-base"></div>
-    </div>
-
-    <div class="assinatura-ornamento assinatura-ornamento-dir">
-        <span>◆</span>
-    </div>
-</div>
         </main> <!-- Fecha desktop-stage -->
 
         <!-- PAINEL LATERAL DIREITO PC DESKTOP -->
@@ -5599,9 +4938,6 @@ function usarHabilidadeCustom(habilidadeId) {
         else { atualizarBarras(); atualizarFaseProceduralBoss(); }
     }
     function nav(abaId, btn) {
-        if (abaId === 'abismo') abaId = 'aventura';
-        if (abaId === 'guerra') abaId = 'conclave';
-
         // [PROGRESSÃO GUIADA - LEVEL GATING]
         if (meuVampiro) {
             if ((abaId === 'aventura' || abaId === 'leilao') && meuVampiro.nivel < 5) {
@@ -5707,7 +5043,7 @@ function usarHabilidadeCustom(habilidadeId) {
         if (abaId === 'leilao') carregarLeilao();
         if (abaId === 'biblioteca') carregarBiblioteca();
         if (abaId === 'ordem') carregarMinhaOrdem();
-        if (abaId === 'magia_codigo') { carregarNosMatriz(); carregarEfeitosAtivos(); } 
+        if (abaId === 'magia_codigo') { carregarMinhasMagiasCodigo(); carregarDocumentacaoOperadores(); } 
         if (abaId === 'reinos') carregarReinos();
         if (abaId === 'oficios') carregarOficios();
         if (abaId === 'caca') carregarAldeias();
@@ -13108,374 +12444,135 @@ async function promoverMembroClient(membroId) {
     } catch(e) { ocultoAlert("Erro ao ascender membro."); }
 }
 
-// --- MATRIZ MÁGICA IA (SUBSTITUIU TERMINAL DE CÓDIGO) ---
-let _matrizTradicaoSelecionada = null;
-
-function selecionarTradicao(btn) {
-    document.querySelectorAll('.matriz-trad-btn').forEach(b => {
-        b.style.borderColor = '#3b0764';
-        b.style.background = '#0a0618';
-        b.style.boxShadow = 'none';
-    });
-    btn.style.borderColor = '#a855f7';
-    btn.style.background = '#1a0840';
-    btn.style.boxShadow = '0 0 15px rgba(147,51,234,0.5)';
-    _matrizTradicaoSelecionada = btn.dataset.trad;
+// --- MAGIA EM CÓDIGO (CODE-MAGIC ENGINE) ---
+function inserirComandoCodigo(snippet) {
+    const area = document.getElementById('code-formula-input');
+    if (!area) return;
+    area.value += (area.value.endsWith('\n') || area.value === '' ? '' : '\n') + snippet;
+    verificarSintaxeAoDigitar();
 }
 
-async function canalizarMatrizIAClient() {
-    if (!meuVampiro) return ocultoAlert("Precisas estar logado.");
-    if (!_matrizTradicaoSelecionada) return ocultoAlert("Seleciona uma Tradição Ancestral (Passo 1).");
-    
-    const intencao = document.getElementById('matriz-intencao-input')?.value?.trim();
-    if (!intencao || intencao.length < 10) return ocultoAlert("Descreve a tua intenção mágica com pelo menos 10 caracteres (Passo 2).");
-    
-    const vinculoTipo = document.getElementById('matriz-vinculo-select')?.value || 'ressonancia';
-    
-    const btn = document.getElementById('btn-canalizar-matriz');
-    if (btn) {
-        btn.disabled = true;
-        btn.innerText = '🌀 A Consciência está a canalizar...';
-        btn.style.opacity = '0.6';
+async function verificarSintaxeAoDigitar() {
+    const formula = document.getElementById('code-formula-input')?.value || '';
+    const feedback = document.getElementById('code-syntax-feedback');
+    if (!feedback) return;
+
+    if (!formula.trim()) {
+        feedback.innerText = "⚡ Insira instruções mágicas.";
+        feedback.style.color = "#888";
+        return;
     }
-    
+
     try {
-        const res = await fetch('/api/ordem/canalizar_matriz_ia', {
+        const res = await fetch('/api/magia_codigo/validar', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ id: meuVampiro.id, tradicao: _matrizTradicaoSelecionada, intencao, vinculoTipo })
+            body: JSON.stringify({ formula })
         });
         const d = await res.json();
-        
-        if (d.sucesso) {
-            ocultoAlert("✨ " + (d.relato || "Nó canalizado com sucesso na Matriz!"));
-            
-            // Mostrar resultado visual
-            const resPanel = document.getElementById('matriz-resultado-ia');
-            if (resPanel && d.no) {
-                resPanel.classList.remove('oculto');
-                const sigilo = document.getElementById('matriz-res-sigilo');
-                const nome = document.getElementById('matriz-res-nome');
-                const trad = document.getElementById('matriz-res-tradicao');
-                const desc = document.getElementById('matriz-res-descricao');
-                const efeito = document.getElementById('matriz-res-efeito');
-                const gnose = document.getElementById('matriz-res-gnose');
-                
-                if (sigilo) sigilo.innerText = d.no.sigilo || '✨';
-                if (nome) nome.innerText = d.no.nome || 'Nó Arcano';
-                if (trad) trad.innerText = `Tradição: ${_matrizTradicaoSelecionada.charAt(0).toUpperCase() + _matrizTradicaoSelecionada.slice(1)} | Vínculo: ${vinculoTipo.replace(/_/g, ' ')}`;
-                if (desc) desc.innerText = d.no.descricao || d.no.descricaoEsoterica || '';
-                if (efeito) efeito.innerText = `⚡ Efeito: ${JSON.stringify(d.no.efeitoAutoritativo || d.no.efeito || {})}`;
-                if (gnose) gnose.innerText = d.gnoseGanha ? `+${d.gnoseGanha} Gnose recebida` : '';
-                
-                resPanel.style.animation = 'fadeIn 0.5s ease';
-            }
-            
-            // Limpar campos
-            document.getElementById('matriz-intencao-input').value = '';
-            _matrizTradicaoSelecionada = null;
-            document.querySelectorAll('.matriz-trad-btn').forEach(b => {
-                b.style.borderColor = '#3b0764';
-                b.style.background = '#0a0618';
-                b.style.boxShadow = 'none';
-            });
-            
+        if (d.valida) {
+            feedback.innerText = "✓ Sintaxe Arcana Harmônica (" + (d.comandos?.length || 0) + " nós de comando válidos)";
+            feedback.style.color = "#00ff88";
         } else {
-            ocultoAlert("⚠️ " + (d.erro || "Falha ao canalizar."));
+            feedback.innerText = "✗ " + d.erro;
+            feedback.style.color = "#ff4444";
         }
-    } catch(e) { 
-        ocultoAlert("Erro de conexão ao canalizar na Matriz."); 
-    } finally {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerText = '✨ Canalizar com a Consciência da Ordem ✨';
-            btn.style.opacity = '1';
-        }
-    }
+    } catch(e) {}
 }
 
-async function carregarNosMatriz() {
-    if (!meuVampiro || !meuVampiro.ordemId) return;
-    try {
-        const res = await fetch('/api/ordem/matriz/' + meuVampiro.ordemId);
-        const d = await res.json();
-        const container = document.getElementById('lista-nos-matriz');
-        const capInfo = document.getElementById('matriz-info-capacidade');
-        const vazioMsg = document.getElementById('matriz-vazia-msg');
-        if (!container) return;
-        
-        const nos = d.nos || (d.matriz ? Object.values(d.matriz) : []);
-        if (capInfo) capInfo.innerText = `Capacidade: ${nos.length} / ${d.maxNos || '?'} nós | Tier ${d.santuarioTier || d.tierAtual || 1}`;
-        
-        if (nos.length === 0) {
-            container.innerHTML = '';
-            if (vazioMsg) vazioMsg.classList.remove('oculto');
-            return;
-        }
-        if (vazioMsg) vazioMsg.classList.add('oculto');
-        
-        container.innerHTML = nos.map(no => {
-            const sintonizadosLista = no.sintonizados || no.sintonizadoPor || [];
-            const sintonizado = sintonizadosLista.includes(meuVampiro.id);
-            const sintonizadosQtd = sintonizadosLista.length;
-            const nome = no.nomeMagico || no.nome || 'Nó Arcano';
-            const sigilo = no.sigiloEnochiano || no.sigilo || '✨';
-            const trad = no.tradicaoNome || no.tradicao || '';
-            const vinculo = no.vinculoNome || no.vinculoTipo?.replace(/_/g, ' ') || '';
-            const desc = no.descricao || no.descricaoEsoterica || '';
-            const efeitoTxt = no.efeitoAutoritativo?.descricao || no.efeitoTexto || JSON.stringify(no.efeitoAutoritativo || no.efeito || {});
-            
-            return `
-                <div style="background: rgba(0,0,0,0.7); border: 1px solid ${sintonizado ? '#a855f7' : '#3b0764'}; border-radius: 8px; padding: 14px; ${sintonizado ? 'box-shadow: 0 0 12px rgba(147,51,234,0.3);' : ''}">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span style="font-size: 1.6rem;">${sigilo}</span>
-                            <div>
-                                <div style="color: #c084fc; font-family: 'Cinzel', serif; font-weight: bold;">${nome}</div>
-                                <div style="font-size: 0.75rem; color: #666;">${trad} · ${vinculo}</div>
-                            </div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 0.75rem; color: ${sintonizado ? '#a855f7' : '#555'};">${sintonizado ? '🔮 Sintonizado' : '⚪ Disponível'}</div>
-                            <div style="font-size: 0.7rem; color: #444;">${sintonizadosQtd} adepto${sintonizadosQtd !== 1 ? 's' : ''}</div>
-                        </div>
-                    </div>
-                    <div style="font-size: 0.85rem; color: #aaa; margin-bottom: 8px; font-style: italic;">${desc}</div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div style="font-size: 0.8rem; color: #00ff88; background: rgba(0,255,136,0.08); padding: 4px 10px; border-radius: 4px; border: 1px solid #0a3a1a;">
-                            ⚡ ${efeitoTxt}
-                        </div>
-                        ${!sintonizado ? `<button onclick="sintonizarNoClient('${no.id}')" style="background: #1a0840; border: 1px solid #7c3aed; color: #c084fc; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">🔮 Sintonizar</button>` : `<span style="font-size: 0.8rem; color: #7c3aed;">Já Sintonizado ✓</span>`}
-                    </div>
-                </div>
-            `;
-        }).join('');
-    } catch(e) { console.error("Erro ao carregar nós da matriz:", e); }
-}
-
-async function sintonizarNoClient(noId) {
+async function forjarMagiaCodigoClient() {
     if (!meuVampiro) return;
+    const nome = document.getElementById('code-feitico-nome')?.value.trim();
+    const esfera = document.getElementById('code-feitico-esfera')?.value || 'Tiphereth';
+    const formula = document.getElementById('code-formula-input')?.value.trim();
+
+    if (!nome || !formula) return ocultoAlert("Preenche o Nome e a Fórmula Arcana.");
+
     try {
-        const res = await fetch('/api/ordem/sintonizar_no', {
+        const res = await fetch('/api/magia_codigo/forjar', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ id: meuVampiro.id, noId })
+            body: JSON.stringify({ id: meuVampiro.id, nome, esfera, codigoFormula: formula, custoSangue: 500, custoFuria: 2 })
         });
         const d = await res.json();
         if (d.sucesso) {
-            ocultoAlert("🔮 " + (d.relato || "Sintonização concluída!"));
-            carregarNosMatriz();
-            carregarEfeitosAtivos();
+            ocultoAlert("⚡ " + d.relato);
+            const terminal = document.getElementById('code-terminal-output');
+            if (terminal) terminal.innerHTML += `<br>> [SUCESSO]: Feitiço em Código [${nome}] integrado à Matrix!`;
+            carregarMinhasMagiasCodigo();
         } else {
-            ocultoAlert("⚠️ " + (d.erro || "Falha ao sintonizar."));
+            ocultoAlert("⚠️ " + (d.erro || "Falha na forja em código."));
         }
-    } catch(e) { ocultoAlert("Erro ao sintonizar nó."); }
+    } catch(e) { ocultoAlert("Erro ao forjar magia em código."); }
 }
 
-async function carregarEfeitosAtivos() {
+async function carregarMinhasMagiasCodigo() {
     if (!meuVampiro) return;
     try {
-        const res = await fetch('/api/ordem/efeitos_ativos/' + meuVampiro.id);
-        const d = await res.json();
-        const container = document.getElementById('lista-efeitos-ativos');
-        const nenhumMsg = document.getElementById('efeitos-nenhum-msg');
-        const poderValor = document.getElementById('efeitos-poder-valor');
+        const res = await fetch('/api/magia_codigo/minhas/' + meuVampiro.id);
+        const lista = await res.json();
+        const container = document.getElementById('lista-minhas-magias-codigo');
         if (!container) return;
-        
-        const efeitos = d.efeitos || [];
-        if (efeitos.length === 0) {
-            container.innerHTML = '';
-            if (nenhumMsg) nenhumMsg.classList.remove('oculto');
-            if (poderValor) poderValor.innerText = '0';
+
+        if (!Array.isArray(lista) || lista.length === 0) {
+            container.innerHTML = '<div style="color: #666; font-size: 0.85rem; text-align: center;">Ainda não forjaste nenhuma magia viva em código. Cria a tua primeira fórmula no terminal!</div>';
             return;
         }
-        if (nenhumMsg) nenhumMsg.classList.add('oculto');
-        
-        let poderTotal = 0;
-        const iconesPorTipo = {
-            'alquimia': '⚗️', 'protecao_santuario': '🛡️', 'dreno_cosmico': '🩸',
-            'manto_astral': '🌀', 'ressonancia': '⚡', 'territorio_sagrado': '🏛️',
-            'maldicao_carmica': '💀', 'cura_egregora': '💚', 'rito': '🔯'
-        };
-        
-        container.innerHTML = efeitos.map(ef => {
-            const poder = ef.poder || ef.efeito?.valor || ef.valor || 1;
-            poderTotal += poder;
-            const icone = ef.icone || iconesPorTipo[ef.tipo] || '✨';
-            const nome = ef.nomeMagico || ef.nome || ef.tipo?.replace(/_/g, ' ') || 'Efeito';
-            const desc = ef.efeito?.descricao || ef.descricao || ef.vinculo || ef.fonte || '';
-            return `
-                <div style="background: rgba(0,0,0,0.6); border: 1px solid #166534; border-radius: 6px; padding: 10px; display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 1.4rem;">${icone}</span>
-                    <div style="flex: 1;">
-                        <div style="color: #4ade80; font-weight: bold; font-size: 0.95rem;">${nome}</div>
-                        <div style="font-size: 0.8rem; color: #888;">${desc}</div>
-                    </div>
-                    <div style="color: #4ade80; font-weight: bold; font-size: 1.1rem;">+${poder}</div>
+
+        container.innerHTML = lista.map(m => `
+            <div style="background: rgba(0,0,0,0.7); border: 1px solid #00e1d9; border-radius: 6px; padding: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-family: 'Cinzel', serif; color: #00e1d9; font-weight: bold; font-size: 1.1rem;">⚡ ${m.nome}</span>
+                    <span style="font-size: 0.75rem; color: #888;">Custo: ${m.custoSangue} Gts | ${m.custoFuria} Fúria</span>
                 </div>
-            `;
-        }).join('');
-        
-        if (poderValor) poderValor.innerText = d.totalPoder !== undefined ? d.totalPoder : poderTotal;
-    } catch(e) { console.error("Erro ao carregar efeitos:", e); }
+                <pre style="background: #050304; border: 1px solid #222; padding: 8px; font-size: 0.8rem; color: #00ff88; margin: 8px 0; border-radius: 4px; overflow-x: auto;">${m.codigoFormula}</pre>
+                <div style="display: flex; justify-content: flex-end;">
+                    <button class="btn" style="background: linear-gradient(135deg, #0b1a1a, #00e1d9); color: #000; font-weight: bold; padding: 6px 14px;" onclick="executarMagiaCodigoClient('${m.id}')">Executar no Servidor</button>
+                </div>
+            </div>
+        `).join('');
+
+    } catch(e) { console.error("Erro ao listar magias em código:", e); }
 }
 
-let _estudoArcanoAtual = null;
-
-async function pesquisarEstudoArcanoClient() {
-    if (!meuVampiro) return ocultoAlert("Precisas estar logado para pesquisar.");
-    const tema = document.getElementById('pesquisa-tema-input')?.value?.trim();
-    if (!tema || tema.length < 3) return ocultoAlert("Digita um mistério ou tema com pelo menos 3 caracteres.");
-    
-    const tradicao = document.getElementById('pesquisa-tradicao-select')?.value || 'hermetismo';
-    const btn = document.getElementById('btn-pesquisar-arcano');
-    const resContainer = document.getElementById('resultado-pesquisa-estudo');
-    
-    if (btn) {
-        btn.disabled = true;
-        btn.innerText = "⏳ A Consciência da IA está a vasculhar os grimórios...";
-        btn.style.opacity = "0.7";
-    }
-    
+async function carregarDocumentacaoOperadores() {
     try {
-        const res = await fetch('/api/ordem/pesquisa_arcana', {
+        const res = await fetch('/api/magia_codigo/operadores');
+        const d = await res.json();
+        const container = document.getElementById('lista-operadores-docs');
+        if (!container || !d.operadores) return;
+
+        container.innerHTML = d.operadores.map(op => `
+            <div style="background: rgba(0,0,0,0.6); border: 1px solid var(--ouro-sombra); padding: 10px; border-radius: 4px;">
+                <div style="font-family: monospace; color: var(--ouro); font-weight: bold; font-size: 0.95rem;">${op.op}</div>
+                <div style="font-family: monospace; font-size: 0.8rem; color: #00e1d9; margin: 3px 0;">${op.formato}</div>
+                <div style="font-size: 0.8rem; color: #ccc;">${op.desc}</div>
+            </div>
+        `).join('');
+    } catch(e) {}
+}
+
+async function executarMagiaCodigoClient(feiticoId) {
+    if (!meuVampiro) return;
+    try {
+        const res = await fetch('/api/magia_codigo/executar', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ id: meuVampiro.id, tema, tradicao })
+            body: JSON.stringify({ id: meuVampiro.id, feiticoId, contexto: { pos2D: meuVampiro.posicao2D || { x: 50, y: 50 } } })
         });
         const d = await res.json();
-        
-        if (d.sucesso && d.estudo) {
-            _estudoArcanoAtual = d.estudo;
-            if (resContainer) {
-                resContainer.classList.remove('oculto');
-                
-                safeSet('estudo-sigilo', d.estudo.sigilo || '📜');
-                safeSet('estudo-titulo', d.estudo.titulo || `Tratado sobre ${tema}`);
-                safeSet('estudo-tradicao-meta', `Tradição: ${d.estudo.tradicao || tradicao} · Referência: ${d.estudo.grimorioReferencia || 'Grimórios Antigos'}`);
-                safeSet('estudo-fonte-badge', d.fonte || 'Oráculo Abissal');
-                safeSet('estudo-citacao', d.estudo.citacaoAntiga ? `"${d.estudo.citacaoAntiga}"` : '');
-                safeSet('estudo-analise', d.estudo.analiseHistorica || '');
-                safeSet('estudo-aplicacao', d.estudo.aplicacaoNoJogo || 'Transmutável na Matriz da Ordem.');
-                safeSet('estudo-vinculo-sug', (d.estudo.sugestaoVinculo || 'ressonancia').replace(/_/g, ' ').toUpperCase());
-                
-                const princDiv = document.getElementById('estudo-principios');
-                if (princDiv) {
-                    const principios = d.estudo.principiosOcultos || ['Soberania', 'Ressonância', 'Correspondência'];
-                    princDiv.innerHTML = principios.map(p => `
-                        <span style="background: rgba(56, 189, 248, 0.15); border: 1px solid #0284c7; color: #7dd3fc; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem;">${p}</span>
-                    `).join('');
-                }
-                
-                resContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const terminal = document.getElementById('code-terminal-output');
+        if (d.sucesso) {
+            ocultoAlert("⚡ " + d.relato);
+            if (terminal) {
+                terminal.innerHTML += `<br>> [EXECUTADO]: ${d.relato}`;
+                if (d.logs) d.logs.forEach(l => terminal.innerHTML += `<br>  * ${l}`);
             }
-            ocultoAlert("📜 Estudo arcano revelado pela IA!");
         } else {
-            ocultoAlert("⚠️ " + (d.erro || "Falha na pesquisa arcana."));
+            ocultoAlert("⚠️ " + d.erro);
+            if (terminal) terminal.innerHTML += `<br>> [FALHA]: ${d.erro}`;
         }
-    } catch(e) {
-        console.error("Erro na pesquisa arcana:", e);
-        ocultoAlert("Erro de conexão ao pesquisar nos grimórios.");
-    } finally {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerText = "🔍 Pesquisar nos Grimórios & Rede Oculta (IA em Tempo Real)";
-            btn.style.opacity = "1";
-        }
-    }
-}
-
-function transmutarEstudoEmNo() {
-    if (!_estudoArcanoAtual) return ocultoAlert("Nenhum estudo ativo.");
-    
-    const intencaoInput = document.getElementById('matriz-intencao-input');
-    if (intencaoInput) {
-        intencaoInput.value = _estudoArcanoAtual.sugestaoIntencao || `Canalizar o poder de ${_estudoArcanoAtual.titulo} através da tradição ${_estudoArcanoAtual.tradicao}`;
-    }
-    
-    const vinculoSelect = document.getElementById('matriz-vinculo-select');
-    if (vinculoSelect && _estudoArcanoAtual.sugestaoVinculo) {
-        vinculoSelect.value = _estudoArcanoAtual.sugestaoVinculo;
-    }
-    
-    const tradMap = {
-        'Hermetismo': 'hermetismo',
-        'Filosofia Oculta': 'agrippa',
-        'Magia Salomônica': 'salomao',
-        'Magia Astrológica': 'picatrix',
-        'Magia Angélica / Enoquiana': 'enoquiano',
-        'Magia da Mão Esquerda': 'qliphoth',
-        'Teurgia Sagrada': 'abramelin'
-    };
-    const tradKey = tradMap[_estudoArcanoAtual.tradicao] || 'hermetismo';
-    const btnTrad = document.querySelector(`.matriz-trad-btn[data-trad="${tradKey}"]`);
-    if (btnTrad) {
-        selecionarTradicao(btnTrad);
-    }
-    
-    const btnCanalizarTab = document.querySelector('.sub-nav-bar[data-domain="magia_codigo"] button:first-child');
-    if (btnCanalizarTab) {
-        switchSubSection('magia_codigo', 'matriz-sec-canalizar', btnCanalizarTab);
-    }
-    
-    ocultoAlert("✨ Intenção e Tradição transferidas! Clica em 'Canalizar com a Consciência da Ordem' para gravar o nó na Matriz.");
-}
-
-async function carregarStatusOraculo() {
-    try {
-        const res = await fetch('/api/oraculo/status');
-        const d = await res.json();
-        if (!d.sucesso) return;
-
-        const elReqs = document.getElementById('met-oraculo-reqs');
-        const elSuc = document.getElementById('met-oraculo-sucessos');
-        const elCache = document.getElementById('met-oraculo-cache');
-        const elEvit = document.getElementById('met-oraculo-evitados');
-        if (elReqs) elReqs.innerText = d.totalRequisicoes || 0;
-        if (elSuc) elSuc.innerText = d.sucessos || 0;
-        if (elCache) elCache.innerText = d.respostasCache || 0;
-        if (elEvit) elEvit.innerText = d.bloqueiosEvitados429 || 0;
-
-        const grid = document.getElementById('oraculo-modelos-grid');
-        if (!grid) return;
-
-        grid.innerHTML = (d.modelos || []).map(m => {
-            let corStatus = '#00ff88'; // ONLINE
-            let badgeBg = 'rgba(0, 255, 136, 0.15)';
-            let bordaCard = '#1a3a4a';
-            
-            if (m.status.includes('COTA') || m.status.includes('RATE LIMIT')) {
-                corStatus = '#f59e0b';
-                badgeBg = 'rgba(245, 158, 11, 0.15)';
-                bordaCard = '#78350f';
-            } else if (m.status.includes('NÃO HABILITADO')) {
-                corStatus = '#6b7280';
-                badgeBg = 'rgba(107, 114, 128, 0.15)';
-                bordaCard = '#374151';
-            }
-
-            return `
-                <div style="background: rgba(0,0,0,0.6); border: 1px solid ${bordaCard}; border-radius: 8px; padding: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
-                        <div>
-                            <div style="color: #e2e8f0; font-weight: bold; font-size: 0.9rem;">${m.label}</div>
-                            <div style="font-size: 0.72rem; color: #64748b; font-family: monospace;">${m.id}</div>
-                        </div>
-                        <span style="font-size: 0.68rem; font-weight: bold; padding: 2px 8px; border-radius: 12px; background: ${badgeBg}; color: ${corStatus}; border: 1px solid ${corStatus}; white-space: nowrap;">
-                            ${m.status}
-                        </span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
-                        <span>Chamadas: <b style="color:#fff;">${m.chamadas || 0}</b></span>
-                        <span>Sucessos: <b style="color:#00ff88;">${m.sucessos || 0}</b></span>
-                        <span>429 Evitados: <b style="color:#f59e0b;">${m.erros429 || 0}</b></span>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    } catch (e) {
-        console.warn('Erro ao obter status do oráculo:', e);
-    }
+    } catch(e) { ocultoAlert("Erro ao executar magia em código."); }
 }
 
 // --- INTEGRAÇÃO COM COMBATE VISCERAL ---
