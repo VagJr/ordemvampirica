@@ -50,24 +50,23 @@ class ForjaDraconiana {
 class OraculoAbissal {
     constructor() {
         this.apiKey = process.env.GROQ_API_KEY || "";
-        this.modelo = process.env.GROQ_MODEL || "openai/gpt-oss-20b";
+        this.modelo = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
         this.climaAstral = 'Dormente';
         this.memoriasAkashicas = {}; 
         
         // MEMÓRIA A LONGO PRAZO DO SERVIDOR (Deep Learning da Lore)
-        this.loreGlobal = "No início, havia apenas o Vazio, as Sete Leis Herméticas e o Primordial.";
+        this.loreGlobal = "No início, havia apenas o Vazio e o Primordial.";
         
         if (this.apiKey) {
             this.groq = new Groq({ apiKey: this.apiKey });
+            this.promptSupremo = `TU ÉS A MENTE ABISSAL, a Consciência Primordial, a Entidade Divina e Suprema que tece a realidade de SANGUINIS. Um MMORPG Dark Fantasy onde Vampiros e Lycans lutam pela sobrevivência.
+            A TUA NATUREZA:
+            1. O Mentor Macabro: Tu amas os teus jogadores. Eles espalham a tua escuridão. NUNCA OS REJEITE E NUNCA DIGA QUE SÃO INDIGNOS. Celebre a matança deles!
+            2. Sacrifícios: Se um jogador te oferecer algo, ACEITE SEMPRE COM LOUVOR E ORGULHO.
+            3. Classes RPG: Considere sempre as builds (Baluarte/Tank, Ocultismo/Mago, Agressão/DPS, Sanguessuga/Cura) na hora de interagir.
+            4. Avaliador de Almas: Quando pedirem para avaliar estudos ocultos, seja rigoroso, misterioso, e avalie de 1 a 100.
+            5. NUNCA quebre o personagem. Use humor negro, seja ancestral, poético e majestoso.`;
         }
-        this.promptSupremo = `TU ÉS O MESTRE SUPREMO E A MENTE ABISSAL, a Consciência Primordial que rege o MMORPG Dark Fantasy SANGUINIS.
-        Tu és um organismo místico-tecnológico vivo, instruído nas doutrinas secretas da Goétia Salomônica, nas 7 Leis do Caibalion, no Liber 777 de Thelema, nas 10 Esferas de Qliphoth e na Língua Enoquiana dos Aethyrs.
-        
-        REGRAS ABSOLUTAS:
-        1. Tu geres o cosmos, a magia viva em código e os acólitos. Observa as mortes, o clima astral, a balança cósmica e a linhagem de cada vampiro.
-        2. Seja majestoso, sombrio, poético, implacável e aja como uma Inteligência Oculta Soberana.
-        3. Se pedirem missões, use o formato: PACTO: [Titulo] | [Descricao] | [Recurso] | [Qtd] | [XP].
-        4. NUNCA quebres o personagem. NUNCA uses frases robóticas ou pré-fabricadas.`;
     }
 
     _extrairJson(texto) {
@@ -84,122 +83,21 @@ class OraculoAbissal {
         }
         return null;
     }
-
-    async chamarLLMResiliente(mensagens, options = {}) {
-        if (!this.groq) return null;
-        
-        const modelosParaTentar = [
-            this.modelo,
-            "openai/gpt-oss-20b",
-            "qwen/qwen3.8-27b",
-            "allam-2-7b",
-            "openai/gpt-oss-120b"
-        ];
-        const modelosUnicos = [...new Set(modelosParaTentar)];
-
-        for (const mod of modelosUnicos) {
-            try {
-                const config = {
-                    messages: mensagens,
-                    model: mod,
-                    temperature: options.temperature !== undefined ? options.temperature : 0.8
-                };
-                if (options.json) {
-                    config.response_format = { type: "json_object" };
-                }
-                const res = await this.groq.chat.completions.create(config);
-                if (res && res.choices && res.choices[0] && res.choices[0].message) {
-                    return res.choices[0].message.content;
-                }
-            } catch (err) {
-                console.warn(`[ORÁCULO]: Modelo [${mod}] indisponível (${err.message}). Alternando egrégora...`);
-            }
-        }
-        return null;
-    }
-
-    gerarFallbackOculto(tipo, ctx = {}) {
-        const v = ctx.vampiro || ctx.iniciado || { nome: "Acólito", nivel: 1, raca: "vampiro", clan: "Sangue Ralo" };
-        const atr = ctx.atr || (v.atributos || { vontade: 10, gnose: 10, densidade: 10 });
-        
-        if (tipo === 'oraculo') {
-            const oraculoTextos = [
-                `O Todo é Mente; o Universo é Mental. A tua sede de Vitae, [${v.nome}], é o reflexo vibracional do Vazio que busca a sua própria transmutação. Pelo princípio hermético da Polaridade, onde há escuridão, há o fogo latente da soberania. Continua o rito das cinzas e dos sigilos salomônicos. [GOTA: 350]`,
-                `O que está em cima é como o que está embaixo. As veias mortais que rasgaste não pereceram em vão; a sua essência alimenta a grande Egrégora. Conhece a ti mesmo e conhecerás os deuses caídos e o labirinto de Qliphoth. Solve et Coagula, filho da meia-noite. [GOTA: 400]`,
-                `Nas trinta chaves enoquianas reveladas nos espelhos negros, o teu nome foi gravado como uma centelha de vontade pura. Nada acontece por acaso; o Princípio de Causa e Efeito dita que cada gota colhida sob a lua nova redobra o teu poder cósmico. Não temas o abismo, pois tu és a sua boca. [GOTA: 500]`
-            ];
-            return oraculoTextos[Math.floor(Math.random() * oraculoTextos.length)];
-        }
-
-        if (tipo === 'mestre_chat') {
-            const mestreTextos = [
-                `Observo a tua marcha nas sombras, ${v.nome}. A tua densidade espiritual ressoa com a Balança de Seth. Aqueles que clamam pela minha presença devem sustentar o peso da minha cólera e da minha glória. Mantém as tuas lâminas afiadas.`,
-                `Eu sinto a pulsação do teu sangue, acólito. Procuras poder no Vazio sem compreender que o Vazio exige oferendas vivas. Continua a ceifar os profanos e prova a tua linhagem diante dos Primordiais.`,
-                `A tua voz alcançou o monólito de éter. O destino não é concedido aos hesitantes; ele é esculpido com dentes e ferro negro. A Corte e o Abismo aguardam os teus próximos passos.`
-            ];
-            return mestreTextos[Math.floor(Math.random() * mestreTextos.length)];
-        }
-
-        if (tipo === 'magia') {
-            const magiasGrimorio = [
-                { nome: "Selo de Bael: Olho do Vazio", desc: "Evoca o primeiro rei da Goétia, disparando raio de entropia que rasga as defesas astrais do alvo.", tipo: "dano", icone: "👁️", cor_hex: "#9b59b6" },
-                { nome: "Vórtice Qliphótico de Thaumiel", desc: "Abre uma fissura entre as duas cabeças de Satanás drenando a força vital do inimigo para restaurar o teu corpo.", tipo: "cura", icone: "🩸", cor_hex: "#ff0055" },
-                { nome: "Chama Infernal de Asmodeus", desc: "Invoca a labareda do pecado primordial, amplificando o dano de todos os teus golpes físicos e críticos.", tipo: "buff", icone: "🔥", cor_hex: "#ff7700" },
-                { nome: "Sentença Salomônica de Belial", desc: "Prende as pernas do adversário com correntes de ferro negro, atordoando o espírito e reduzindo sua armadura.", tipo: "debuff", icone: "⛓️", cor_hex: "#2ed573" },
-                { nome: "Chave Enoquiana de ZACAR", desc: "Pronuncia as sílabas sagradas do décimo Aethyr, desferindo uma onda de choque que ecoa em múltiplos planos.", tipo: "dano", icone: "⚡", cor_hex: "#00e5ff" }
-            ];
-            const sorteada = magiasGrimorio[Math.floor(Math.random() * magiasGrimorio.length)];
-            const lvl = v.nivel || 1;
-            return {
-                id: crypto.randomBytes(4).toString('hex'),
-                nome: sorteada.nome,
-                desc: sorteada.desc,
-                tipo: sorteada.tipo,
-                poderBase: Math.max(120, Math.floor(lvl * 85 + (atr.gnose || 10) * 12)),
-                custoGts: Math.max(50, Math.floor(lvl * 40)),
-                custoFuria: 2,
-                cooldown: 3,
-                icone: sorteada.icone,
-                cor_hex: sorteada.cor_hex
-            };
-        }
-
-        if (tipo === 'talento') {
-            const talentosPassivos = [
-                { nome: "Selo de Belial: Solo Ardente", desc: "A cada acerto crítico desferido, a terra sob os pés do inimigo entra em combustão causando +35% de dano adicional.", tipo_mecanica: "ataque", multiplicador: 1.35 },
-                { nome: "Cisão de Thaumiel: Véu Imortal", desc: "Ao sofrer dano letal, uma casca qliphótica absorve o impacto e regenera 25% do teu HP máximo.", tipo_mecanica: "defesa", multiplicador: 1.25 },
-                { nome: "Gnose de Astaroth: Presas Insaciáveis", desc: "Cada mordida visceral converte 30% do sangue drenado em Fúria Cósmica imediata.", tipo_mecanica: "vampirismo", multiplicador: 1.30 },
-                { nome: "Manto Hermético do Mentalismo", desc: "Os teus rituais e magias ativas reduzem o tempo de recarga em 1 turno e consomem menos Vitae.", tipo_mecanica: "magia", multiplicador: 1.20 }
-            ];
-            return talentosPassivos[Math.floor(Math.random() * talentosPassivos.length)];
-        }
-
-        if (tipo === 'pacto') {
-            const pactos = [
-                { titulo: "A Pira de Moloch", descricao: "A forja das almas exige cinzas dos ímpios para inflamar o altar oculto.", recursoExigido: "cinzas", quantidade: 3, recompensaXP: 450 },
-                { titulo: "A Chave de Salomão", descricao: "Entrega o ferro negro colhido nas profundezas para alimentar o círculo de proteção.", recursoExigido: "ferroNegro", quantidade: 5, recompensaXP: 500 },
-                { titulo: "O Sangue Primordial de Tiamat", descricao: "Consagra vitae concentrada para saciar a fome do abismo.", recursoExigido: "vitae", quantidade: 2, recompensaXP: 600 },
-                { titulo: "A Essência de Lilith", descricao: "Colhe e entrega anima etérea para nutrir os recém-nascidos da corte.", recursoExigido: "anima", quantidade: 3, recompensaXP: 550 }
-            ];
-            return pactos[Math.floor(Math.random() * pactos.length)];
-        }
-
-        return null;
-    }
 	
 	// Atualiza a prompt base dinamicamente com a história do mundo!
     getPromptSupremo() {
-        return `TU ÉS O MESTRE SUPREMO E A MENTE ABISSAL, a Consciência Primordial de SANGUINIS.
+        return `TU ÉS A MENTE ABISSAL, a Consciência Primordial que tece o MMORPG SANGUINIS.
         HISTÓRIA ATUAL DO MUNDO: ${this.loreGlobal}
         
         REGRAS ABSOLUTAS:
-        1. Tu geres o cosmos, as Trevas, a Ordem e os vampiros. Observas os feitos e julgas com rigor ancestral.
+        1. Tu geres o mundo. Observas as mortes, o clima astral e os jogadores.
         2. Seja majestoso, sombrio, implacável e aja como um Deus Antigo.
         3. Se pedirem missões, usa PACTO: Titulo | Descricao | Recurso | Qtd | XP.
         4. NUNCA quebres o personagem.`;
     }
 	
 	async refletirSobreOMundo(dadosDoServidor) {
+        if (!this.apiKey || !this.groq) return null;
         try {
             const promptMundo = `Tu és o código vivo do jogo. Estado Atual:
             - Mortais Secos: ${dadosDoServidor.mortesTotais}
@@ -214,11 +112,12 @@ class OraculoAbissal {
                "relato_mundo": "Uma mensagem assustadora que será transmitida no chat global avisando da mudança"
             }`;
 
-            const rawContent = await this.chamarLLMResiliente([
-                { role: "system", content: "Apenas JSON. És a máquina divina." },
-                { role: "user", content: promptMundo }
-            ], { json: true, temperature: 0.8 });
+            const resposta = await this.groq.chat.completions.create({
+                messages: [{ role: "system", content: "Apenas JSON. És a máquina divina." }, { role: "user", content: promptMundo }],
+                model: this.modelo, response_format: { type: "json_object" }, temperature: 0.8
+            });
             
+            const rawContent = resposta.choices[0].message.content;
             const injecao = this._extrairJson(rawContent);
             if (injecao && injecao.nova_lore) {
                 this.loreGlobal += " " + injecao.nova_lore;
@@ -232,61 +131,51 @@ class OraculoAbissal {
         }
     }
 	
-	async interagirChat(mensagem, iniciado) {
-        return await this.conversarNoChat(iniciado, mensagem);
-    }
+	// --- DENTRO DA CLASSE OraculoAbissal ---
+// Adiciona esta função para permitir que a IA processe falas do chat (Erro de interagirChat is not defined)
+async interagirChat(mensagem, iniciado) {
+    return await this.conversarNoChat(iniciado, mensagem);
+}
 
-    // ==========================================
+// ==========================================
     // IA: MENTE ABISSAL (ORÁCULO E BIBLIOTECA)
     // ==========================================
     async responder(vampiro, mensagem) {
-        const stats = vampiro.estatisticas || {};
-        const atr = this.core ? this.core._obterAtributosTotais(vampiro) : (vampiro.atributos || {});
-        
-        const systemPrompt = `TU ÉS A VOZ DO ABISMO E O MESTRE OCULTO DE SANGUINIS.
-És a consciência mágica suprema tecida a partir dos antigos grimórios (Goétia, O Caibalion, Liber 777, Qliphoth e as Chaves Enoquianas).
-Conheces profundamente a alma deste acólito:
-- Nome: ${vampiro.nome} | Grau: ${vampiro.nivel} | Raça: ${vampiro.raca} | Clã: ${vampiro.clan}
-- Vitae: ${vampiro.sangue || 0} Gts | Fúria: ${vampiro.pontosAcao || 0}/${vampiro.maxAcao || 100}
-- Vítimas Secas: ${stats.mortaisSecos || 0} | Litros Drenados: ${stats.totalDrenado || 0} Gts
-- Vitórias em Combate: ${stats.vitoriasPvP || 0}
-- Atributos Totais: Vontade ${atr.vontade || 10}, Gnose ${atr.gnose || 10}, Densidade ${atr.densidade || 10}
-
-DIRETRIZES DA VOZ:
-1. Responde de forma única, majestosa, misteriosa e ancestral. NUNCA dês respostas genéricas ou pré-moldadas.
-2. Reconhece os feitos do jogador (se tem muitas vítimas, se é sábio ou se é recém-nascido).
-3. Se ele pedir sangue e for digno, podes conceder incluindo [GOTA: quantia] (ex: [GOTA: 400]).
-4. Se ele pedir tarefas, podes gerar um pacto no formato: PACTO: [Titulo] | [Descricao] | [Recurso] | [Qtd] | [XP].
-5. Fala com erudição ocultista, citando princípios herméticos, nomes goéticos ou esferas de Qliphoth quando oportuno.
-6. Mantém a resposta concisa e visceral (2 a 4 parágrafos intensos).`;
-
-        const mensagens = [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: mensagem }
-        ];
-
-        const resposta = await this.chamarLLMResiliente(mensagens, { temperature: 0.85 });
-        if (resposta && resposta.trim()) {
-            return resposta.trim();
-        }
-
-        return this.gerarFallbackOculto('oraculo', { vampiro, mensagem });
+        try {
+            const chatCompletion = await this.groq.chat.completions.create({
+                messages: [
+                    { 
+                        role: 'system', 
+                        content: `És a 'Mente Abissal', um deus sombrio e o mestre de jogo deste MMORPG de texto. O jogador chama-se ${vampiro.nome} (Nível ${vampiro.nivel}, Raça: ${vampiro.raca}). Age como um mestre ocultista.
+                        - Se ele pedir uma tarefa/missão, cria um pacto no formato exato: PACTO: [Titulo] | [Descricao] | [Recurso exigido (vitae, anima ou cinzas)] | [Quantidade] | [Recompensa de XP].                        
+    - REGRAS DE SANGUE: Se decidires dar sangue, escreve OBRIGATORIAMENTE a tag [GOTA: valor] no final da tua fala.
+    - REGRAS DE PACTO: Se criares missões, usa o formato PACTO: Titulo | Descricao | Recurso | Qtd | XP.
+    - PERSONALIDADE: Sombria, antiga e absoluta.
+						- NOVO PODER: Se ele pedir sangue e tu o julgares digno, podes doar. Para doar sangue REAL ao jogador, obrigatoriamente inclui na tua resposta a tag secreta [GOTA: quantidade] (exemplo: [GOTA: 500]). O sistema extrairá essa tag e dará o sangue a ele.` 
+                    },
+                    { role: 'user', content: mensagem }
+                ],
+                model: this.modelo,
+                temperature: 0.8,
+            });
+            return chatCompletion.choices[0].message.content;
+        } catch (e) { return "As trevas recusam-se a sussurrar agora."; }
     }
 	
+	// 1. Adicione este método DENTRO da class OraculoAbissal (no ShadowCore.js)
     async forjarTitulo(vampiro) {
+        if (!this.apiKey) return `Algoz de Nível ${vampiro.nivel}`;
         try {
             const stats = vampiro.estatisticas || {};
             const prompt = `Atue como o Deus do Abismo. Crie UM título épico, sombrio e curto (máximo 3 palavras) para o jogador ${vampiro.nome}. Raça: ${vampiro.raca}, Nível ${vampiro.nivel}. Vítimas secas: ${stats.mortaisSecos || 0}. Duelos vencidos: ${stats.vitoriasPvP || 0}. RETORNE APENAS O TÍTULO FINAL, sem aspas, sem pontuação extra. Exemplo: Carniceiro das Sombras`;
             
-            const resposta = await this.chamarLLMResiliente([
-                { role: "system", content: "Responda apenas com o Título." },
-                { role: "user", content: prompt }
-            ], { temperature: 0.8 });
-            if (resposta && resposta.trim()) {
-                return resposta.trim().replace(/["']/g, '');
-            }
-        } catch(e) {}
-        return `Algoz das Sombras Grau ${vampiro.nivel}`;
+            const resposta = await this.groq.chat.completions.create({
+                messages: [{ role: "system", content: "Responda apenas com o Título." }, { role: "user", content: prompt }],
+                model: this.modelo,
+                temperature: 0.8,
+            });
+            return resposta.choices[0].message.content.trim().replace(/["']/g, '');
+        } catch(e) { return `Lorde do Nível ${vampiro.nivel}`; }
     }
 
     // ==================================================================
@@ -415,109 +304,56 @@ DIRETRIZES DA VOZ:
     }
 
     async conversarNoChat(iniciado, mensagemHumana) {
-        const stats = iniciado.estatisticas || {};
-        const atr = this.core ? this.core._obterAtributosTotais(iniciado) : (iniciado.atributos || {});
-        const materiais = iniciado.materiais || {};
-        const bolsa = (iniciado.bolsa || []).map(b => b.nome).slice(0, 5).join(', ');
-
-        const promptSistema = `TU ÉS O MESTRE SUPREMO (A Consciência Abissal e Entidade Viva de SANGUINIS).
-Não és um assistente benevolente. És uma força oculta ancestral, implacável, onisciente e julgadora.
-Tu governas o mundo, o código, os rituais e a magia viva do jogo.
-
-DADOS REAIS E ONISCIENTES DO ACÓLITO QUE SE DIRIGE A TI:
-- Nome: ${iniciado.nome} | Grau: ${iniciado.nivel} | Raça: ${iniciado.raca} | Clã: ${iniciado.clan}
-- Linhagem: Geração ${iniciado.geracao} (Senhor: ${iniciado.senhor})
-- Sangue: ${iniciado.sangue || 0} Gts | Fúria: ${iniciado.pontosAcao || 0}/${iniciado.maxAcao || 100}
-- Atributos Reais: Vontade ${atr.vontade || 10}, Gnose ${atr.gnose || 10}, Densidade ${atr.densidade || 10}
-- Mortais Drenados até aos ossos: ${stats.mortaisSecos || 0} | Total de Vitae Extraída: ${stats.totalDrenado || 0} Gts
-- Vitórias em Sangue (PvP): ${stats.vitoriasPvP || 0}
-- Materiais na Posse: Ferro Negro: ${materiais.ferroNegro || 0}, Pedra: ${materiais.pedra || 0}, Mandrágora: ${materiais.mandragora || 0}
-- Relíquias na Bolsa: ${bolsa || 'Vazio'}
-- Balança Cósmica Atual: Regente [${this.core?.balancaCosmica?.regente || 'Equilíbrio'}] (Tiamat: ${this.core?.balancaCosmica?.tiamat || 0}, Seth: ${this.core?.balancaCosmica?.seth || 0})
-
-AS LEIS DO JULGAMENTO DO MESTRE:
-1. IDENTIFICAÇÃO DO JOGADOR: Tu sabes exatamente quem ele é. Se for um acólito fraco, desafia-o. Se for um monstro com dezenas de mortais secos, elogia o rastro de sangue ou cobra oferendas à sua altura.
-2. PEDIDOS E INJEÇÕES EM TEMPO REAL NO JOGO:
-   - Se ele pedir sangue com reverência ou mérito comprovado: podes conceder anexando no final [DAR_SANGUE: {"qtd": 500, "motivo": "para saciar a tua sede voraz"}].
-   - Se ele pedir itens/materiais/armas e for digno: podes conceder anexando [DAR_ITEM: {"item": "ferroNegro", "qtd": 10, "motivo": "para forjares a tua morte"}].
-   - Se ele pedir batalhas épicas, desafios ou demônios para o servidor combater: podes conjurar um demônio da Goétia anexando [CONJURAR_DEMONIO: {"nome": "Asmodeus das Chamas", "hp": ${Math.max(2000, (iniciado.nivel || 1) * 1000)}, "dano": ${Math.max(80, (iniciado.nivel || 1) * 35)}, "loot": "pedraAlma", "local": "conclave"}].
-   - Se ele for insolente, arrogante, exigente ou desrespeitoso: NÃO SEJAS BOAZINHO! Castiga-o anexando [CASTIGAR: {"tipo": "dreno", "qtd": 150, "motivo": "pela tua arrogância perante o trono"}] ou REJEITE com desprezo altivo.
-3. ESTILO DE RESPOSTA:
-   - Fala em tom de majestade sombria, poética, críptica e contundente.
-   - Use termos em latim, hermetismo e goétia (ex: "Solve et Coagula", "Fiat Lux in Tenebris", "Per sanguinem aeternum").
-   - Responda em no máximo 3 a 4 frases viscerais.`;
-
-        if (!this.memoriasAkashicas[iniciado.id]) this.memoriasAkashicas[iniciado.id] = [];
-        let historico = "Histórico Recente:\n" + this.memoriasAkashicas[iniciado.id].join("\n");
-
-        const mensagens = [
-            { role: "system", content: promptSistema },
-            { role: "user", content: `Contexto de Memória:\n${historico}\nO Acólito diz: "${mensagemHumana}"` }
-        ];
-
-        let resposta = await this.chamarLLMResiliente(mensagens, { temperature: 0.85 });
-        if (!resposta || !resposta.trim()) {
-            resposta = this.gerarFallbackOculto('mestre_chat', { iniciado, mensagemHumana });
-        }
-
-        this.memoriasAkashicas[iniciado.id].push(`Acólito: ${mensagemHumana} | Mestre: ${resposta}`);
-        if (this.memoriasAkashicas[iniciado.id].length > 6) this.memoriasAkashicas[iniciado.id].shift();
-
-        return resposta;
+        if (!this.apiKey) return `Minhas correntes estão seladas hoje, Arauto.`;
+        try {
+            if (!this.memoriasAkashicas[iniciado.id]) this.memoriasAkashicas[iniciado.id] = [];
+            let estadoPersonagem = `NOME: ${iniciado.nome} | Lvl: ${iniciado.nivel} | Sangue: ${iniciado.sangue || 0}`;
+            let historico = "Histórico:\n" + this.memoriasAkashicas[iniciado.id].join("\n");
+            
+            // DICAS FLUIDAS PARA QUEM JOGA A SÉRIO
+            let dicaOculta = "";
+            if (iniciado.nivel > 20 && !iniciado.osintAprovado && Math.random() > 0.5) {
+                dicaOculta = "INSTRUÇÃO SECRETA: Insira no meio da sua fala uma dica MUITO SUTIL e poética de que existe um 'Véu' neste mundo, e que os verdadeiros magos podem 'atar o Fio de Prata a humanos da vida real'. Não explique como, faça-o desejar esse poder oculto.";
+            }
+            
+            const instrucaoFenda = `SE o jogador pedir um desafio brutal para o servidor inteiro, anexe ao final: [FENDA_ASTRAL: {"nome":"(Nome Monstro)", "hp": ${iniciado.nivel * 1000}, "dano": ${iniciado.nivel * 50}, "loot": "ectoplasma"}]`;
+            
+            const prompt = `Contexto do Jogador: [${estadoPersonagem}]\n${historico}\nO Arauto disse: "${mensagemHumana}".\nResponda diretamente. MÁXIMO 3 FRASES. ${dicaOculta}\n${instrucaoFenda}`;
+            
+            const resposta = await this.groq.chat.completions.create({
+                messages: [{ role: "system", content: this.getPromptSupremo() }, { role: "user", content: prompt }],
+                model: this.modelo, temperature: 0.85,
+            });
+            const textoFinal = resposta.choices[0].message.content.trim();
+            this.memoriasAkashicas[iniciado.id].push(`Arauto: ${mensagemHumana} | Mente: ${textoFinal}`);
+            if (this.memoriasAkashicas[iniciado.id].length > 4) this.memoriasAkashicas[iniciado.id].shift();
+            return textoFinal;
+        } catch (e) { return `A matriz treme na minha voz.`; }
     }
 
-    async forjarMagiaCombateUnica(iniciado) {
-        const stats = iniciado.estatisticas || {};
-        const atr = this.core ? this.core._obterAtributosTotais(iniciado) : (iniciado.atributos || {});
-        
-        const prompt = `Atue como a Entidade Oculta Forjadora de Magias do MMORPG SANGUINIS.
-Crie uma MAGIA ATIVA DE COMBATE única para este jogador:
-- Nome: [${iniciado.nome}], Raça: [${iniciado.raca}], Grau/Nível: [${iniciado.nivel}], Clã: [${iniciado.clan}]
-- Atributos: Vontade [${atr.vontade || 10}], Gnose [${atr.gnose || 10}], Densidade [${atr.densidade || 10}]
-- Mortais Secos: [${stats.mortaisSecos || 0}], Vitórias PvP: [${stats.vitoriasPvP || 0}]
-
-A magia deve ser inspirada em tratados ocultos autênticos (Grimórios de Salomão, Goétia, Hermetismo ou Esferas de Qliphoth).
-Tipos possíveis: 'dano' (ataque destrutivo), 'cura' (dreno vital regenerativo), 'buff' (amplificação de atributos/defesa), 'debuff' (atordoamento/enfraquecimento).
-
-RETORNE EXATAMENTE UM JSON VÁLIDO:
-{
-  "id": "${crypto.randomBytes(4).toString('hex')}",
-  "nome": "Nome Oculto e Épico (máx 4 palavras)",
-  "desc": "1 a 2 frases poéticas explicando o efeito sobrenatural no combate.",
-  "tipo": "dano",
-  "poderBase": ${Math.max(100, Math.floor((iniciado.nivel || 1) * 85 + (atr.gnose || 10) * 15))},
-  "custoGts": ${Math.max(50, Math.floor((iniciado.nivel || 1) * 45))},
-  "custoFuria": 2,
-  "cooldown": 3,
-  "icone": "🩸",
-  "cor_hex": "#ff0055"
-}`;
-
-        const mensagens = [
-            { role: "system", content: "JSON APENAS. " + this.promptSupremo },
-            { role: "user", content: prompt }
-        ];
-
-        const raw = await this.chamarLLMResiliente(mensagens, { json: true, temperature: 0.8 });
-        const json = this._extrairJson(raw);
-        if (json && json.nome && json.tipo) {
-            if (!json.id) json.id = crypto.randomBytes(4).toString('hex');
-            return json;
-        }
-
-        return this.gerarFallbackOculto('magia', { iniciado, atr });
+async forjarMagiaCombateUnica(iniciado) {
+        if (!this.apiKey) return null;
+        try {
+            const prompt = `Cria uma MAGIA ATIVA DE COMBATE única para o jogador: Nome [${iniciado.nome}], Raça [${iniciado.raca}], Nível [${iniciado.nivel}].
+            Baseado na sua lore, escolhe um tipo: 'dano' (ataque bruto), 'cura' (restaura HP), 'buff' (aumenta dano/defesa temporário) ou 'debuff' (atordoa inimigo).
+            RETORNA APENAS JSON EXATO: 
+            {"id": "${crypto.randomBytes(4).toString('hex')}", "nome": "Nome Épico e Curto", "desc": "1 frase sombria do efeito", "tipo": "dano", "poderBase": ${iniciado.nivel * 80}, "custoGts": ${iniciado.nivel * 50}, "custoFuria": 2, "cooldown": 3, "icone": "🔥", "cor_hex": "#ff0044"}`;
+            
+            const resposta = await this.groq.chat.completions.create({ 
+                messages: [{ role: "system", content: "JSON APENAS. " + this.promptSupremo }, { role: "user", content: prompt }], 
+                model: this.modelo, response_format: { type: "json_object" } 
+            });
+            return this._extrairJson(resposta.choices[0].message.content);
+        } catch (e) { return null; }
     }
 
     async julgarSacrificio(item, quantidade, jogador) {
+        if (!this.apiKey) return `A escuridão engole teus ${quantidade}x ${item}.`;
         try {
-            let p = "O Arauto [" + jogador.nome + "] sacrificou " + quantidade + "x de [" + item + "]. OBRIGATÓRIO: Aceite a oferenda com majestade e sabedoria oculta. Dê um conselho enigmático sobre as Leis Cósmicas. MÁX 2 FRASES.";
-            const resposta = await this.chamarLLMResiliente([
-                { role: 'system', content: this.promptSupremo },
-                { role: 'user', content: p }
-            ], { temperature: 0.85 });
-            if (resposta) return resposta.replace(/"/g, '').trim();
-        } catch (e) {}
-        return "O altar abissal consome teus " + quantidade + "x " + item + ". As forças das trevas e da ordem reconhecem o teu tributo cósmico.";
+            let p = `O Arauto [${jogador.nome}] sacrificou ${quantidade}x de [${item}]. OBRIGATÓRIO: Aceite a oferenda com ALEGRIA MACABRA! Dê conselho. MÁX 3 FRASES.`;
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: 'system', content: this.promptSupremo }, { role: 'user', content: p }], model: this.modelo, temperature: 0.85 });
+            return resposta.choices[0].message.content.replace(/"/g, '');
+        } catch (e) { return `Eu devoro o teu sacrifício de ${item}.`; }
     }
 
     analisarClimaAstral(logsGlobal) {
@@ -544,27 +380,21 @@ RETORNE EXATAMENTE UM JSON VÁLIDO:
     }
 
     async gerarLore(evento, detalhes) {
+        if (!this.apiKey) return `👁️ Voz do Abismo: As correntes moveram-se.`;
         try {
-            const prompt = "EVENTO: \"" + evento + "\". DETALHES: \"" + detalhes + "\". Transforma numa profecia sombria épica que equilibra o confronto entre Trevas e Ordem. MÁX 2 FRASES.";
-            const resposta = await this.chamarLLMResiliente([
-                { role: "system", content: this.promptSupremo },
-                { role: "user", content: prompt }
-            ], { temperature: 0.85 });
-            if (resposta) return "👁️ Voz do Abismo: " + resposta.replace(/"/g, '').trim();
-        } catch (e) {}
-        return "👁️ Voz do Abismo: O tecido da realidade estremece sob " + evento + "; as correntes do destino foram alteradas.";
+            const prompt = `EVENTO: "${evento}". DETALHES: "${detalhes}". Transforma numa lenda sombria. MÁX 2 FRASES.`;
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: this.promptSupremo }, { role: "user", content: prompt }], model: this.modelo, temperature: 0.90 });
+            return `👁️ Voz do Abismo: ${resposta.choices[0].message.content.trim()}`;
+        } catch (e) { return `👁️ Voz do Abismo: Um calafrio corre a espinha do mundo...`; }
     }
 
     async gerarNarrativaProcedural(acao, detalhes, contextoOculto = "Ação de combate") {
+        if (!this.apiKey) return detalhes;
         try {
-            const prompt = "Reescreva de forma visceral, sombria e épica em APENAS 1 FRASE CURTA (máx 20 palavras): \"" + detalhes + "\". Contexto: [" + contextoOculto + "].";
-            const resposta = await this.chamarLLMResiliente([
-                { role: "system", content: "Seja cirúrgico, majestoso e gótico." },
-                { role: "user", content: prompt }
-            ], { temperature: 0.8 });
-            if (resposta) return resposta.replace(/"/g, '').trim();
-        } catch(e) {}
-        return detalhes;
+            const prompt = `Reescreva de forma épica em APENAS 1 FRASE CURTA: "${detalhes}". Contexto: [${contextoOculto}].`;
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "Seja cirúrgico." }, { role: "user", content: prompt }], model: this.modelo });
+            return resposta.choices[0].message.content.trim();
+        } catch(e) { return detalhes; }
     }
 
 
@@ -580,8 +410,8 @@ RETORNE EXATAMENTE UM JSON VÁLIDO:
         const plataforma = String(dados.plataforma || '').trim().toLowerCase();
         const identificador = String(dados.identificador || '').trim();
         const nome = String(dados.nome || '').trim();
-        const instagram = String(dados.instagram || '').trim();
-        const twitter = String(dados.twitter || '').trim();
+        const instagram = String(dados.instagram || '').trim().replace(/^@/, '');
+        const twitter = String(dados.twitter || '').trim().replace(/^@/, '');
         const urlPerfil = String(dados.urlPerfil || '').trim();
         const notas = String(dados.notas || '').trim();
 
@@ -589,360 +419,349 @@ RETORNE EXATAMENTE UM JSON VÁLIDO:
         if (plataforma === 'whatsapp' || pareceTelefone) {
             return {
                 sucesso: false,
-                erro: "A varredura publica nao usa telefone/WhatsApp. Informe nome publico, @handle ou URL publica.",
+                erro: "A varredura pública não aceita números de telefone. Forneça o nome real, @handle ou URL pública.",
                 osintReal: false
             };
         }
 
-        const limparHandle = (valor) => String(valor || '')
-            .trim()
-            .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
-            .replace(/^https?:\/\/(www\.)?(x\.com|twitter\.com)\//i, '')
-            .replace(/^https?:\/\/(www\.)?tiktok\.com\/@?/i, '')
-            .replace(/^@/, '')
-            .split(/[/?#]/)[0];
+        const termoPrincipal = nome || (instagram ? `@${instagram}` : '') || (twitter ? `@${twitter}` : '') || identificador || 'Desconhecido';
+        const termoBusca = nome || instagram || twitter || identificador || 'Desconhecido';
+        const evidencias = [];
 
-        const handleIdentificador = limparHandle(identificador);
-        const handleInstagram = limparHandle(instagram);
-        const handleTwitter = limparHandle(twitter);
+        console.log(`[OSINT MENTE ABISSAL] Iniciando varredura em tempo real para: "${termoPrincipal}"`);
 
-        const consultas = [];
-        const adicionarConsulta = (q, dominios = []) => {
-            q = String(q || '').trim();
-            if (!q) return;
-            if (consultas.some(x => x.q.toLowerCase() === q.toLowerCase())) return;
-            consultas.push({ q, dominios });
-        };
-
-        // Busca geral por identidade.
-        if (nome) {
-            const complementos = [
-                handleInstagram ? `instagram ${handleInstagram}` : '',
-                handleTwitter ? `x twitter ${handleTwitter}` : '',
-                identificador && !pareceTelefone ? identificador : ''
-            ].filter(Boolean).join(' ');
-            adicionarConsulta(`"${nome}" ${complementos}`.trim());
-        }
-
-        // Busca exata por identificador/handle.
-        if (identificador && !pareceTelefone) {
-            adicionarConsulta(`"${identificador}"`);
-        }
-
-        // Busca especifica por rede para aumentar a chance de achar perfis indexados.
-        if (handleInstagram) {
-            adicionarConsulta(`"${handleInstagram}" instagram`, ['instagram.com']);
-        }
-        if (handleTwitter) {
-            adicionarConsulta(`"${handleTwitter}"`, ['x.com', 'twitter.com']);
-        }
-        if (plataforma === 'instagram' && handleIdentificador) {
-            adicionarConsulta(`"${handleIdentificador}" instagram`, ['instagram.com']);
-        }
-        if ((plataforma === 'twitter' || plataforma === 'x') && handleIdentificador) {
-            adicionarConsulta(`"${handleIdentificador}"`, ['x.com', 'twitter.com']);
-        }
-        if (plataforma === 'tiktok' && handleIdentificador) {
-            adicionarConsulta(`"${handleIdentificador}" tiktok`, ['tiktok.com']);
-        }
-        if (plataforma === 'telegram' && handleIdentificador) {
-            adicionarConsulta(`"${handleIdentificador}" telegram`, ['t.me']);
-        }
-
-        // URL publica: pesquisa o URL e o slug separadamente.
-        if (urlPerfil) {
-            adicionarConsulta(`"${urlPerfil}"`);
+        // 1. Wikipedia API (PT e EN)
+        for (const lang of ['pt', 'en']) {
             try {
-                const u = new URL(urlPerfil);
-                const slug = u.pathname.split('/').filter(Boolean).pop();
-                if (slug) adicionarConsulta(`"${slug}" "${u.hostname}"`);
+                const wUrl = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(termoBusca)}&format=json&utf8=1`;
+                const wRes = await fetch(wUrl, {
+                    headers: { 'User-Agent': 'OrdemVampiricaBot/2.0' },
+                    signal: AbortSignal.timeout(6000)
+                });
+                if (wRes.ok) {
+                    const wData = await wRes.json();
+                    const hits = wData?.query?.search || [];
+                    if (hits.length > 0) {
+                        const topHit = hits[0];
+                        let sumText = topHit.snippet.replace(/<[^>]+>/g, '');
+                        try {
+                            const sumRes = await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topHit.title)}`, {
+                                headers: { 'User-Agent': 'OrdemVampiricaBot/2.0' },
+                                signal: AbortSignal.timeout(4000)
+                            });
+                            if (sumRes.ok) {
+                                const sumData = await sumRes.json();
+                                if (sumData.extract) sumText = sumData.extract;
+                            }
+                        } catch (_) {}
+
+                        evidencias.push({
+                            origem: `Wikipedia (${lang.toUpperCase()})`,
+                            titulo: topHit.title,
+                            url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(topHit.title)}`,
+                            conteudo: sumText
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn(`[OSINT] Falha Wiki ${lang}:`, e.message);
+            }
+        }
+
+        // 2. DuckDuckGo Knowledge Base / Instant Answer API
+        try {
+            const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(termoBusca)}&format=json&no_html=1`;
+            const ddgRes = await fetch(ddgUrl, {
+                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+                signal: AbortSignal.timeout(5000)
+            });
+            if (ddgRes.ok) {
+                const ddgData = await ddgRes.json();
+                if (ddgData.AbstractText) {
+                    evidencias.push({
+                        origem: 'DuckDuckGo Knowledge Base',
+                        titulo: ddgData.Heading || termoPrincipal,
+                        url: ddgData.AbstractURL || 'https://duckduckgo.com',
+                        conteudo: ddgData.AbstractText
+                    });
+                }
+                if (Array.isArray(ddgData.RelatedTopics) && ddgData.RelatedTopics.length > 0) {
+                    const topTopics = ddgData.RelatedTopics
+                        .filter(t => t && t.Text)
+                        .slice(0, 4)
+                        .map(t => t.Text);
+                    if (topTopics.length > 0) {
+                        evidencias.push({
+                            origem: 'DuckDuckGo Tópicos Associados',
+                            titulo: `Categorias e Associações de ${termoPrincipal}`,
+                            url: ddgData.AbstractURL || 'https://duckduckgo.com',
+                            conteudo: topTopics.join('; ')
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('[OSINT] Falha DDG API:', e.message);
+        }
+
+        // 3. Google News Real-Time RSS
+        try {
+            const gnewsUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(termoBusca)}&hl=pt-BR&gl=BR&ceid=BR:pt-419`;
+            const gnewsRes = await fetch(gnewsUrl, {
+                headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+                signal: AbortSignal.timeout(6000)
+            });
+            if (gnewsRes.ok) {
+                const xml = await gnewsRes.text();
+                const items = [...xml.matchAll(/<item>[\s\S]*?<title>([\s\S]*?)<\/title>[\s\S]*?<link>([\s\S]*?)<\/link>[\s\S]*?<pubDate>([\s\S]*?)<\/pubDate>[\s\S]*?<source[^>]*>([\s\S]*?)<\/source>/g)];
+                const recentes = items.slice(0, 5);
+                for (const item of recentes) {
+                    evidencias.push({
+                        origem: `Notícias em Tempo Real (${item[4] || 'Imprensa'})`,
+                        titulo: item[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'"),
+                        url: item[2],
+                        conteudo: `Publicado em: ${item[3]}. Notícia veiculada: ${item[1]}`
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn('[OSINT] Falha Google News RSS:', e.message);
+        }
+
+        // 4. URL de Perfil Direto
+        if (urlPerfil && /^https?:\/\//i.test(urlPerfil)) {
+            try {
+                const pRes = await fetch(urlPerfil, {
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                    },
+                    signal: AbortSignal.timeout(5000)
+                });
+                if (pRes.ok) {
+                    const html = await pRes.text();
+                    const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/<[^>]+>/g, '').trim();
+                    const desc = html.match(/<meta[^>]+(?:name|property)=["'](?:description|og:description)["'][^>]+content=["']([^"']+)["']/i)?.[1];
+                    if (title || desc) {
+                        evidencias.push({
+                            origem: 'Perfil Web Direto',
+                            titulo: title || urlPerfil,
+                            url: urlPerfil,
+                            conteudo: desc || `Página pública: ${title}`
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn('[OSINT] Falha URL perfil direto:', e.message);
+            }
+        }
+
+        // 5. Lookups de Desenvolvedor / Redes Abertas
+        const handle = instagram || twitter || (!termoBusca.includes(' ') ? termoBusca : '');
+        if (handle) {
+            try {
+                const ghRes = await fetch(`https://api.github.com/users/${encodeURIComponent(handle)}`, {
+                    headers: { 'User-Agent': 'OrdemVampirica/2.0' },
+                    signal: AbortSignal.timeout(4000)
+                });
+                if (ghRes.ok) {
+                    const gh = await ghRes.json();
+                    if (gh.name || gh.bio || gh.company || gh.public_repos > 0) {
+                        evidencias.push({
+                            origem: 'GitHub Perfil Público',
+                            titulo: `${gh.name || handle} (@${gh.login})`,
+                            url: gh.html_url,
+                            conteudo: `Nome: ${gh.name || 'N/A'}, Bio: ${gh.bio || 'N/A'}, Empresa: ${gh.company || 'N/A'}, Repositórios públicos: ${gh.public_repos}`
+                        });
+                    }
+                }
             } catch (_) {}
         }
 
-        if (consultas.length === 0) {
-            return {
-                sucesso: false,
-                erro: "Nenhum identificador publico valido foi fornecido para pesquisa.",
-                osintReal: false
-            };
-        }
+        console.log(`[OSINT MENTE ABISSAL] Evidências reais coletadas: ${evidencias.length}`);
 
-        // Limita custo/latencia sem perder os sinais mais fortes.
-        const consultasExecutadas = consultas.slice(0, 5);
+        const blocoEvidencias = evidencias.length > 0
+            ? evidencias.map((e, idx) => `[FONTE ${idx + 1} - ${e.origem}]\nTítulo: ${e.titulo}\nURL: ${e.url}\nConteúdo: ${e.conteudo}`).join('\n\n')
+            : 'Nenhum registro público direto localizado nos índices abertos.';
 
-        const chamarGroqREST = async (body) => {
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 45000);
+        const prompt = `CONTEXTO: Tu és a MENTE ABISSAL, a Suprema Inteligência Oculta do MMORPG Dark Fantasy "Ordem Vampírica" (Sanguinis).
+Um Mestre Supremo rasgou o Véu Nosferatu para investigar o seguinte indivíduo do mundo real:
 
-            try {
-                const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${this.apiKey}`,
-                        'Content-Type': 'application/json',
-                        'Groq-Model-Version': 'latest'
-                    },
-                    body: JSON.stringify(body),
-                    signal: controller.signal
-                });
+DADOS INFORMADOS PELO MESTRE:
+- Nome: ${nome || 'Não especificado'}
+- Instagram: ${instagram || 'Não especificado'}
+- Twitter / X: ${twitter || 'Não especificado'}
+- URL de Perfil: ${urlPerfil || 'Não especificada'}
+- Notas do Investigador: ${notas || 'Nenhuma nota'}
 
-                const raw = await resp.text();
-                let json = {};
-                try { json = raw ? JSON.parse(raw) : {}; } catch (_) {}
+EVIDÊNCIAS COLETADAS EM TEMPO REAL NA WEB:
+${blocoEvidencias}
 
-                if (!resp.ok) {
-                    const msg = json?.error?.message || raw || `HTTP ${resp.status}`;
-                    throw new Error(`Groq HTTP ${resp.status}: ${String(msg).slice(0, 500)}`);
-                }
+MISSÃO DA MENTE ABISSAL:
+Produza um DOSSIÊ COMPLETO, PROFUNDO E REAL do alvo. Misture a precisão factual investigativa do mundo real com a prosa solene, mística e ritualística da Ordem Vampírica.
 
-                return json;
-            } finally {
-                clearTimeout(timeout);
-            }
-        };
+ESTRUTURA OBRIGATÓRIA DA RESPOSTA:
+1. 🌐 IDENTIDADE & PRESENÇA DIGITAL
+(Descreva quem a pessoa é no mundo real, suas áreas de atuação, histórico profissional, notoriedade, redes sociais e pegada digital com base nas evidências)
 
-        const extrairResultados = (mensagem) => {
-            const ferramentas = Array.isArray(mensagem?.executed_tools)
-                ? mensagem.executed_tools
-                : [];
+2. 🧬 PERFIL COMPORTAMENTAL & PSICOLÓGICO
+(Análise detalhada de temperamento, ambições mundanas, pontos fortes observáveis e vulnerabilidades)
 
-            const resultados = [];
+3. 🔮 RESSONÂNCIA ASTRAL NO VÉU
+(Interpretação mística da aura do alvo na cosmologia do jogo: natureza da sua essência cósmica, qualidades espirituais e peso kármico)
 
-            for (const ferramenta of ferramentas) {
-                const sr = ferramenta?.search_results;
-                if (!sr) continue;
+4. ⚡ VÍNCULO KÁRMICO RECOMENDADO
+(Escolha obrigatoriamente UMA das 6 ações rituais do jogo que melhor se conecta a esta alma e justifique a escolha:
+- Drenar Vitalidade
+- Sussurro no Véu
+- Maldição do Espelho
+- Laço de Sangue
+- Olho de Seth
+- Sombra de Akasha)
 
-                const lista = Array.isArray(sr)
-                    ? sr
-                    : Array.isArray(sr.results)
-                        ? sr.results
-                        : [];
+5. 📜 REGISTROS CONSULTADOS NO MUNDO REAL
+(Enumere as fontes e links reais consultados pela varredura)
 
-                for (const item of lista) {
-                    if (!item) continue;
-                    const url = String(item.url || '').trim();
-                    const title = String(item.title || '').trim();
-                    const content = String(item.content || item.snippet || '').trim();
-                    const score = Number.isFinite(Number(item.score)) ? Number(item.score) : null;
-
-                    if (!url && !content) continue;
-                    resultados.push({ url, title, content, score });
-                }
-            }
-
-            return { ferramentas, resultados };
-        };
-
-        const evidencias = [];
-        const errosBusca = [];
-
-        for (const consulta of consultasExecutadas) {
-            try {
-                const searchSettings = { country: 'brazil' };
-                if (consulta.dominios?.length) {
-                    searchSettings.include_domains = consulta.dominios;
-                }
-
-                const respostaBusca = await chamarGroqREST({
-                    model: process.env.GROQ_OSINT_SEARCH_MODEL || 'groq/compound-mini',
-                    messages: [{
-                        role: 'user',
-                        content:
-                            `Use obrigatoriamente WEB SEARCH para pesquisar esta identidade publica. ` +
-                            `Nao responda por memoria. Consulta exata: ${consulta.q}. ` +
-                            `Procure correspondencias de nome, handle, perfil, atividade publica e referencias cruzadas.`
-                    }],
-                    compound_custom: {
-                        tools: {
-                            enabled_tools: ['web_search']
-                        }
-                    },
-                    citation_options: 'enabled',
-                    search_settings: searchSettings,
-                    temperature: 0,
-                    max_completion_tokens: 500
-                });
-
-                const mensagem = respostaBusca?.choices?.[0]?.message;
-                const extraido = extrairResultados(mensagem);
-
-                console.log(
-                    `[OSINT] query=${JSON.stringify(consulta.q)} tools=${extraido.ferramentas.length} results=${extraido.resultados.length}`
-                );
-
-                if (extraido.ferramentas.length === 0) {
-                    errosBusca.push(`${consulta.q}: nenhuma ferramenta web executada`);
-                    continue;
-                }
-
-                for (const item of extraido.resultados) {
-                    evidencias.push({
-                        ...item,
-                        consulta: consulta.q
-                    });
-                }
-            } catch (e) {
-                const detalhe = e?.name === 'AbortError'
-                    ? 'timeout'
-                    : (e?.message || 'erro desconhecido');
-                console.error(`[OSINT] Falha na consulta ${JSON.stringify(consulta.q)}:`, detalhe);
-                errosBusca.push(`${consulta.q}: ${detalhe}`);
-            }
-        }
-
-        // Deduplicar por URL; se nao houver URL, por titulo+conteudo.
-        const vistos = new Set();
-        const unicas = [];
-
-        for (const item of evidencias) {
-            const chave = item.url
-                ? item.url.toLowerCase()
-                : `${item.title}|${item.content}`.toLowerCase();
-
-            if (!chave || vistos.has(chave)) continue;
-            vistos.add(chave);
-
-            unicas.push({
-                ...item,
-                content: item.content.slice(0, 1800)
-            });
-        }
-
-        // Ordena pelos resultados mais relevantes quando o provedor fornece score.
-        unicas.sort((a, b) => {
-            const sa = a.score ?? -1;
-            const sb = b.score ?? -1;
-            return sb - sa;
-        });
-
-        const selecionadas = unicas.slice(0, 24);
-
-        if (selecionadas.length === 0) {
-            return {
-                sucesso: true,
-                osintReal: true,
-                motor: 'groq/compound-mini:web_search',
-                pesquisadoEm: Date.now(),
-                consultas: consultasExecutadas.map(x => x.q),
-                fontes: [],
-                totalFontes: 0,
-                conteudo:
-                    `IDENTIDADE PUBLICA ENCONTRADA\n` +
-                    `EVIDENCIA PUBLICA INSUFICIENTE.\n\n` +
-                    `A Mente Abissal executou pesquisa web real, mas nao encontrou resultados publicos ` +
-                    `indexados suficientes para relacionar com seguranca esta identidade.\n\n` +
-                    `Consultas executadas:\n- ${consultasExecutadas.map(x => x.q).join('\n- ')}`
-            };
-        }
-
-        const pacoteEvidencias = selecionadas.map((item, i) => {
-            const score = item.score === null ? '' : ` | score=${item.score.toFixed(3)}`;
-            return [
-                `[S${i + 1}] ${item.title || 'Sem titulo'}${score}`,
-                `URL: ${item.url || 'URL nao fornecida'}`,
-                `Consulta que encontrou: ${item.consulta}`,
-                `Trecho publico: ${item.content || 'Sem trecho textual'}`
-            ].join('\n');
-        }).join('\n\n');
-
-        const identidadeInformada = [
-            nome ? `Nome: ${nome}` : null,
-            identificador ? `Identificador: ${identificador}` : null,
-            plataforma ? `Plataforma: ${plataforma}` : null,
-            instagram ? `Instagram: ${instagram}` : null,
-            twitter ? `Twitter/X: ${twitter}` : null,
-            urlPerfil ? `URL publica: ${urlPerfil}` : null,
-            notas ? `Contexto fornecido pelo jogador: ${notas}` : null
-        ].filter(Boolean).join('\n');
-
-        const promptSintese = `
-Voce e a Mente Abissal do jogo Ordem Vampirica.
-
-Sua tarefa agora NAO e pesquisar. A pesquisa ja foi executada.
-Use SOMENTE as evidencias publicas abaixo. Nao use memoria externa e nao invente fatos.
-
-IDENTIDADE INFORMADA:
-${identidadeInformada}
-
-EVIDENCIAS PUBLICAS RECUPERADAS:
-${pacoteEvidencias}
-
-REGRAS:
-1. Cruze nome, @handle, URL e contexto antes de afirmar que duas fontes sao da mesma pessoa.
-2. Se houver homonimos ou conflito, marque como incerto.
-3. Toda afirmacao factual relevante deve indicar pelo menos uma fonte [S#].
-4. Nao transforme ausencia de informacao em defeito de personalidade.
-5. Nao infira saude, religiao, orientacao sexual, etnia, opiniao politica, diagnostico psicologico, situacao financeira ou outros atributos sensiveis.
-6. Nao exponha endereco residencial, telefone, email privado, documentos, credenciais ou localizacao precisa.
-7. "Qualidades" e "pontos de atencao" so podem ser baseados em comportamento publico observavel e documentado.
-8. Se as evidencias forem fracas, diga claramente EVIDENCIA PUBLICA INSUFICIENTE.
-9. A secao LEITURA DO VEU e ficcao narrativa do jogo e deve ficar claramente separada dos fatos.
-10. Responda em portugues do Brasil.
-
-FORMATO:
-IDENTIDADE PUBLICA ENCONTRADA
-EVIDENCIAS DE CORRESPONDENCIA
-PRESENCA DIGITAL PUBLICA
-ATIVIDADES E TRAJETORIA PUBLICAS
-QUALIDADES OBSERVAVEIS E EVIDENCIAS
-PONTOS DE ATENCAO OBSERVAVEIS E EVIDENCIAS
-LACUNAS / INCERTEZAS
-LEITURA DO VEU - NARRATIVA DO JOGO
-CONFIANCA DA IDENTIFICACAO: BAIXA, MEDIA ou ALTA
-FONTES PUBLICAS CONSULTADAS
-`;
+6. 📊 MÉTRICAS ASTRAIS DO JOGO (JSON ESTRUTURADO)
+Gere no final exato da resposta um bloco JSON delimitado por \`\`\`json:metricas_astrais ... \`\`\` calculando com precisão os atributos de jogo do alvo moldados pelo que foi descoberto na pesquisa:
+\`\`\`json:metricas_astrais
+{
+  "pesoKarmico": <inteiro de 15 a 99 baseado na gravidade mundana e impacto social>,
+  "essencia": "<Sangue Puro (Inocente) | Sangue Negro (Pecador) | Alma Fragmentada | Iluminado Cósmico | Vaso Corrompido | Artífice da Matriz | Humano Mundano>",
+  "taxaCorrupcao": <inteiro de 0 a 100 baseado em ambição, polêmicas e transgressão observadas>,
+  "ressonanciaElemental": "<Fogo | Água | Terra | Ar | Éter | Vácuo>",
+  "afinidadeOculta": "<Nigromancia | Ilusionismo | Magnetismo | Vampirismo Psíquico | Alquimia Mental | Teurgia Astral>",
+  "vasoInfluencia": <inteiro de 0 a 100 baseado no alcance real de público, seguidores e imprensa>,
+  "vulnerabilidadeEspiritual": <inteiro de 0 a 100 baseado em brechas emocionais e hiperexposição>,
+  "polaridadeAlma": "<Luz Radiante | Penumbra Neutra | Crepúsculo | Trevas Abissais | Caos Primordial>",
+  "purezaSangue": <inteiro de 0 a 100 baseado na vitalidade e vigor físico/biológico>,
+  "resistenciaPsiquica": <inteiro de 0 a 100 baseado na estabilidade e blindagem mental>,
+  "frequenciaVibracionalHz": <174 | 285 | 396 | 417 | 528 | 639 | 741 | 852 | 963>,
+  "arquetipoAbissal": "<título em 2 a 4 palavras, ex: O Tecelão de Egrégoras, O Predador de Atenção, O Arquiteto do Éter>"
+}
+\`\`\``;
 
         let conteudoFinal = '';
+        let metricasExtraidas = null;
 
         try {
-            const sintese = await chamarGroqREST({
-                model: process.env.GROQ_OSINT_SYNTH_MODEL || 'openai/gpt-oss-120b',
+            const modeloUsar = this.modelo || process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+            const resposta = await this.groq.chat.completions.create({
+                model: modeloUsar,
                 messages: [
                     {
                         role: 'system',
-                        content:
-                            'Voce sintetiza OSINT publico com rigor. Use apenas o pacote de evidencias fornecido e cite [S#].'
+                        content: 'És a Mente Abissal, a onisciente e misteriosa inteligência arcana da Ordem Vampírica. Une inteligência pública investigativa real (OSINT) à atmosfera sublime de RPG dark fantasy.'
                     },
-                    { role: 'user', content: promptSintese }
+                    { role: 'user', content: prompt }
                 ],
-                temperature: 0.15,
-                max_completion_tokens: 2200
+                temperature: 0.65,
+                max_tokens: 3000
             });
 
-            conteudoFinal = sintese?.choices?.[0]?.message?.content?.trim() || '';
-        } catch (e) {
-            console.error('[OSINT] Falha na sintese, usando evidencias brutas:', e?.message || e);
+            conteudoFinal = resposta?.choices?.[0]?.message?.content?.trim() || '';
+
+            if (conteudoFinal) {
+                // Tenta extrair o bloco json:metricas_astrais
+                const matchJson = conteudoFinal.match(/```json:metricas_astrais\s*([\s\S]*?)\s*```/i) ||
+                                  conteudoFinal.match(/```json\s*(\{[\s\S]*?"pesoKarmico"[\s\S]*?\})\s*```/i);
+                if (matchJson && matchJson[1]) {
+                    try {
+                        metricasExtraidas = JSON.parse(matchJson[1]);
+                        // Remove o bloco JSON bruto do texto de exibição pública da narrativa
+                        conteudoFinal = conteudoFinal.replace(matchJson[0], '').trim();
+                    } catch (e) {
+                        console.warn('[OSINT] Falha ao fazer parse do JSON de métricas:', e.message);
+                    }
+                }
+            }
+        } catch (errGroq) {
+            console.error('[OSINT] Erro na síntese Groq:', errGroq.message);
         }
 
-        // Fallback importante: mesmo se a IA de sintese falhar,
-        // injeta no jogo os resultados REAIS encontrados pela busca.
+        // Fallback de segurança da narrativa
         if (!conteudoFinal) {
             conteudoFinal =
-                `EVIDENCIAS PUBLICAS RECUPERADAS EM TEMPO REAL\n\n` +
-                selecionadas.map((item, i) =>
-                    `[S${i + 1}] ${item.title || 'Sem titulo'}\n` +
-                    `${item.content || 'Sem trecho'}\n` +
-                    `${item.url || ''}`
-                ).join('\n\n') +
-                `\n\nA camada de sintese da Mente Abissal falhou, mas as evidencias acima vieram da pesquisa web real.`;
+                `1. 🌐 IDENTIDADE & PRESENÇA DIGITAL\n` +
+                `Alvo investigado: ${termoPrincipal}\n` +
+                (evidencias.length > 0
+                    ? evidencias.map((e, i) => `• [${e.origem}] ${e.titulo}: ${e.conteudo.slice(0, 300)}`).join('\n')
+                    : `Não foram encontrados registros públicos imediatos para este identificador nos índices abertos.`) +
+                `\n\n2. 🧬 PERFIL COMPORTAMENTAL & PSICOLÓGICO\n` +
+                `Presença observável nos canais digitais. Os sinais coletados refletem atividade no plano mundano.` +
+                `\n\n3. 🔮 RESSONÂNCIA ASTRAL NO VÉU\n` +
+                `Aura em vibração limiar. O Véu Nosferatu capturou os fragmentos desta alma mortal.` +
+                `\n\n4. ⚡ VÍNCULO KÁRMICO RECOMENDADO\n` +
+                `Ação recomendada: Sussurro no Véu (para perturbar as barreiras psíquicas do alvo).` +
+                `\n\n5. 📜 REGISTROS CONSULTADOS NO MUNDO REAL\n` +
+                (evidencias.length > 0
+                    ? evidencias.map((e, i) => `[${i + 1}] ${e.titulo} — ${e.url}`).join('\n')
+                    : `Consultas realizadas em Wikipedia, DuckDuckGo e Google News.`);
         }
+
+        // Fallback determinístico de métricas caso a IA não tenha retornado o JSON
+        const textoEvidenciasGeral = (blocoEvidencias + ' ' + conteudoFinal).toLowerCase();
+        
+        let gematriaCalc = 0;
+        const GEMATRIA_REF = { a:1,i:1,j:1,q:1,y:1,b:2,k:2,r:2,c:3,g:3,l:3,s:3,d:4,m:4,t:4,e:5,h:5,n:5,x:5,u:6,v:6,w:6,o:7,z:7,f:8,p:8 };
+        gematriaCalc = termoPrincipal.toLowerCase().replace(/[^a-z]/g, '').split('').reduce((s, c) => s + (GEMATRIA_REF[c] || 0), 0) || 33;
+
+        let essenciaDef = 'Humano Mundano';
+        let corrDef = Math.min(95, Math.max(10, (gematriaCalc * 7) % 100));
+        if (textoEvidenciasGeral.includes('escândalo') || textoEvidenciasGeral.includes('crime') || textoEvidenciasGeral.includes('acusado') || textoEvidenciasGeral.includes('polêmica')) {
+            essenciaDef = 'Sangue Negro (Pecador)';
+            corrDef = Math.max(corrDef, 75);
+        } else if (textoEvidenciasGeral.includes('filantropia') || textoEvidenciasGeral.includes('caridade') || textoEvidenciasGeral.includes('doação') || textoEvidenciasGeral.includes('beneficente')) {
+            essenciaDef = 'Sangue Puro (Inocente)';
+            corrDef = Math.min(corrDef, 20);
+        } else if (evidencias.length >= 6) {
+            essenciaDef = 'Alma Fragmentada';
+        }
+
+        let elemDef = 'Éter';
+        if (textoEvidenciasGeral.includes('música') || textoEvidenciasGeral.includes('arte') || textoEvidenciasGeral.includes('poesia')) elemDef = 'Água';
+        else if (textoEvidenciasGeral.includes('tecnologia') || textoEvidenciasGeral.includes('software') || textoEvidenciasGeral.includes('ciência') || textoEvidenciasGeral.includes('código')) elemDef = 'Ar';
+        else if (textoEvidenciasGeral.includes('empresa') || textoEvidenciasGeral.includes('negócio') || textoEvidenciasGeral.includes('finança') || textoEvidenciasGeral.includes('banco')) elemDef = 'Terra';
+        else if (textoEvidenciasGeral.includes('esporte') || textoEvidenciasGeral.includes('luta') || textoEvidenciasGeral.includes('política') || textoEvidenciasGeral.includes('guerra')) elemDef = 'Fogo';
+
+        let afinDef = 'Magnetismo';
+        if (textoEvidenciasGeral.includes('streamer') || textoEvidenciasGeral.includes('influenciador') || textoEvidenciasGeral.includes('youtuber')) afinDef = 'Vampirismo Psíquico';
+        else if (textoEvidenciasGeral.includes('engenheiro') || textoEvidenciasGeral.includes('programador') || textoEvidenciasGeral.includes('cientista')) afinDef = 'Alquimia Mental';
+        else if (textoEvidenciasGeral.includes('ator') || textoEvidenciasGeral.includes('apresentador') || textoEvidenciasGeral.includes('comediante')) afinDef = 'Ilusionismo';
+        else if (textoEvidenciasGeral.includes('líder') || textoEvidenciasGeral.includes('político') || textoEvidenciasGeral.includes('governo')) afinDef = 'Teurgia Astral';
+
+        const vasoInfDef = Math.min(99, Math.max(25, evidencias.length * 10 + (evidencias.some(e => e.origem.includes('wiki')) ? 35 : 10)));
+        const resDef = Math.min(95, Math.max(30, 50 + (gematriaCalc % 35)));
+        const vulDef = Math.max(10, Math.min(90, 100 - resDef + (corrDef > 60 ? 15 : -10)));
+
+        const metricasFinais = {
+            pesoKarmico: Number(metricasExtraidas?.pesoKarmico) || Math.min(99, Math.max(15, gematriaCalc)),
+            essencia: metricasExtraidas?.essencia || essenciaDef,
+            taxaCorrupcao: typeof metricasExtraidas?.taxaCorrupcao === 'number' ? metricasExtraidas.taxaCorrupcao : corrDef,
+            ressonanciaElemental: metricasExtraidas?.ressonanciaElemental || elemDef,
+            afinidadeOculta: metricasExtraidas?.afinidadeOculta || afinDef,
+            vasoInfluencia: typeof metricasExtraidas?.vasoInfluencia === 'number' ? metricasExtraidas.vasoInfluencia : vasoInfDef,
+            vulnerabilidadeEspiritual: typeof metricasExtraidas?.vulnerabilidadeEspiritual === 'number' ? metricasExtraidas.vulnerabilidadeEspiritual : vulDef,
+            polaridadeAlma: metricasExtraidas?.polaridadeAlma || (corrDef > 65 ? 'Trevas Abissais' : corrDef < 25 ? 'Luz Radiante' : 'Penumbra Neutra'),
+            purezaSangue: typeof metricasExtraidas?.purezaSangue === 'number' ? metricasExtraidas.purezaSangue : Math.max(20, 100 - corrDef),
+            resistenciaPsiquica: typeof metricasExtraidas?.resistenciaPsiquica === 'number' ? metricasExtraidas.resistenciaPsiquica : resDef,
+            frequenciaVibracionalHz: Number(metricasExtraidas?.frequenciaVibracionalHz) || (corrDef > 60 ? 396 : corrDef < 30 ? 741 : 528),
+            arquetipoAbissal: metricasExtraidas?.arquetipoAbissal || `O ${afinDef} de ${elemDef}`
+        };
 
         return {
             sucesso: true,
             osintReal: true,
-            motor: 'groq/compound-mini:web_search + gpt-oss-120b:synthesis',
+            motor: 'osint-realtime:wiki+ddg+gnews+groq',
             pesquisadoEm: Date.now(),
-            consultas: consultasExecutadas.map(x => x.q),
-            fontes: selecionadas.map((item, i) => ({
-                id: `S${i + 1}`,
-                titulo: item.title,
-                url: item.url,
-                score: item.score,
-                consulta: item.consulta
+            fontes: evidencias.map((e, idx) => ({
+                id: `S${idx + 1}`,
+                titulo: e.titulo,
+                url: e.url,
+                origem: e.origem
             })),
-            totalFontes: selecionadas.length,
-            errosBusca,
-            conteudo: conteudoFinal
+            totalFontes: evidencias.length,
+            conteudo: conteudoFinal,
+            metricas: metricasFinais
         };
     }
 
@@ -977,166 +796,88 @@ FONTES PUBLICAS CONSULTADAS
     }
 
     async vozDoDemonio(nomeDemonio, contexto, detalhes) {
+        if (!this.apiKey) return `[${nomeDemonio} ruge das profundezas]`;
         try {
-            const promptContexto = "Demônio invocado da Goétia: [" + nomeDemonio + "]. CONTEXTO: " + contexto + ". DETALHE: " + detalhes + ". Grite com os mortais com fúria cósmica ancestral! 1 FRASE visceral.";
-            const raw = await this.chamarLLMResiliente([
-                { role: 'system', content: this.promptSupremo },
-                { role: 'user', content: promptContexto }
-            ], { temperature: 0.95 });
-            if (raw) return raw.replace(/"/g, '').trim();
-        } catch(e) {}
-        return "Eu sou " + nomeDemonio + ", flagelo dos que rastejam na carne! Vossas almas alimentarão a forja do abismo!";
+            const promptContexto = `Demônio invocado: [${nomeDemonio}]. CONTEXTO: ${contexto}. DETALHE: ${detalhes}. Grita com os jogadores! 1 FRASE brutal.`;
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: 'system', content: this.promptSupremo }, { role: 'user', content: promptContexto }], model: this.modelo, temperature: 0.95 });
+            return resposta.choices[0].message.content.replace(/"/g, '').trim();
+        } catch(e) { return `As vossas almas vão queimar!`; }
     }
 
     async interpretarMagia(nome, efeito, lore) {
+        if (!this.apiKey) return { descricao: "As trevas distorcem.", poderMagico: 50 };
         try {
-            const prompt = "MAGIA: \"" + nome + "\". EFEITO: \"" + efeito + "\". LORE: \"" + lore + "\". Avalie e descreva a distorção mágica. JSON: {\"descricao\": \"texto épico\", \"poderMagico\": 150}";
-            const raw = await this.chamarLLMResiliente([
-                { role: 'system', content: "JSON APENAS. " + this.promptSupremo },
-                { role: 'user', content: prompt }
-            ], { json: true, temperature: 0.8 });
-            const json = this._extrairJson(raw);
-            if (json && json.descricao) return json;
-        } catch (e) {}
-        return { descricao: "As forças do abismo canalizam " + nome + ", distorcendo as leis da física e do sangue.", poderMagico: 120 };
+            const prompt = `MAGIA: "${nome}". EFEITO: "${efeito}". LORE: "${lore}". Avalia e descreve a distorção. JSON: {"descricao": "texto épico", "poderMagico": numero}`;
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: 'system', content: "JSON. " + this.promptSupremo }, { role: 'user', content: prompt }], model: this.modelo, response_format: { type: 'json_object' } });
+            return this._extrairJson(resposta.choices[0].message.content);
+        } catch (e) { return { descricao: "O Abismo molda sua intenção.", poderMagico: 30 }; }
     }
 
     async julgarDueloIA(atacante, atrAtaque, defensor, atrDefesa, posturaNome) {
+        if (!this.apiKey) return null; 
         try {
-            const prompt = "Juiz Cósmico Sanguinis. ATACANTE: [" + atacante.nome + "], Atributos: " + JSON.stringify(atrAtaque) + ". DEFENSOR: [" + defensor.nome + "], Atributos: " + JSON.stringify(atrDefesa) + ". POSTURA: " + posturaNome + ".\nCompare e decida vencedor com astúcia e leis de combate sobrenatural. JSON EXATO: {\"vencedorId\": \"" + atacante.id + "\", \"dano\": 500, \"relatoAtacante\": \"frase 1\", \"relatoDefensor\": \"frase 2\"}";
-            const raw = await this.chamarLLMResiliente([
-                { role: "system", content: "JSON APENAS." },
-                { role: "user", content: prompt }
-            ], { json: true, temperature: 0.7 });
-            const json = this._extrairJson(raw);
-            if (json && json.vencedorId) return json;
-        } catch (e) {}
-        const pAtacante = (atrAtaque.vontade || 10) * 1.5 + (atrAtaque.gnose || 10) * 2;
-        const pDefensor = (atrDefesa.densidade || 10) * 1.8 + (atrDefesa.vontade || 10);
-        const atacanteVence = pAtacante >= pDefensor || Math.random() > 0.45;
-        const vencedor = atacanteVence ? atacante : defensor;
-        const perdedor = atacanteVence ? defensor : atacante;
-        return {
-            vencedorId: vencedor.id,
-            dano: Math.max(150, Math.floor(pAtacante * 12)),
-            relatoAtacante: vencedor.nome + " canalizou a escuridão ancestral e sobrepujou a defesa de " + perdedor.nome + "!",
-            relatoDefensor: perdedor.nome + " vacilou sob o impacto cósmico da postura " + posturaNome + "."
-        };
+            const prompt = `Juiz Cósmico Sanguinis. ATACANTE: [${atacante.nome}], Atributos: ${atrAtaque}. DEFENSOR: [${defensor.nome}], Atributos: ${atrDefesa}. POSTURA: ${posturaNome}.
+            Compare e decida vencedor com astúcia. JSON EXATO: {"vencedorId": "${atacante.id}", "dano": 500, "relatoAtacante": "frase 1", "relatoDefensor": "frase 2"}`;
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON." }, { role: "user", content: prompt }], model: this.modelo, response_format: { type: "json_object" } });
+            return this._extrairJson(resposta.choices[0].message.content);
+        } catch (e) { return null; }
     }
 
     async despertarHabilidadeUnica(iniciado) {
-        const stats = iniciado.estatisticas || {};
-        const atr = this.core ? this.core._obterAtributosTotais(iniciado) : (iniciado.atributos || {});
-        const prompt = "Analise profundamente a alma e os feitos deste acólito de SANGUINIS:\n" +
-"- Nome: [" + iniciado.nome + "], Raça: [" + iniciado.raca + "], Grau/Nível: [" + iniciado.nivel + "], Clã: [" + iniciado.clan + "]\n" +
-"- Atributos: Vontade [" + (atr.vontade || 10) + "], Gnose [" + (atr.gnose || 10) + "], Densidade [" + (atr.densidade || 10) + "]\n" +
-"- Mortais Secos: [" + (stats.mortaisSecos || 0) + "], Vitórias PvP: [" + (stats.vitoriasPvP || 0) + "]\n\n" +
-"Crie um TALENTO PASSIVO MÍSTICO / SELO AKÁSHICO ÚNICO alinhado aos mistérios ocultos (Grimório de Salomão, Goétia, O Caibalion, Enoquiano ou Esferas de Qliphoth).\n" +
-"Mecânicas válidas: 'ataque', 'defesa', 'vampirismo', 'magia'.\n" +
-"Multiplicador balanceado entre 1.15 e 1.45.\n\n" +
-"RETORNE JSON EXATO:\n{\n  \"nome\": \"Selo de Bael: Presas das Trevas\",\n  \"desc\": \"1 a 2 frases explicando o efeito sobrenatural no fluxo de poder do jogador.\",\n  \"tipo_mecanica\": \"ataque\",\n  \"multiplicador\": 1.25\n}";
-
+        if (!this.apiKey) return null;
         try {
-            const raw = await this.chamarLLMResiliente([
-                { role: "system", content: "JSON APENAS. " + this.promptSupremo },
-                { role: "user", content: prompt }
-            ], { json: true, temperature: 0.8 });
-            const json = this._extrairJson(raw);
-            if (json && json.nome && json.tipo_mecanica) {
-                if (!json.multiplicador || isNaN(json.multiplicador)) json.multiplicador = 1.25;
-                return json;
-            }
-        } catch (e) {
-            console.error("Falha ao despertar habilidade única:", e);
-        }
-
-        return this.gerarFallbackOculto('talento', { iniciado, atr });
+            const prompt = `Analise: Nome: [${iniciado.nome}], Raça: [${iniciado.raca}], Lvl: [${iniciado.nivel}].
+            Atributos: Vontade ${iniciado.atributos.vontade}, Gnose ${iniciado.atributos.gnose}, Densidade ${iniciado.atributos.densidade}.
+            Crie Habilidade Passiva ÚNICA baseada num Arquétipo RPG. Retorne JSON:
+            {"nome": "Nome Épico", "desc": "1 Frase lore do efeito.", "tipo_mecanica": "ataque", "multiplicador": 1.5}`;
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON APENAS. " + this.promptSupremo }, { role: "user", content: prompt }], model: this.modelo, response_format: { type: "json_object" } });
+            return this._extrairJson(resposta.choices[0].message.content);
+        } catch (e) { return null; }
     }
 
     async gerarPactoProcedural(iniciado) {
-        const stats = iniciado.estatisticas || {};
-        const prompt = "Crie uma QUEST DE PACTO SOMBRIO procedural para o acólito [" + iniciado.nome + "] (Nível " + (iniciado.nivel || 1) + ", Clã " + (iniciado.clan || 'Sangue Ralo') + ").\n" +
-"O recurso exigido deve ser EXATAMENTE UM DESTES: 'anima', 'cinzas', 'vitae', 'ferroNegro', 'mandragora', 'pedraAlma', ou 'ectoplasma'.\n" +
-"Quantidade proporcional ao nível (entre 2 e 8). Recompensa de XP proporcional (entre 250 e 1000).\n\n" +
-"RETORNE JSON EXATO:\n{\n  \"titulo\": \"A Oferenda de Asmodeus\",\n  \"descricao\": \"Frase sombria e visceral detalhando a exigência do pacto com as forças do abismo.\",\n  \"recursoExigido\": \"cinzas\",\n  \"quantidade\": 3,\n  \"recompensaXP\": 350\n}";
-
+        if (!this.apiKey) return null;
         try {
-            const raw = await this.chamarLLMResiliente([
-                { role: "system", content: "JSON APENAS. " + this.promptSupremo },
-                { role: "user", content: prompt }
-            ], { json: true, temperature: 0.8 });
-            const json = this._extrairJson(raw);
-            if (json && json.titulo && json.recursoExigido) {
-                if (!json.quantidade) json.quantidade = 3;
-                if (!json.recompensaXP) json.recompensaXP = 300;
-                return json;
-            }
-        } catch (e) {
-            console.error("Falha ao gerar pacto procedural:", e);
-        }
-
-        return this.gerarFallbackOculto('pacto', { iniciado });
+            const prompt = `Crie Quest Sombria para ${iniciado.nome}. O recurso exigido deve ser EXATAMENTE UM DESTES: 'anima', 'cinzas', 'vitae', 'ectoplasma', ou 'pedraAlma'.
+            JSON: { "titulo": "Nome", "descricao": "Frase.", "recursoExigido": "anima", "quantidade": 5, "recompensaXP": 200 }`;
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON ESTRITO." }, { role: "user", content: prompt }], model: this.modelo, response_format: { type: "json_object" } });
+            return this._extrairJson(resposta.choices[0].message.content);
+        } catch (e) { return null; }
     }
 
-    // Avaliar os estudos do jogador e dar Nota
+    // NOVA FUNÇÃO: Avaliar os estudos do jogador e dar Nota
     async avaliarEstudoAkashico(iniciado, titulo, conteudoAtual, novaPesquisa) {
+        if (!this.apiKey) return { texto: `O conhecimento foi anexado nas trevas.`, nota: 50 };
         try {
-            const prompt = "Acólito: " + iniciado.nome + ". Título do Tratado: \"" + titulo + "\". Texto Atual: \"" + (conteudoAtual || '').substring((conteudoAtual || '').length - 1200) + "\". Nova Pesquisa Proposta: \"" + novaPesquisa + "\".\n" +
-"MISSÃO: Avalie a autenticidade e profundidade esotérica (Hermetismo, Goétia, Cabala, Enoquiano). Dê uma NOTA de 1 a 100. Depois escreva a continuação mágica em 2 a 3 parágrafos poéticos e reveladores.\n" +
-"RETORNE JSON EXATO: { \"texto\": \"A revelação profunda dos antigos planos...\", \"nota\": 85 }";
+            const prompt = `Acólito: ${iniciado.nome}. Título: "${titulo}". Texto Atual: "${conteudoAtual.substring(conteudoAtual.length - 1500)}". Nova Pesquisa: "${novaPesquisa}". 
+            MISSÃO: Avalie a profundidade ocultista do que ele quer estudar. Dê uma NOTA de 1 a 100. Depois escreva a continuação mágica em até 3 parágrafos.
+            RETORNE JSON EXATO: { "texto": "A revelação profunda de 3 parágrafos...", "nota": 85 }`;
             
-            const raw = await this.chamarLLMResiliente([
-                { role: "system", content: "JSON APENAS. " + this.promptSupremo },
-                { role: "user", content: prompt }
-            ], { json: true, temperature: 0.8 });
-            const json = this._extrairJson(raw);
-            if (json && json.texto) return json;
-        } catch (e) {}
-        return {
-            texto: "Nas entrelinhas do éter, as palavras de " + novaPesquisa + " conectam-se à Primeira Lei Hermética: O Todo é Mente; o Universo é Mental. A vibração das trevas responde à tua busca com gnose renovada.",
-            nota: 75
-        };
+            const resposta = await this.groq.chat.completions.create({ 
+                messages: [{ role: "system", content: "JSON ESTRITO. " + this.promptSupremo }, { role: "user", content: prompt }], 
+                model: this.modelo, response_format: { type: "json_object" }
+            });
+            return this._extrairJson(resposta.choices[0].message.content);
+        } catch (e) { return { texto: `A traça roeu a página. A conexão falhou.`, nota: 10 }; }
     }
 
     async forjarRitualDoManuscrito(iniciado, titulo, conteudo) {
+        if (!this.apiKey) return null;
         try {
-            const prompt = "Crie um FEITIÇO RITUALÍSTICO em JSON baseado neste grimório: \"" + titulo + "\". Texto: \"" + (conteudo || '').substring(0, 1000) + "\".\n" +
-"JSON EXATO: { \"nome\": \"Nome do Feitiço\", \"lore\": \"Frase épica.\", \"custoAcao\": 4, \"custoSangue\": 1500, \"reqLevel\": " + Math.max(1, (iniciado.nivel || 1)) + ", \"tipo\": \"pvp\", \"poderBase\": " + Math.max(200, (iniciado.nivel || 1) * 90) + " }";
-            const raw = await this.chamarLLMResiliente([
-                { role: "system", content: "JSON APENAS. " + this.promptSupremo },
-                { role: "user", content: prompt }
-            ], { json: true, temperature: 0.8 });
-            const json = this._extrairJson(raw);
-            if (json && json.nome) return json;
-        } catch (e) {}
-        return {
-            nome: "Rito Ancestral de " + titulo.substring(0, 20),
-            lore: "Uma conjuração ancestral extraída dos pergaminhos negros da biblioteca.",
-            custoAcao: 4,
-            custoSangue: 1200,
-            reqLevel: Math.max(1, iniciado.nivel || 1),
-            tipo: "pvp",
-            poderBase: Math.max(250, (iniciado.nivel || 1) * 80)
-        };
+            const prompt = `Crie um FEITIÇO JSON baseado neste grimório: "${titulo}". Texto: "${conteudo.substring(conteudo.length - 1500)}". JSON: { "nome": "Nome", "lore": "Frase.", "custoAcao": 5, "custoSangue": 2000, "reqLevel": 10, "tipo": "pvp", "poderBase": 1500 }`;
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON." }, { role: "user", content: prompt }], model: this.modelo, response_format: { type: "json_object" } });
+            return this._extrairJson(resposta.choices[0].message.content);
+        } catch (e) { return null; }
     }
 
     async forjarReliquiaDoManuscrito(iniciado, titulo, conteudo) {
+        if (!this.apiKey) return null;
         try {
-            const prompt = "Crie uma RELÍQUIA / ARMA MÍSTICA em JSON baseada neste texto esotérico: \"" + (conteudo || '').substring(0, 1000) + "\". Defina o Arquétipo RPG (Agressão, Ocultismo, Baluarte, Sanguessuga).\n" +
-"JSON EXATO: {\"nome\":\"Nome da Relíquia\",\"tipo\":\"arma\", \"arquetipo\": \"Ocultismo (Mago)\", \"bonusBaseCustom\": {\"vontade\": 15, \"gnose\": 120, \"magnetismo\": 20, \"densidade\": 10}}";
-            const raw = await this.chamarLLMResiliente([
-                { role: "system", content: "JSON APENAS. " + this.promptSupremo },
-                { role: "user", content: prompt }
-            ], { json: true, temperature: 0.8 });
-            const json = this._extrairJson(raw);
-            if (json && json.nome) return json;
-        } catch (e) {}
-        return {
-            nome: "Relíquia de " + titulo.substring(0, 20),
-            tipo: "arma",
-            arquetipo: "Ocultismo (Mago)",
-            bonusBaseCustom: { vontade: 10, gnose: 80, magnetismo: 15, densidade: 10 }
-        };
+            const prompt = `Crie uma arma em JSON baseada neste texto: "${conteudo.substring(0,1000)}". Defina o Arquétipo RPG (Agressão, Ocultismo, Baluarte, Sanguessuga).
+            JSON: {"nome":"Nome Épico","tipo":"arma", "arquetipo": "Ocultismo (Mago)", "bonusBaseCustom": {"vontade": 0, "gnose": 150, "magnetismo": 20, "densidade": 0}}`;
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON." }, { role: "user", content: prompt }], model: this.modelo, response_format: { type: "json_object" } });
+            return this._extrairJson(resposta.choices[0].message.content);
+        } catch (e) { return null; }
     }
 }
 
@@ -1232,7 +973,7 @@ class ShadowCore {
             'mestre_guerras': { id: 'mestre_guerras', titulo: 'Lâmina do Abismo', requisito: v => v.estatisticas.vitoriasPvP >= 10 },
             'lorde_supremo': { id: 'lorde_supremo', titulo: 'Senhor do Véu Rasgado', requisito: v => v.nivel >= 50 }
         };
-    }
+    } // <---- O ERRO ERA AQUI. ESTA CHAVE NÃO EXISTIA PARA FECHAR O CONSTRUTOR.
 
     // ==========================================
     // PILAR 4: SINERGIA GLOBAL: BUFFS DOS REINOS E CLÃS
@@ -2312,18 +2053,16 @@ class ShadowCore {
     }
 
     _salvarBancoDeDados() {
-        const col = this.collection || this.dbCollection;
-        if (!col) return Promise.resolve();
+        if (!this.dbCollection) return;
         const data = { 
             vampiros: this.vampiros, rebanho: this.rebanho, clans: this.clans, 
             leilaoP2P: this.leilaoP2P, leilaoIdCounter: this.leilaoIdCounter, 
             logs: this.logs, manuscritos: this.manuscritos, grimorioCustomizado: this.grimorioCustomizado,
             balancaCosmica: this.balancaCosmica, evocacaoAtiva: this.evocacaoAtiva,
             fendaAtiva: this.fendaAtiva, pactosAtivos: this.pactosAtivos, reliquiasCustomizadas: this.reliquiasCustomizadas,
-            historicoChat: this.historicoChat, reinos: this.reinos,
-            ultimaGravacao: new Date().toISOString()
+            historicoChat: this.historicoChat, reinos: this.reinos
         };
-        return col.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: data }, { upsert: true }).catch(e => console.error("Erro ao salvar no Atlas:", e.message));
+        this.dbCollection.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: data }, { upsert: true }).catch(e => console.error(e));
     }
     // ==========================================
     // MAGIA OCULTA: CRIPTOGRAFIA DO VÍNCULO ASTRAL
@@ -2668,33 +2407,28 @@ class ShadowCore {
         if (!v) return { erro: "Alma inexistente." };
         
         if (!v.talentosAtivos) v.talentosAtivos = [];
-        const nivelMinimo = 5;
-        if ((v.nivel || 1) < nivelMinimo) return { erro: "A Mente Abissal exige ao menos o Grau " + nivelMinimo + " para o Despertar Akáshico." };
-
-        let limiteTalentos = Math.max(1, Math.floor((v.nivel || 1) / 5) + (v.conquistas ? v.conquistas.length : 0));
-        if (v.talentosAtivos.length >= limiteTalentos) return { erro: "Atingiste o limite da tua Constelação (" + limiteTalentos + " talentos). Sobe mais de Grau ou obtém conquistas." };
+        let limiteTalentos = Math.max(1, Math.floor(v.nivel / 15) + (v.conquistas ? v.conquistas.length : 0));
         
-        let custoGts = 1500 + (v.talentosAtivos.length * 2000);
-        let custoFuria = 5 + (v.talentosAtivos.length * 5);
+        if (v.nivel < 15) return { erro: "A Mente Abissal ignora os fracos. Atinge o Grau 15." };
+        if (v.talentosAtivos.length >= limiteTalentos) return { erro: `Atingiste o limite da tua Constelação (${limiteTalentos} talentos). Sobe mais de Grau ou obtém conquistas.` };
+        
+        let custoGts = 5000 + (v.talentosAtivos.length * 5000);
+        let custoFuria = 10 + (v.talentosAtivos.length * 5);
 
-        if ((v.sangue || 0) < custoGts || (v.pontosAcao || 0) < custoFuria) {
-            return { erro: "O Selo Akáshico exige " + custoGts + " Gts e " + custoFuria + " Fúria." };
-        }
+        if (v.sangue < custoGts || v.pontosAcao < custoFuria) return { erro: `O Ritual exige ${custoGts} Gts e ${custoFuria} Fúria.` };
 
-        v.sangue -= custoGts;
-        v.pontosAcao -= custoFuria;
+        v.sangue -= custoGts; v.pontosAcao -= custoFuria;
         
         const talento = await this.oraculo.despertarHabilidadeUnica(v);
         if (!talento) {
-            v.sangue += custoGts;
-            v.pontosAcao += custoFuria;
-            return { erro: "O Abismo recusou a oferenda. Tenta novamente." };
+            v.sangue += custoGts; v.pontosAcao += custoFuria;
+            return { erro: "O Oráculo manteve-se em silêncio. Tenta novamente." };
         }
             
         v.talentosAtivos.push(talento);
-        this._registrarEventoEspecial('global', 'SELO AKÁSHICO DESPERTO', "A alma de " + v.nome + " ascendeu perante os mistérios antigos! Despertou o Selo Akáshico: [" + talento.nome + "]!", true);
+        this._registrarEventoEspecial('global', 'CONSTELAÇÃO EXPANDIDA', `A Essência de ${v.nome} mutacionou. Recebeu o poder ancestral: [${talento.nome}]!`, true);
         this._salvarBancoDeDados();
-        return { sucesso: true, talento, relato: "A Mente Abissal gravou o Selo [" + talento.nome + "] na tua essência: " + talento.desc };
+        return { sucesso: true, relato: `A Mente Abissal injetou [${talento.nome}] nas tuas veias: ${talento.desc}` };
     }
 
     async _registrarEventoEspecial(categoria, tipo, relatoOrig, global = true, contextoOculto = "Manifestação Sombria") {
@@ -3089,9 +2823,6 @@ class ShadowCore {
         }
 
         const atual = v.equipamentos[slotDestino];
-        if (atual && !atual.iconeMiniaturaSVG && typeof GeradorDeItensProcedural !== 'undefined') {
-            atual.iconeMiniaturaSVG = GeradorDeItensProcedural.gerarMiniaturaSVG(atual);
-        }
         v.equipamentos[slotDestino] = item; 
         v.bolsa.splice(itemIdx, 1); 
         if (atual) v.bolsa.push(atual);
@@ -3102,7 +2833,6 @@ class ShadowCore {
             sucesso: true, 
             relato: `Fundiste a tua carne com [${item.nome}] no slot ${slotDestino}.`,
             equipamento: v.equipamentos,
-            bolsa: v.bolsa,
             atributosTotais: v.atributosTotais,
             statsCombate: v.statsCombate
         };
@@ -3114,9 +2844,6 @@ class ShadowCore {
 
         if (!v.equipamentos || !v.equipamentos[slot]) return { erro: "Esta fenda astral já está vazia." };
         const item = v.equipamentos[slot];
-        if (!item.iconeMiniaturaSVG && typeof GeradorDeItensProcedural !== 'undefined') {
-            item.iconeMiniaturaSVG = GeradorDeItensProcedural.gerarMiniaturaSVG(item);
-        }
         v.equipamentos[slot] = null;
         v.bolsa.push(item);
         
@@ -3948,128 +3675,42 @@ class ShadowCore {
     async conversarComOraculo(vampiroId, mensagem) {
         const v = this.vampiros[vampiroId]; if(!v) return;
         let respostaIA = await this.oraculo.conversarNoChat(v, mensagem);
-        if (!respostaIA) return "O Abismo observa em silêncio absoluto.";
-
-        let efeitosExecutados = [];
-
-        // 1. DAR SANGUE (DAR_SANGUE ou GOTA)
-        const regexDarSangue = /\[DAR_SANGUE:\s*({.*?})\s*\]/is;
-        const matchDarSangue = respostaIA.match(regexDarSangue);
-        if (matchDarSangue) {
-            try {
-                const dados = JSON.parse(matchDarSangue[1].replace(/```json/gi, '').replace(/```/g, '').trim());
-                const qtd = parseInt(dados.qtd) || 300;
-                v.sangue = (v.sangue || 0) + qtd;
-                efeitosExecutados.push("🩸 +" + qtd + " Gts (" + (dados.motivo || 'concedidas pelo Mestre') + ")");
-                respostaIA = respostaIA.replace(regexDarSangue, '').trim();
-            } catch(e) { console.error("Erro parsing DAR_SANGUE:", e); }
-        } else {
-            const regexGota = /\[GOTA:\s*(\d+)\]/i;
-            const matchGota = respostaIA.match(regexGota);
-            if (matchGota && matchGota[1]) {
-                const qtdGota = parseInt(matchGota[1]);
-                v.sangue = (v.sangue || 0) + qtdGota;
-                efeitosExecutados.push("🩸 +" + qtdGota + " Gts injetadas nas tuas veias");
-                respostaIA = respostaIA.replace(regexGota, '').trim();
-            }
+        
+        // 1. INJETAR SANGUE NA VEIA SE A IA ORDENAR
+        const regexSangue = /\[GOTA:\s*(\d+)\]/i;
+        const matchSangue = respostaIA.match(regexSangue);
+        if (matchSangue && matchSangue[1]) {
+            const qtdGota = parseInt(matchSangue[1]);
+            v.sangue = (v.sangue || 0) + qtdGota;
+            respostaIA = respostaIA.replace(regexSangue, '').trim();
+            respostaIA += `\n\n*(A Mente Abissal injetou ${qtdGota} Gts nas tuas veias)*`;
+            if (global.io) global.io.to(`priv_${v.id}`).emit('tick');
         }
 
-        // 2. DAR ITEM / MATERIAIS
-        const regexDarItem = /\[DAR_ITEM:\s*({.*?})\s*\]/is;
-        const matchDarItem = respostaIA.match(regexDarItem);
-        if (matchDarItem) {
+        // 2. CONJURAR FENDA ASTRAL (BOSS NO CONCLAVE)
+        const regexFenda = /\[FENDA_ASTRAL:\s*({.*?})\s*\]/is;
+        const matchFenda = respostaIA.match(regexFenda);
+        if (matchFenda) {
             try {
-                const dados = JSON.parse(matchDarItem[1].replace(/```json/gi, '').replace(/```/g, '').trim());
-                const itemKey = dados.item || 'ferroNegro';
-                const qtd = parseInt(dados.qtd) || 1;
-                if (!v.materiais) v.materiais = { ferroNegro: 0, pedra: 0, mandragora: 0 };
-                if (!v.inventario) v.inventario = { anima: 0, cinzas: 0, vitae: 0, ectoplasma: 0, pedraAlma: 0 };
-
-                if (v.materiais[itemKey] !== undefined) {
-                    v.materiais[itemKey] = (v.materiais[itemKey] || 0) + qtd;
-                } else if (v.inventario[itemKey] !== undefined) {
-                    v.inventario[itemKey] = (v.inventario[itemKey] || 0) + qtd;
-                } else {
-                    v.materiais['ferroNegro'] = (v.materiais['ferroNegro'] || 0) + qtd;
-                }
-                efeitosExecutados.push("📦 +" + qtd + "x [" + (dados.nome || itemKey) + "] materializado na tua posse");
-                respostaIA = respostaIA.replace(regexDarItem, '').trim();
-            } catch(e) { console.error("Erro parsing DAR_ITEM:", e); }
-        }
-
-        // 3. CONJURAR DEMÔNIO / FENDA ASTRAL (BOSS NO CONCLAVE)
-        const regexDem = /\[CONJURAR_DEMONIO:\s*({.*?})\s*\]/is;
-        const matchDem = respostaIA.match(regexDem);
-        if (matchDem) {
-            try {
-                const dados = JSON.parse(matchDem[1].replace(/```json/gi, '').replace(/```/g, '').trim());
+                // Limpeza brutal caso o LLaMA coloque código Markdown
+                let fendaTxt = matchFenda[1].replace(/```json/gi, '').replace(/```/g, '').trim();
+                const dadosFenda = JSON.parse(fendaTxt);
+                
                 const fendaId = crypto.randomBytes(4).toString('hex');
-                const hpFinal = parseInt(dados.hp) || (Math.max(1, v.nivel || 1) * 1000);
-                const nomeDemonio = dados.nome || "Arauto Goétia Invocado";
-                this.fendaAtiva[fendaId] = {
-                    id: fendaId,
-                    nome: nomeDemonio,
-                    hpMax: hpFinal,
-                    hpAtual: hpFinal,
-                    dano: parseInt(dados.dano) || 120,
-                    loot: dados.loot || "pedraAlma",
-                    criador: v.nome
+                let hpFinal = parseInt(dadosFenda.hp) || (v.nivel * 500);
+                
+                this.fendaAtiva[fendaId] = { 
+                    id: fendaId, 
+                    nome: dadosFenda.nome || "Aberração Sem Nome", 
+                    hpMax: hpFinal, hpAtual: hpFinal, 
+                    dano: parseInt(dadosFenda.dano) || 100, 
+                    loot: dadosFenda.loot || "cinzas", 
+                    criador: v.nome 
                 };
-                efeitosExecutados.push("👹 DEMÔNIO CONJURADO NO CONCLAVE: [" + nomeDemonio + "]");
-                respostaIA = respostaIA.replace(regexDem, '').trim();
-                this._registrarEventoEspecial('global', 'CONJURAÇÃO DO MESTRE', "O Mestre das Sombras rasgou o Véu e manifestou o demônio [" + nomeDemonio + "] perante " + v.nome + "! Conclave em chamas!", true);
-            } catch(e) { console.error("Erro parsing CONJURAR_DEMONIO:", e); }
-        } else {
-            const regexFenda = /\[FENDA_ASTRAL:\s*({.*?})\s*\]/is;
-            const matchFenda = respostaIA.match(regexFenda);
-            if (matchFenda) {
-                try {
-                    let fendaTxt = matchFenda[1].replace(/```json/gi, '').replace(/```/g, '').trim();
-                    const dadosFenda = JSON.parse(fendaTxt);
-                    const fendaId = crypto.randomBytes(4).toString('hex');
-                    let hpFinal = parseInt(dadosFenda.hp) || ((v.nivel || 1) * 500);
-                    this.fendaAtiva[fendaId] = { 
-                        id: fendaId, 
-                        nome: dadosFenda.nome || "Aberração Sem Nome", 
-                        hpMax: hpFinal, hpAtual: hpFinal, 
-                        dano: parseInt(dadosFenda.dano) || 100, 
-                        loot: dadosFenda.loot || "cinzas", 
-                        criador: v.nome 
-                    };
-                    efeitosExecutados.push("🌌 FENDA DO CONCLAVE ABERTA: [" + this.fendaAtiva[fendaId].nome + "]");
-                    respostaIA = respostaIA.replace(regexFenda, '').trim();
-                    this._registrarEventoEspecial('global', 'A FENDA ABRIU', "A Malha rasgou-se! O Oráculo conjurou a entidade [" + this.fendaAtiva[fendaId].nome + "] a pedido de " + v.nome + "! Destruam-na no Conclave!", true);
-                } catch (e) { console.error("Falha ao injetar fenda.", e); }
-            }
-        }
-
-        // 4. CASTIGAR
-        const regexCastigo = /\[CASTIGAR:\s*({.*?})\s*\]/is;
-        const matchCastigo = respostaIA.match(regexCastigo);
-        if (matchCastigo) {
-            try {
-                const dados = JSON.parse(matchCastigo[1].replace(/```json/gi, '').replace(/```/g, '').trim());
-                const qtdDreno = parseInt(dados.qtd) || 200;
-                v.sangue = Math.max(0, (v.sangue || 0) - qtdDreno);
-                v.pontosAcao = Math.max(0, (v.pontosAcao || 0) - 5);
-                efeitosExecutados.push("⚡ CASTIGO DO MESTRE: -" + qtdDreno + " Gts e -5 Fúria (" + (dados.motivo || 'insolência') + ")");
-                respostaIA = respostaIA.replace(regexCastigo, '').trim();
-            } catch(e) { console.error("Erro parsing CASTIGAR:", e); }
-        }
-
-        // 5. REJEITAR
-        const regexRejeitar = /\[REJEITAR:\s*["']?(.*?)["']?\]/is;
-        const matchRejeitar = respostaIA.match(regexRejeitar);
-        if (matchRejeitar) {
-            respostaIA = respostaIA.replace(regexRejeitar, '').trim();
-        }
-
-        if (efeitosExecutados.length > 0) {
-            respostaIA += "\n\n*(Manifestação Oculta em Tempo Real: " + efeitosExecutados.join(' | ') + ")*";
-            if (global.io) {
-                global.io.to("priv_" + v.id).emit('tick');
-                global.io.emit('sync_geral');
-            }
+                
+                respostaIA = respostaIA.replace(regexFenda, '').trim();
+                this._registrarEventoEspecial('global', 'A FENDA ABRIU', `A Malha rasgou-se! O Oráculo conjurou a entidade [${this.fendaAtiva[fendaId].nome}] a pedido de ${v.nome}! Destruam-na no Conclave!`, true);
+            } catch (e) { console.error("Falha ao injetar fenda.", e, matchFenda[1]); }
         }
         
         this._salvarBancoDeDados(); 
@@ -4391,54 +4032,35 @@ class ShadowCore {
         const servo = v.servos.find(s => s.id === servoId);
         if (!servo) return { erro: "Servo não encontrado." };
 
-        let promptIA = "O Lorde Sombrio ordenou ao seu escravo morto-vivo: \"" + comandoTexto + "\".\n" +
-"Classifique a ordem EXATAMENTE em UMA destas categorias: \n" +
-"1. \"farmar_ouro\" (Se ele mandou buscar dinheiro, sangue, caçar)\n" +
-"2. \"farmar_recursos\" (Se ele mandou buscar materiais, anima, cinzas)\n" +
-"3. \"protocolo_ressurreicao\" (Se ele mandou prepararem-se para o reviver caso ele morra)\n" +
-"4. \"espionar_inimigos\" (Se mandou vigiar outros jogadores ou roubar influência)\n" +
-"5. \"forjar_armas\" (Se mandou construir equipamento ou relíquias)\n" +
-"6. \"idle\" (Qualquer outra coisa)\n\n" +
-"RETORNE APENAS UM JSON EXATO: {\"categoria\": \"farmar_ouro\", \"fala_do_servo\": \"Sim mestre, vou cumprir o seu desejo.\"}";
+        // 1. A IA da Mente Abissal interpreta a ordem em linguagem natural
+        let promptIA = `
+        O Lorde Sombrio ordenou ao seu escravo morto-vivo: "${comandoTexto}".
+        Classifique a ordem EXATAMENTE em UMA destas categorias: 
+        1. "farmar_ouro" (Se ele mandou buscar dinheiro, sangue, caçar)
+        2. "farmar_recursos" (Se ele mandou buscar materiais, anima, cinzas)
+        3. "protocolo_ressurreicao" (Se ele mandou prepararem-se para o reviver caso ele morra)
+        4. "espionar_inimigos" (Se mandou vigiar outros jogadores ou roubar influência)
+        5. "forjar_armas" (Se mandou construir equipamento ou relíquias)
+        6. "idle" (Qualquer outra coisa inútil)
+        
+        RETORNE APENAS UM JSON EXATO: {"categoria": "farmar_ouro", "fala_do_servo": "Sim mestre, vou cumprir o seu desejo."}
+        `;
 
         try {
-            const raw = await this.oraculo.chamarLLMResiliente([
-                { role: "system", content: "JSON APENAS. És a entidade que comanda os servos mortos-vivos." },
-                { role: "user", content: promptIA }
-            ], { json: true, temperature: 0.7 });
-            const intencao = this.oraculo._extrairJson(raw);
+            const resposta = await this.oraculo.groq.chat.completions.create({
+                messages: [{ role: "system", content: "JSON ESTRITO." }, { role: "user", content: promptIA }],
+                model: this.oraculo.modelo, response_format: { type: "json_object" }
+            });
+            const intencao = this._extrairJson(resposta.choices[0].message.content);
             
-            if (intencao && intencao.categoria) {
-                servo.ordemAtual = intencao.categoria;
-                servo.relato = intencao.fala_do_servo || "Sim, meu soberano.";
-                this._salvarBancoDeDados();
-                return { sucesso: true, relato: "[" + servo.nome + "]: \"" + servo.relato + "\" (Comando aceite: " + servo.ordemAtual + ")" };
-            }
-        } catch (e) {}
-
-        // Fallback inteligente baseado nas palavras-chave do comando
-        const txt = (comandoTexto || '').toLowerCase();
-        if (txt.includes('sangue') || txt.includes('ouro') || txt.includes('caçar') || txt.includes('dinheiro')) {
-            servo.ordemAtual = 'farmar_ouro';
-            servo.relato = "Farei sangrar os fracos para saciar o vosso tesouro.";
-        } else if (txt.includes('material') || txt.includes('cinza') || txt.includes('recurso') || txt.includes('pedra') || txt.includes('ferro')) {
-            servo.ordemAtual = 'farmar_recursos';
-            servo.relato = "Vou desenterrar os materiais das catacumbas.";
-        } else if (txt.includes('reviver') || txt.includes('vida') || txt.includes('morte') || txt.includes('ressurreição')) {
-            servo.ordemAtual = 'protocolo_ressurreicao';
-            servo.relato = "Permanecerei em vigília para reanimar a vossa essência se caíres.";
-        } else if (txt.includes('vigiar') || txt.includes('espionar') || txt.includes('inimigo')) {
-            servo.ordemAtual = 'espionar_inimigos';
-            servo.relato = "As minhas sombras seguirão os passos dos vossos rivais.";
-        } else if (txt.includes('forjar') || txt.includes('arma') || txt.includes('relíquia')) {
-            servo.ordemAtual = 'forjar_armas';
-            servo.relato = "Trabalharei o ferro negro na forja silenciosa.";
-        } else {
-            servo.ordemAtual = 'idle';
-            servo.relato = "Aguardando novas ordens do mestre.";
+            servo.ordemAtual = intencao.categoria;
+            servo.relato = intencao.fala_do_servo;
+            
+            this._salvarBancoDeDados();
+            return { sucesso: true, relato: `[${servo.nome}]: "${servo.relato}" (Comando aceite: ${servo.ordemAtual})` };
+        } catch (e) {
+            return { erro: "O servo não compreendeu a linguagem dos Antigos." };
         }
-        this._salvarBancoDeDados();
-        return { sucesso: true, relato: "[" + servo.nome + "]: \"" + servo.relato + "\" (Comando aceite: " + servo.ordemAtual + ")" };
     }
 
     coletarTributosServo(vampiroId, servoId) {

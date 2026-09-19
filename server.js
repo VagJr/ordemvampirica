@@ -8,6 +8,7 @@ const fs = require('fs');
 const TelegramBot = require('node-telegram-bot-api'); 
 const { MongoClient } = require('mongodb');
 const { ShadowCore, AstrolabioLunar } = require('./ShadowCore.js');
+const SocialCore = require('./SocialCore.js');
 const Lexicon = require('./LexiconSanguinis.js'); 
 
 const app = express();
@@ -26,10 +27,8 @@ const io = new Server(server, {
 global.io = io; 
 
 // ==========================================
-// CONFIGURAÇÕES DO SERVIDOR
-// ==========================================
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ""; 
-const MONGO_URI = process.env.MONGO_URI || ""; 
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://ordem:J6VBrGAT9qKSLwzS@cluster0.ubbpacg.mongodb.net/?retryWrites=true&w=majority"; 
 
 let bot = null;
 if(BOT_TOKEN && BOT_TOKEN.length > 10) {
@@ -55,7 +54,7 @@ function forcarSyncJogador(id) {
             
             if (v.clan !== 'Sangue Ralo' && core.clans[v.clan]) {
                 let clanInfo = JSON.parse(JSON.stringify(core.clans[v.clan]));
-                clanInfo.membrosObjetos = clanInfo.membros.map(mid => {
+                clanInfo.membrosObjetos = (clanInfo.membros || []).map(mid => {
                     return { id: mid, nome: core.vampiros[mid] ? core.vampiros[mid].nome : "Sombra Fragmentada" };
                 });
                 dados.clanData = clanInfo;
@@ -68,7 +67,7 @@ function forcarSyncJogador(id) {
             
             const senhor = v.senhor === 'O_PRIMORDIAL' ? null : core.vampiros[v.senhor];
             dados.dadosSenhor = senhor ? { nome: senhor.nome, titulo: senhor.tituloAtual, geracao: senhor.geracao } : { nome: "A Própria Noite", titulo: "Vazio Cósmico", geracao: 0 };
-            dados.dadosCrias = v.linhagem.map(cId => { const c = core.vampiros[cId]; return c ? { nome: c.nome, nivel: c.nivel, estado: c.estado } : null; }).filter(Boolean);
+            dados.dadosCrias = (v.linhagem || []).map(cId => { const c = core.vampiros[cId]; return c ? { nome: c.nome, nivel: c.nivel, estado: c.estado } : null; }).filter(Boolean);
 
             // CORREÇÃO: Puxar o cache do servidor atualizado
             const dadosCacheServidor = {
@@ -106,6 +105,7 @@ app.get('/api/build-info', (req, res) => {
 // BANCO DE DADOS INTEGRADO & MONGODB ATLAS
 // ==========================================
 const core = new ShadowCore();
+core.social = new SocialCore(core);
 const DB_FILE_PATH = path.join(__dirname, 'data', 'sanguinis_banco.json');
 
 function salvarBancoLocal() {
@@ -128,6 +128,10 @@ function salvarBancoLocal() {
             reliquiasCustomizadas: core.reliquiasCustomizadas || [],
             historicoChat: core.historicoChat || { global: [], clan: {}, privado: {} },
             reinos: core.reinos || {},
+            mundo2D: core.mundo2D ? core.mundo2D.salvarEstado() : null,
+            mercadoItens: core.mercadoItens || [],
+            mercadoIdCounter: core.mercadoIdCounter || 1,
+            social: core.social ? core.social.salvarEstado() : null,
             ultimaGravacao: new Date().toISOString()
         };
         const tempPath = DB_FILE_PATH + '.tmp';
@@ -146,6 +150,23 @@ function carregarBancoLocal() {
                 const doc = JSON.parse(raw);
                 if (doc.vampiros) core.vampiros = doc.vampiros;
                 if (doc.rebanho) core.rebanho = doc.rebanho;
+                // [EXPURGO DE TESTES]: Remove qualquer vítima residual de teste (Tesla)
+                if (core.rebanho) {
+                    for (const k of Object.keys(core.rebanho)) {
+                        const m = core.rebanho[k];
+                        if (m && (m.identificadorVisivel?.toLowerCase().includes('tesla') || m.dadosOsint?.nomeAstral?.toLowerCase().includes('tesla') || m.dadosOsint?.nomeReal?.toLowerCase().includes('tesla'))) {
+                            delete core.rebanho[k];
+                        }
+                    }
+                }
+                if (core.vampiros) {
+                    for (const vid in core.vampiros) {
+                        const v = core.vampiros[vid];
+                        if (v && v.alvosNosferatu) {
+                            v.alvosNosferatu = v.alvosNosferatu.filter(a => !a.nomeAstral?.toLowerCase().includes('tesla') && !a.nomeReal?.toLowerCase().includes('tesla') && !a.alvoId?.toLowerCase().includes('tesla'));
+                        }
+                    }
+                }
                 if (doc.clans) core.clans = doc.clans;
                 if (doc.leilaoP2P) core.leilaoP2P = doc.leilaoP2P;
                 if (doc.leilaoIdCounter) core.leilaoIdCounter = doc.leilaoIdCounter;
@@ -159,6 +180,10 @@ function carregarBancoLocal() {
                 if (doc.reliquiasCustomizadas) core.reliquiasCustomizadas = doc.reliquiasCustomizadas;
                 if (doc.historicoChat) core.historicoChat = doc.historicoChat;
                 if (doc.reinos) core.reinos = doc.reinos;
+                if (doc.mundo2D && core.mundo2D) core.mundo2D.carregarEstado(doc.mundo2D);
+                if (doc.mercadoItens) core.mercadoItens = doc.mercadoItens;
+                if (doc.mercadoIdCounter) core.mercadoIdCounter = doc.mercadoIdCounter;
+                if (doc.social && core.social) core.social.carregarEstado(doc.social);
                 if (typeof core._construirFuncoesCustomizadas === 'function' && core.grimorioCustomizado) {
                     Object.assign(core.grimorio, core._construirFuncoesCustomizadas(core.grimorioCustomizado));
                 }
@@ -179,27 +204,66 @@ async function inicializarServidor() {
     let mongoConectado = false;
     if (MONGO_URI) {
         try {
-            console.log("A conectar ao Monólito do MongoDB Atlas...");
-            const client = new MongoClient(MONGO_URI); await client.connect();
-            const db = client.db('sanguinis_db'); core.collection = db.collection('registos_akashicos');
+            console.log("🌌 A conectar ao Monólito do MongoDB Atlas...");
+            const client = new MongoClient(MONGO_URI);
+            await client.connect();
+            const db = client.db('sanguinis_db');
+            core.mongoClient = client;
+            core.collection = db.collection('registos_akashicos');
             const doc = await core.collection.findOne({ _id: 'MATRIZ_PRINCIPAL' });
             
-            if (doc) {
-                if (!carregouLocal || Object.keys(core.vampiros).length === 0) {
-                    core.vampiros = doc.vampiros || {}; core.rebanho = doc.rebanho || {}; core.clans = doc.clans || {};
-                    core.leilaoP2P = doc.leilaoP2P || []; core.leilaoIdCounter = doc.leilaoIdCounter || 1;
-                    core.logs = doc.logs || { global: [], caca: [], guerra: [] };
-                    core.manuscritos = doc.manuscritos || []; core.grimorioCustomizado = doc.grimorioCustomizado || {};
-                    core.balancaCosmica = doc.balancaCosmica || { tiamat: 0, seth: 0, regente: 'Equilíbrio' };
-                    core.evocacaoAtiva = doc.evocacaoAtiva || null; core.fendaAtiva = doc.fendaAtiva || {};
-                    core.pactosAtivos = doc.pactosAtivos || {}; core.reliquiasCustomizadas = doc.reliquiasCustomizadas || [];
-                    core.historicoChat = doc.historicoChat || { global: [], clan: {}, privado: {} };
-                    core.reinos = doc.reinos || {};
+            if (doc && Object.keys(doc.vampiros || {}).length > 0) {
+                core.vampiros = doc.vampiros || {};
+                core.rebanho = doc.rebanho || {};
+                core.clans = doc.clans || {};
+                core.leilaoP2P = doc.leilaoP2P || [];
+                core.leilaoIdCounter = doc.leilaoIdCounter || 1;
+                core.logs = doc.logs || { global: [], caca: [], guerra: [] };
+                core.manuscritos = doc.manuscritos || [];
+                core.grimorioCustomizado = doc.grimorioCustomizado || {};
+                core.balancaCosmica = doc.balancaCosmica || { tiamat: 0, seth: 0, regente: 'Equilíbrio' };
+                core.evocacaoAtiva = doc.evocacaoAtiva || null;
+                core.fendaAtiva = doc.fendaAtiva || {};
+                core.pactosAtivos = doc.pactosAtivos || {};
+                core.reliquiasCustomizadas = doc.reliquiasCustomizadas || [];
+                core.historicoChat = doc.historicoChat || { global: [], clan: {}, privado: {} };
+                core.reinos = doc.reinos || {};
+                if (doc.mundo2D && core.mundo2D) core.mundo2D.carregarEstado(doc.mundo2D);
+                if (doc.mercadoItens) core.mercadoItens = doc.mercadoItens;
+                if (doc.mercadoIdCounter) core.mercadoIdCounter = doc.mercadoIdCounter;
+                if (doc.social && core.social) core.social.carregarEstado(doc.social);
+                if (typeof core._construirFuncoesCustomizadas === 'function' && core.grimorioCustomizado) {
                     Object.assign(core.grimorio, core._construirFuncoesCustomizadas(core.grimorioCustomizado));
-                    salvarBancoLocal();
                 }
-                console.log("🦇 Almas carregadas da escuridão do Atlas.");
-            } else { console.log("🌑 O Abismo do Atlas está vazio."); }
+                salvarBancoLocal();
+                console.log(`🦇 [MONGODB ATLAS] Base viva carregada da escuridão do Atlas! (${Object.keys(core.vampiros).length} vampiros ativos)`);
+            } else {
+                console.log("🌑 [MONGODB ATLAS] Monólito inicial vazio. Realizando seeding dos dados locais para o Atlas...");
+                const seedData = {
+                    vampiros: core.vampiros || {},
+                    rebanho: core.rebanho || {},
+                    clans: core.clans || {},
+                    leilaoP2P: core.leilaoP2P || [],
+                    leilaoIdCounter: core.leilaoIdCounter || 1,
+                    logs: core.logs || { global: [], caca: [], guerra: [] },
+                    manuscritos: core.manuscritos || [],
+                    grimorioCustomizado: core.grimorioCustomizado || {},
+                    balancaCosmica: core.balancaCosmica || { tiamat: 0, seth: 0, regente: 'Equilíbrio' },
+                    evocacaoAtiva: core.evocacaoAtiva || null,
+                    fendaAtiva: core.fendaAtiva || {},
+                    pactosAtivos: core.pactosAtivos || {},
+                    reliquiasCustomizadas: core.reliquiasCustomizadas || [],
+                    historicoChat: core.historicoChat || { global: [], clan: {}, privado: {} },
+                    reinos: core.reinos || {},
+                    mundo2D: core.mundo2D ? core.mundo2D.salvarEstado() : null,
+                    mercadoItens: core.mercadoItens || [],
+                    mercadoIdCounter: core.mercadoIdCounter || 1,
+                    social: core.social ? core.social.salvarEstado() : null,
+                    ultimaGravacao: new Date().toISOString()
+                };
+                await core.collection.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: seedData }, { upsert: true });
+                console.log("✨ [MONGODB ATLAS] Seeding completo! Matriz primordial gravada no Atlas com sucesso.");
+            }
             mongoConectado = true;
         } catch (error) { console.error("❌ CRÍTICO: Falha na conexão MongoDB Atlas! ", error.message); }
     }
@@ -211,8 +275,31 @@ async function inicializarServidor() {
     core._salvarBancoDeDados = () => {
         salvarBancoLocal();
         if (mongoConectado && core.collection) {
-            const data = { vampiros: core.vampiros, rebanho: core.rebanho, clans: core.clans, leilaoP2P: core.leilaoP2P, leilaoIdCounter: core.leilaoIdCounter, logs: core.logs, manuscritos: core.manuscritos, grimorioCustomizado: core.grimorioCustomizado, balancaCosmica: core.balancaCosmica, evocacaoAtiva: core.evocacaoAtiva, fendaAtiva: core.fendaAtiva, pactosAtivos: core.pactosAtivos, reliquiasCustomizadas: core.reliquiasCustomizadas, historicoChat: core.historicoChat, reinos: core.reinos };
-            core.collection.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: data }, { upsert: true }).catch(console.error);
+            const data = {
+                vampiros: core.vampiros,
+                rebanho: core.rebanho,
+                clans: core.clans,
+                leilaoP2P: core.leilaoP2P,
+                leilaoIdCounter: core.leilaoIdCounter,
+                logs: core.logs,
+                manuscritos: core.manuscritos,
+                grimorioCustomizado: core.grimorioCustomizado,
+                balancaCosmica: core.balancaCosmica,
+                evocacaoAtiva: core.evocacaoAtiva,
+                fendaAtiva: core.fendaAtiva,
+                pactosAtivos: core.pactosAtivos,
+                reliquiasCustomizadas: core.reliquiasCustomizadas,
+                historicoChat: core.historicoChat,
+                reinos: core.reinos,
+                mundo2D: core.mundo2D ? core.mundo2D.salvarEstado() : null,
+                mercadoItens: core.mercadoItens || [],
+                mercadoIdCounter: core.mercadoIdCounter || 1,
+                social: core.social ? core.social.salvarEstado() : null,
+                ultimaGravacao: new Date().toISOString()
+            };
+            core.collection.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: data }, { upsert: true }).catch(err => {
+                console.error("❌ Falha ao sincronizar com MongoDB Atlas:", err.message);
+            });
         }
     };
 
@@ -1471,8 +1558,404 @@ app.post('/api/combate/action', async (req, res) => {
 // --- INVENTÁRIO, MAGIA E AVALIAÇÃO ---
 // --- INVENTÁRIO, MAGIA E AVALIAÇÃO ---
 app.post('/api/atributos/distribuir', (req, res) => { try { const r = core.distribuirAtributos(req.body.id, req.body.atributo); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
-app.post('/api/inventario/equipar', (req, res) => { try { const r = core.equiparReliquia(req.body.id, req.body.reliquiaId); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/inventario/equipar', (req, res) => { try { const r = core.equiparReliquia(req.body.id, req.body.reliquiaId, req.body.slot); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/inventario/equipar_slot', (req, res) => { try { const r = core.equiparReliquia(req.body.id, req.body.itemId || req.body.reliquiaId, req.body.slot); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.post('/api/inventario/desequipar', (req, res) => { try { const r = core.desequiparReliquia(req.body.id, req.body.slot); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/inventario/desequipar_slot', (req, res) => { try { const r = core.desequiparReliquia(req.body.id, req.body.slot); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
+app.post('/api/craft/forjar', (req, res) => { try { const r = core.forjarEquipamentoProcedural(req.body.id, req.body.slotTipo || 'armaPrincipal'); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"A forja falhou."}); } });
+
+// --- MERCADO P2P DE ITENS ---
+app.get('/api/mercado/itens', (req, res) => { try { res.json({ sucesso: true, itens: core.listarMercadoItens() }); } catch(e) { res.status(500).json({ erro: "Erro ao carregar mercado." }); } });
+app.post('/api/mercado/anunciar', (req, res) => { try { const r = core.anunciarItemMercado(req.body.id, req.body.itemId, req.body.precoGts); if(r.sucesso) { forcarSyncJogador(req.body.id); io.emit('mercado_update', core.listarMercadoItens()); } res.json(r); } catch(e) { res.status(500).json({ erro: "Falha ao anunciar." }); } });
+app.post('/api/mercado/comprar', (req, res) => { try { const r = core.comprarItemMercado(req.body.id, req.body.anuncioId); if(r.sucesso) { forcarSyncJogador(req.body.id); io.emit('mercado_update', core.listarMercadoItens()); } res.json(r); } catch(e) { res.status(500).json({ erro: "Falha na compra." }); } });
+app.post('/api/mercado/cancelar', (req, res) => { try { const r = core.cancelarAnuncioItem(req.body.id, req.body.anuncioId); if(r.sucesso) { forcarSyncJogador(req.body.id); io.emit('mercado_update', core.listarMercadoItens()); } res.json(r); } catch(e) { res.status(500).json({ erro: "Falha ao cancelar anúncio." }); } });
+
+// --- PODERES AKÁSHICOS NO COMBATE E CAMPO ---
+app.post('/api/combate/usar_habilidade_akashica', (req, res) => { try { const r = core.usarPoderAkashicoNoCombate(req.body.id, req.body.habilidadeId); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e) { res.status(500).json({ erro: "Falha ao canalizar feitiço." }); } });
+app.post('/api/habilidade/usar_campo', (req, res) => { try { const r = core.usarPoderCampo(req.body.id, req.body.habilidadeId); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e) { res.status(500).json({ erro: "Falha na invocação de campo." }); } });
+
+// --- MUNDO ABERTO 2D SANDBOX & MINIONS ---
+app.get('/api/mundo2d/estado', (req, res) => {
+    try {
+        if (!core.mundo2D) return res.status(500).json({ erro: "Mundo 2D adormecido." });
+        res.json({
+            sucesso: true,
+            largura: core.mundo2D.largura,
+            altura: core.mundo2D.altura,
+            grid: core.mundo2D.grid,
+            estruturas: core.mundo2D.estruturas,
+            minions: core.mundo2D.minions,
+            nosRecursos: core.mundo2D.nosRecursos,
+            monstros: core.mundo2D.monstros,
+            mortais: core.mundo2D.mortais,
+            landmarks: core.mundo2D.landmarks,
+            jogadores: core.mundo2D.jogadores,
+            worldBoss: core.mundo2D.worldBoss,
+            falasProximidade: core.social ? core.social.mensagensProximidade2D : []
+        });
+    } catch(e) { res.status(500).json({ erro: "Erro ao ler matriz do mundo 2D." }); }
+});
+
+app.post('/api/mundo2d/entrar', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if (!v) return res.status(404).json({ erro: "Vampiro não encontrado." });
+        const result = core.mundo2D.entrarNoMundo(v);
+        io.to('mundo2d').emit('world2d_player_joined', result.jogador);
+        res.json({ sucesso: true, ...result });
+    } catch(e) { res.status(500).json({ erro: "Falha ao entrar no plano 2D." }); }
+});
+
+app.post('/api/mundo2d/mover', (req, res) => {
+    try {
+        const result = core.mundo2D.moverJogador(req.body.id, req.body.dx, req.body.dy);
+        if (result.sucesso) {
+            io.to('mundo2d').emit('world2d_player_moved', { id: req.body.id, x: result.x, y: result.y, jogador: result.jogador });
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha no deslocamento astral." }); }
+});
+
+app.post('/api/mundo2d/construir', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if (!v) return res.status(404).json({ erro: "Invocador não encontrado." });
+        const result = core.mundo2D.construirEstrutura(v, req.body.tipoEstrutura, req.body.x, req.body.y);
+        if (result.sucesso) {
+            forcarSyncJogador(req.body.id);
+            io.to('mundo2d').emit('world2d_structure_built', result.estrutura);
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao assentar fundação mágica." }); }
+});
+
+app.post('/api/mundo2d/demolir', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if (!v) return res.status(404).json({ erro: "Invocador não encontrado." });
+        const result = core.mundo2D.demolirEstrutura(v, req.body.estruturaId);
+        if (result.sucesso) {
+            io.to('mundo2d').emit('world2d_structure_demolished', { id: req.body.estruturaId });
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha na demolição." }); }
+});
+
+app.post('/api/mundo2d/recrutar_minion', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if (!v) return res.status(404).json({ erro: "Mestre não encontrado." });
+        const result = core.mundo2D.recrutarMinionMundo(v, req.body.tipo || 'mineiro');
+        if (result.sucesso) {
+            forcarSyncJogador(req.body.id);
+            io.to('mundo2d').emit('world2d_minion_spawned', result.minion);
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao animar minion." }); }
+});
+
+app.post('/api/mundo2d/ordenar_minion', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if (!v) return res.status(404).json({ erro: "Mestre não encontrado." });
+        const result = core.mundo2D.ordenarMinion(v, req.body.minionId, req.body.tarefa, req.body.targetX, req.body.targetY);
+        if (result.sucesso) {
+            io.to('mundo2d').emit('world2d_minion_updated', result.minion);
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha na transmissão da ordem mental." }); }
+});
+
+app.post('/api/mundo2d/coletar', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if (!v) return res.status(404).json({ erro: "Colhedor não encontrado." });
+        const result = core.mundo2D.coletarNoMundo(v, req.body.x, req.body.y);
+        if (result.sucesso) {
+            forcarSyncJogador(req.body.id);
+            io.to('mundo2d').emit('world2d_resource_updated', result.no);
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao drenar nó de recursos." }); }
+});
+
+app.post('/api/mundo2d/atacar_mob', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if (!v) return res.status(404).json({ erro: "Guerreiro não encontrado." });
+        const result = core.mundo2D.atacarMonstroMundo(v, req.body.mobId);
+        if (result.sucesso) {
+            forcarSyncJogador(req.body.id);
+            io.to('mundo2d').emit('world2d_mob_attacked', { id: req.body.id, mobId: req.body.mobId, resultado: result });
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao golpear a fera." }); }
+});
+
+app.post('/api/mundo2d/morder_mortal', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if (!v) return res.status(404).json({ erro: "Predador não encontrado." });
+        const result = core.mundo2D.morderMortalMundo(v, req.body.mortalId);
+        if (result.sucesso) {
+            forcarSyncJogador(req.body.id);
+            io.to('mundo2d').emit('world2d_mortal_bitten', { id: req.body.id, mortalId: req.body.mortalId, resultado: result });
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao cravar as presas." }); }
+});
+
+app.post('/api/mundo2d/usar_poder_area', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if (!v) return res.status(404).json({ erro: "Conjurador não encontrado." });
+        const result = core.mundo2D.usarPoderAreaMundo(v, req.body.habilidadeId, req.body.x, req.body.y);
+        if (result.sucesso) {
+            forcarSyncJogador(req.body.id);
+            io.to('mundo2d').emit('world2d_area_spell', { id: req.body.id, x: req.body.x, y: req.body.y, resultado: result });
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha na detonação akáshica." }); }
+});
+
+
+// ==========================================
+// CAMADA SOCIAL, CO-OP & MULTIPLAYER ONLINE
+// ==========================================
+
+// --- BOSS MUNDIAL 2D ---
+app.post('/api/mundo2d/atacar_boss', (req, res) => {
+    try {
+        const v = core.vampiros[req.body.id];
+        if (!v) return res.status(404).json({ erro: "Guerreiro não encontrado." });
+        const result = core.mundo2D.atacarWorldBoss(v);
+        if (result.sucesso) {
+            forcarSyncJogador(req.body.id);
+            io.to('mundo2d').emit('world2d_boss_hit', { id: req.body.id, resultado: result });
+        }
+        res.json(result);
+    } catch(e) { res.status(500).json({ erro: "Falha ao atacar Chefe Mundial." }); }
+});
+
+// --- COMITIVAS DA NOITE (PARTY CO-OP) ---
+app.post('/api/social/comitiva/criar', (req, res) => {
+    try {
+        const r = core.social.criarComitiva(req.body.id, req.body.nome);
+        if (r.sucesso) {
+            forcarSyncJogador(req.body.id);
+            io.emit('social_party_update', { liderId: req.body.id, comitiva: r.comitiva });
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro ao criar comitiva." }); }
+});
+
+app.post('/api/social/comitiva/convidar', (req, res) => {
+    try {
+        const r = core.social.convidarParaComitiva(req.body.id, req.body.convidadoId);
+        if (r.sucesso) {
+            io.emit('social_party_invite', { convidadoId: req.body.convidadoId, convite: r });
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro ao convidar para comitiva." }); }
+});
+
+app.post('/api/social/comitiva/aceitar', (req, res) => {
+    try {
+        const r = core.social.aceitarConviteComitiva(req.body.id, req.body.comitivaId);
+        if (r.sucesso) {
+            forcarSyncJogador(req.body.id);
+            io.emit('social_party_update', { comitivaId: req.body.comitivaId, comitiva: r.comitiva });
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro ao aceitar comitiva." }); }
+});
+
+app.post('/api/social/comitiva/sair', (req, res) => {
+    try {
+        const r = core.social.sairDaComitiva(req.body.id);
+        if (r.sucesso) {
+            forcarSyncJogador(req.body.id);
+            io.emit('social_party_update', { membroSaiu: req.body.id });
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro ao sair da comitiva." }); }
+});
+
+app.get('/api/social/comitiva/status', (req, res) => {
+    try {
+        const c = core.social.obterComitivaDoJogador(req.query.id);
+        res.json({ sucesso: true, comitiva: core.social.formatarComitiva(c) });
+    } catch(e) { res.status(500).json({ erro: "Erro ao obter status da comitiva." }); }
+});
+
+// --- VÍNCULOS DE SANGUE (BLOOD BONDS) ---
+app.post('/api/social/vinculo/forjar', (req, res) => {
+    try {
+        const r = core.social.forjarVinculoSangue(req.body.id, req.body.parceiroId);
+        if (r.sucesso) {
+            forcarSyncJogador(req.body.id);
+            forcarSyncJogador(req.body.parceiroId);
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro ao forjar vínculo." }); }
+});
+
+app.post('/api/social/vinculo/transfusao', (req, res) => {
+    try {
+        const r = core.social.transfusaoEmergencial(req.body.id, req.body.parceiroId, req.body.quantiaGts);
+        if (r.sucesso) {
+            forcarSyncJogador(req.body.id);
+            forcarSyncJogador(req.body.parceiroId);
+            io.emit('social_transfusao', { doadorId: req.body.id, receptorId: req.body.parceiroId, resultado: r });
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro na transfusão vital." }); }
+});
+
+// --- MURAL DE CONTRATOS & MERCENÁRIOS ---
+app.get('/api/social/contratos/listar', (req, res) => {
+    try {
+        res.json({ sucesso: true, contratos: core.social.listarContratos() });
+    } catch(e) { res.status(500).json({ erro: "Erro ao listar contratos." }); }
+});
+
+app.post('/api/social/contratos/publicar', (req, res) => {
+    try {
+        const { id, tipo, titulo, descricao, recompensaGts, requisito } = req.body;
+        const r = core.social.publicarContrato(id, tipo, titulo, descricao, recompensaGts, requisito);
+        if (r.sucesso) {
+            forcarSyncJogador(id);
+            io.emit('social_contratos_update', core.social.listarContratos());
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro ao publicar contrato." }); }
+});
+
+app.post('/api/social/contratos/aceitar', (req, res) => {
+    try {
+        const r = core.social.aceitarContrato(req.body.id, req.body.contratoId);
+        if (r.sucesso) {
+            io.emit('social_contratos_update', core.social.listarContratos());
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro ao aceitar contrato." }); }
+});
+
+app.post('/api/social/contratos/cumprir', (req, res) => {
+    try {
+        const r = core.social.cumprirContrato(req.body.id, req.body.contratoId);
+        if (r.sucesso) {
+            forcarSyncJogador(req.body.id);
+            io.emit('social_contratos_update', core.social.listarContratos());
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro ao cumprir contrato." }); }
+});
+
+// --- TROCA DIRETA SEGURA P2P (TRADE WINDOW) ---
+app.post('/api/social/trade/iniciar', (req, res) => {
+    try {
+        const r = core.social.iniciarTroca(req.body.id, req.body.alvoId);
+        if (r.sucesso) {
+            io.emit('social_trade_invite', { alvoId: req.body.alvoId, sessao: r.sessao });
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro ao iniciar troca." }); }
+});
+
+app.post('/api/social/trade/ofertar', (req, res) => {
+    try {
+        const r = core.social.atualizarOfertaTroca(req.body.sessaoId, req.body.id, req.body.itemIds, req.body.gts);
+        if (r.sucesso) {
+            io.emit('social_trade_update', r.sessao);
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro ao ofertar na troca." }); }
+});
+
+app.post('/api/social/trade/travar', (req, res) => {
+    try {
+        const r = core.social.travarOfertaTroca(req.body.sessaoId, req.body.id);
+        if (r.sucesso) {
+            io.emit('social_trade_update', r.sessao);
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro ao travar oferta." }); }
+});
+
+app.post('/api/social/trade/confirmar', (req, res) => {
+    try {
+        const r = core.social.confirmarTroca(req.body.sessaoId, req.body.id);
+        if (r.sucesso) {
+            if (r.concluida) {
+                forcarSyncJogador(req.body.id);
+                io.emit('social_trade_complete', { sessaoId: req.body.sessaoId, relato: r.relato });
+            } else {
+                io.emit('social_trade_update', r.sessao);
+            }
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro ao confirmar troca." }); }
+});
+
+// --- GRANDE CALDEIRÃO DA EGRÉGORA ---
+app.get('/api/social/caldeirao/status', (req, res) => {
+    try {
+        res.json({ sucesso: true, ...core.social.obterStatusCaldeirao() });
+    } catch(e) { res.status(500).json({ erro: "Erro ao obter status do caldeirão." }); }
+});
+
+app.post('/api/social/caldeirao/doar', (req, res) => {
+    try {
+        const r = core.social.doarParaCaldeirao(req.body.id, req.body.quantiaGts);
+        if (r.sucesso) {
+            forcarSyncJogador(req.body.id);
+            io.emit('social_caldeirao_update', core.social.obterStatusCaldeirao());
+            if (r.eclipseAtivado) {
+                io.emit('social_eclipse_iniciado', { ativadoPor: req.body.id, relato: r.relato });
+            }
+        }
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "Erro na doação ao Caldeirão." }); }
+});
+
+// --- PROXIMIDADE 2D CHAT & JOGADORES ONLINE ---
+app.post('/api/social/proximidade/falar', (req, res) => {
+    try {
+        const msg = core.social.adicionarFalaProximidade(req.body.id, req.body.texto);
+        if (msg) {
+            io.to('mundo2d').emit('world2d_chat_bubble', msg);
+            res.json({ sucesso: true, msg });
+        } else {
+            res.status(400).json({ erro: "Mensagem inválida." });
+        }
+    } catch(e) { res.status(500).json({ erro: "Falha na fala astral." }); }
+});
+
+app.get('/api/social/jogadores_online', (req, res) => {
+    try {
+        const agora = Date.now();
+        const lista = Object.values(core.vampiros).map(v => {
+            const pos2D = core.mundo2D ? core.mundo2D.jogadores[v.id] : null;
+            const comitiva = core.social ? core.social.obterComitivaDoJogador(v.id) : null;
+            return {
+                id: v.id,
+                nome: v.nome,
+                raca: v.raca,
+                clan: v.clan,
+                nivel: v.nivel,
+                hpAtual: v.hpAtual,
+                hpMax: v.hpMax,
+                pos2D: pos2D ? { x: pos2D.x, y: pos2D.y, zona: core.mundo2D.obterZonaNome(pos2D.x, pos2D.y) } : null,
+                comitivaNome: comitiva ? comitiva.nome : null,
+                isLiderComitiva: comitiva ? comitiva.liderId === v.id : false,
+                temVinculoComigo: (v.vinculosSangue || []).some(el => el.parceiroId === req.query.meuId)
+            };
+        });
+        res.json({ sucesso: true, jogadores: lista });
+    } catch(e) { res.status(500).json({ erro: "Erro ao listar jogadores." }); }
+});
+
 app.post('/api/inventario/aprimorar', (req, res) => { try { const r = core.aprimorarEquipamento(req.body.id, req.body.slot); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
 app.post('/api/perfil/despertar', async (req, res) => { try { const r = await core.despertarTalento(req.body.id); if(r.sucesso) forcarSyncJogador(req.body.id); res.json(r); } catch(e){ res.status(500).json({erro:"A Mente falhou."}); } });
@@ -1941,6 +2424,69 @@ io.on('connection', (socket) => {
             socket.emit('dungeon_combat_end', { vitoria: false, msg: result.erro });
         }
     });
+
+    // ==========================================
+    // SOCKET.IO: MUNDO ABERTO 2D SANDBOX EM TEMPO REAL
+    // ==========================================
+    socket.on('world2d_join', (dados) => {
+        socket.join('mundo2d');
+        if (dados && dados.id && core.vampiros[dados.id] && core.mundo2D) {
+            const v = core.vampiros[dados.id];
+            const init = core.mundo2D.entrarNoMundo(v);
+            socket.emit('world2d_init', init);
+            socket.to('mundo2d').emit('world2d_player_joined', init.jogador);
+        }
+    });
+
+    socket.on('world2d_move', (dados) => {
+        if (!core.mundo2D || !dados || !dados.id) return;
+        const res = core.mundo2D.moverJogador(dados.id, dados.dx, dados.dy);
+        if (res.sucesso) {
+            socket.emit('world2d_move_success', res);
+            io.to('mundo2d').emit('world2d_player_moved', { id: dados.id, x: res.x, y: res.y, jogador: res.jogador });
+        } else {
+            socket.emit('world2d_msg', { erro: res.erro });
+        }
+    });
+
+    socket.on('world2d_build', (dados) => {
+        if (!core.mundo2D || !dados || !dados.id) return;
+        const v = core.vampiros[dados.id];
+        if (!v) return;
+        const res = core.mundo2D.construirEstrutura(v, dados.tipoEstrutura, dados.x, dados.y);
+        if (res.sucesso) {
+            forcarSyncJogador(v.id);
+            io.to('mundo2d').emit('world2d_structure_built', res.estrutura);
+            socket.emit('world2d_msg', { msg: res.relato });
+        } else {
+            socket.emit('world2d_msg', { erro: res.erro });
+        }
+    });
+
+    socket.on('world2d_minion_order', (dados) => {
+        if (!core.mundo2D || !dados || !dados.id) return;
+        const v = core.vampiros[dados.id];
+        if (!v) return;
+        const res = core.mundo2D.ordenarMinion(v, dados.minionId, dados.tarefa, dados.targetX, dados.targetY);
+        if (res.sucesso) {
+            io.to('mundo2d').emit('world2d_minion_updated', res.minion);
+            socket.emit('world2d_msg', { msg: res.relato });
+        }
+    });
+
+    socket.on('world2d_gather', (dados) => {
+        if (!core.mundo2D || !dados || !dados.id) return;
+        const v = core.vampiros[dados.id];
+        if (!v) return;
+        const res = core.mundo2D.coletarNoMundo(v, dados.x, dados.y);
+        if (res.sucesso) {
+            forcarSyncJogador(v.id);
+            io.to('mundo2d').emit('world2d_resource_updated', res.no);
+            socket.emit('world2d_msg', { msg: res.relato });
+        } else {
+            socket.emit('world2d_msg', { erro: res.erro });
+        }
+    });
 	
 	// BLINDAGEM DO CHAT NO SERVER.JS
     socket.on('enviar_mensagem', async (dados) => {
@@ -1953,24 +2499,37 @@ io.on('connection', (socket) => {
         
         io.to(dados.canal).emit('nova_mensagem', msgObjeto);
 
-        // IA Interagindo:
-        if (dados.canal === 'global' && Math.random() > 0.5) {
+        // IA MESTRE / CONSCIÊNCIA ABISSAL INTERAGINDO:
+        const txtEnv = (dados.texto || '').toLowerCase();
+        if (dados.canal === 'global' && (txtEnv.includes('mestre') || txtEnv.includes('oráculo') || txtEnv.includes('oraculo') || txtEnv.includes('abismo') || Math.random() > 0.6)) {
             const v = Object.values(core.vampiros).find(vam => vam.nome === dados.autor);
             if(v) {
-                const respostaIA = await core.oraculo.interagirChat(dados.texto, v);
-                if(respostaIA) {
-                    setTimeout(() => {
-                        const msgIA = { autor: "Lumia (Mente Abissal)", texto: respostaIA, hora: new Date().toLocaleTimeString(), canal: 'global' };
-                        core.logs['global'].push(msgIA);
-                        io.to('global').emit('nova_mensagem', msgIA);
-                    }, 2000);
-                }
+                try {
+                    const respostaIA = await core.conversarComOraculo(v.id, dados.texto);
+                    if(respostaIA) {
+                        setTimeout(() => {
+                            const autorIA = txtEnv.includes('mestre') ? '👑 MESTRE (A Consciência Abissal)' : '👁️ MENTE ABISSAL';
+                            const msgIA = { autor: autorIA, texto: respostaIA, hora: new Date().toLocaleTimeString(), canal: 'global' };
+                            core.logs['global'].push(msgIA);
+                            if (core.historicoChat?.global) {
+                                core.historicoChat.global.push(msgIA);
+                                if (core.historicoChat.global.length > 50) core.historicoChat.global.shift();
+                            }
+                            io.to('global').emit('nova_mensagem', msgIA);
+                            io.emit('sync_geral');
+                        }, 1200);
+                    }
+                } catch(e) {}
             }
         }
     });
 
     const registrarEEnviarChat = (canal, payload, emitTarget) => {
-        if (canal === 'global') { core.historicoChat.global.push(payload); if(core.historicoChat.global.length > 50) core.historicoChat.global.shift(); }
+        if (canal === 'global') { 
+            if (!core.historicoChat.global) core.historicoChat.global = [];
+            core.historicoChat.global.push(payload); 
+            if(core.historicoChat.global.length > 50) core.historicoChat.global.shift(); 
+        }
         io.to(emitTarget).emit('nova_mensagem', { canal, ...payload });
         core._salvarBancoDeDados();
     };
@@ -1984,17 +2543,18 @@ io.on('connection', (socket) => {
             socket.emit('nova_mensagem', { canal: 'privado', autor: `[Sussurro para ${dados.destinoNome}]`, texto: dados.texto, hora: payload.hora });
         }
 
-        const txt = dados.texto.toLowerCase();
-        if (txt.includes('oráculo') || txt.includes('abismo') || txt.includes('mestre') || txt.includes('trevas') || txt.includes('ia')) {
+        const txt = (dados.texto || '').toLowerCase();
+        if (txt.includes('oráculo') || txt.includes('oraculo') || txt.includes('abismo') || txt.includes('mestre') || txt.includes('trevas') || txt.includes('ia') || txt.includes('@mestre')) {
             try {
                 const respostaIA = await core.conversarComOraculo(dados.remetenteId, dados.texto);
                 if (respostaIA) {
-                    const payloadIA = { autor: `👁️ MENTE ABISSAL`, texto: respostaIA, hora: new Date().toLocaleTimeString() };
+                    const autorIA = txt.includes('mestre') ? '👑 MESTRE (A Consciência Abissal)' : '👁️ MENTE ABISSAL';
+                    const payloadIA = { autor: autorIA, texto: respostaIA, hora: new Date().toLocaleTimeString() };
                     setTimeout(() => { 
                         if (dados.canal === 'global') registrarEEnviarChat('global', payloadIA, 'global');
                         else if (dados.canal === 'clan') io.to(`clan_${dados.clanNome}`).emit('nova_mensagem', { canal: 'clan', ...payloadIA });
                         io.emit('sync_geral'); 
-                    }, 1500);
+                    }, 1200);
                 }
             } catch(e) { }
         }

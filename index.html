@@ -708,7 +708,89 @@
         .chat-container { height: 320px; background: #070304; border: 1px solid #291014; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; border-left: 3px solid var(--sangue); border-radius: 4px; }
         .chat-msg { background: #0e0507; padding: 10px; border-left: 2px solid #555; font-size: 0.95em; word-wrap: break-word; border-radius: 2px; }
         .chat-msg.ia { border-color: var(--ouro); background: #1a1000; color: #ffebcc; font-style: italic;}
+        .chat-msg.mestre { border-left: 3px solid var(--ouro); background: linear-gradient(90deg, rgba(35, 15, 5, 0.95) 0%, rgba(18, 8, 10, 0.9) 100%); color: #ffe0a3; box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); font-style: italic; border-radius: 4px; padding: 12px; }
         .chat-autor { font-weight: bold; color: var(--ouro); margin-right: 5px; font-family: 'Cinzel', serif;}
+
+        /* CRÔNICAS E PROFECIAS GLOBAIS */
+        .log-box {
+            background: linear-gradient(180deg, #090305 0%, #060203 100%);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 12px;
+            max-height: 480px;
+            min-height: 260px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.9);
+            scroll-behavior: smooth;
+        }
+        .log-item {
+            background: rgba(18, 6, 9, 0.85);
+            border: 1px solid rgba(138, 3, 3, 0.25);
+            border-left: 3px solid var(--sangue);
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 0.92em;
+            line-height: 1.45;
+            color: #d8cbc7;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .log-item:hover {
+            background: rgba(30, 8, 14, 0.95);
+            border-left-color: var(--ouro);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        .log-tipo {
+            font-family: 'Cinzel', serif;
+            font-weight: bold;
+            font-size: 0.82em;
+            letter-spacing: 0.8px;
+            color: var(--ouro);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-transform: uppercase;
+        }
+        .profecias-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, #180509 0%, #100305 100%);
+            border: 1px solid var(--ouro-sombra);
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            gap: 10px;
+        }
+        .profecias-filtro-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .profecias-pill {
+            background: #140407;
+            border: 1px solid var(--panel-border);
+            color: var(--text-muted);
+            font-family: 'Cinzel', serif;
+            font-size: 0.75em;
+            padding: 5px 12px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .profecias-pill:hover, .profecias-pill.active {
+            background: var(--sangue);
+            color: #fff;
+            border-color: var(--ouro);
+            box-shadow: 0 0 10px rgba(255, 30, 47, 0.4);
+        }
 
         #inspect-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0a0204; border: 2px solid var(--ouro); padding: 22px; box-shadow: 0 0 50px #000, inset 0 0 20px var(--sangue); z-index: 1000009; width: 320px; max-width: 90%; text-align: center; border-radius: 4px; }
         .inspect-title { font-family: 'Cinzel', serif; color: var(--ouro); font-size: 1.3em; border-bottom: 1px dashed #555; padding-bottom: 5px; margin-bottom: 10px;}
@@ -1043,6 +1125,276 @@
             border-color: var(--magia);
             box-shadow: 0 0 10px rgba(147, 51, 234, 0.4);
         }
+        /* --- MEGAPACK RPG: PAPERDOLL 8 SLOTS & MUNDO 2D --- */
+        .paperdoll-grid {
+            display: grid;
+            grid-template-columns: 1fr 140px 1fr;
+            gap: 10px;
+            align-items: center;
+            background: radial-gradient(circle at center, #150508 0%, #060102 100%);
+            border: 1px solid var(--sangue);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8) inset;
+        }
+        .paperdoll-col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .paperdoll-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .paperdoll-avatar-box {
+            width: 110px;
+            height: 140px;
+            border: 2px solid var(--ouro);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 2, 4, 0.9);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+            position: relative;
+            margin-bottom: 8px;
+        }
+        .paperdoll-slot {
+            background: #0a0305;
+            border: 1px solid #331518;
+            border-radius: 6px;
+            padding: 6px;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .paperdoll-slot:hover {
+            border-color: var(--ouro);
+            background: #15070a;
+        }
+        .paperdoll-slot.slot-vazio {
+            border: 1px dashed #442225;
+            color: #666;
+            font-size: 0.75rem;
+            justify-content: center;
+        }
+        .slot-mini-box {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            background: #050102;
+            border: 1px solid #442;
+        }
+        .slot-info-box {
+            flex: 1;
+            min-width: 0;
+            line-height: 1.2;
+        }
+        .slot-nome-item {
+            font-size: 0.78rem;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+        .slot-sub-info {
+            font-size: 0.68rem;
+            color: #888;
+        }
+        .slot-botoes-acao {
+            display: flex;
+            gap: 4px;
+            margin-top: 3px;
+        }
+        .btn-hab-akashic {
+            background: linear-gradient(180deg, #1f0b38 0%, #0d0319 100%);
+            border: 1px solid #9333ea;
+            border-radius: 6px;
+            color: #fff;
+            padding: 5px 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 0 10px rgba(147, 51, 234, 0.3);
+        }
+        .btn-hab-akashic:hover {
+            transform: scale(1.04);
+            border-color: #00e5ff;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+        }
+        .btn-build-block {
+            background: #0d080a;
+            border: 1px solid #442525;
+            color: #ccc;
+            font-size: 0.74rem;
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .btn-build-block:hover {
+            border-color: var(--ouro);
+            color: #fff;
+            background: #1a0f12;
+        }
+        .btn-build-block.active {
+            border-color: var(--ouro);
+            background: #2a1419;
+            color: var(--ouro);
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+        }
+        /* --- MEGAPACK RPG: PAPERDOLL 8 SLOTS & MUNDO 2D --- */
+        .paperdoll-grid {
+            display: grid;
+            grid-template-columns: 1fr 140px 1fr;
+            gap: 10px;
+            align-items: center;
+            background: radial-gradient(circle at center, #150508 0%, #060102 100%);
+            border: 1px solid var(--sangue);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8) inset;
+        }
+        .paperdoll-col {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .paperdoll-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .paperdoll-avatar-box {
+            width: 110px;
+            height: 140px;
+            border: 2px solid var(--ouro);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 2, 4, 0.9);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+            position: relative;
+            margin-bottom: 8px;
+        }
+        .paperdoll-slot {
+            background: #0a0305;
+            border: 1px solid #331518;
+            border-radius: 6px;
+            padding: 6px;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .paperdoll-slot:hover {
+            border-color: var(--ouro);
+            background: #15070a;
+        }
+        .paperdoll-slot.slot-vazio {
+            border: 1px dashed #442225;
+            color: #666;
+            font-size: 0.75rem;
+            justify-content: center;
+        }
+        .slot-mini-box {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            background: #050102;
+            border: 1px solid #442;
+        }
+        .slot-info-box {
+            flex: 1;
+            min-width: 0;
+            line-height: 1.2;
+        }
+        .slot-nome-item {
+            font-size: 0.78rem;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+        .slot-sub-info {
+            font-size: 0.68rem;
+            color: #888;
+        }
+        .slot-botoes-acao {
+            display: flex;
+            gap: 4px;
+            margin-top: 3px;
+        }
+        .btn-hab-akashic {
+            background: linear-gradient(180deg, #1f0b38 0%, #0d0319 100%);
+            border: 1px solid #9333ea;
+            border-radius: 6px;
+            color: #fff;
+            padding: 5px 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 0 10px rgba(147, 51, 234, 0.3);
+        }
+        .btn-hab-akashic:hover {
+            transform: scale(1.04);
+            border-color: #00e5ff;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.5);
+        }
+        .btn-build-block {
+            background: #0d080a;
+            border: 1px solid #442525;
+            color: #ccc;
+            font-size: 0.74rem;
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .btn-build-block:hover {
+            border-color: var(--ouro);
+            color: #fff;
+            background: #1a0f12;
+        }
+        .btn-build-block.active {
+            border-color: var(--ouro);
+            background: #2a1419;
+            color: var(--ouro);
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+        }
         .nosf-acoes-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -1104,7 +1456,136 @@
             box-shadow: 0 0 18px rgba(147, 51, 234, 0.6);
         }
 
-    </style>
+    
+/* =================================================== */
+/* ESTILOS DA CAMADA SOCIAL, CO-OP & TRADE P2P         */
+/* =================================================== */
+.social-subnav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    background: #090204;
+    padding: 8px;
+    border: 1px solid #331518;
+    border-radius: 8px;
+}
+.social-subnav-btn {
+    background: #140508;
+    border: 1px solid #4a1820;
+    color: #ccc;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.social-subnav-btn:hover {
+    border-color: #ff007f;
+    color: #fff;
+    transform: translateY(-1px);
+}
+.social-subnav-btn.active {
+    background: linear-gradient(135deg, #40051a 0%, #1a0208 100%);
+    border-color: #ff007f;
+    color: #ff79c6;
+    box-shadow: 0 0 10px rgba(255, 0, 127, 0.35);
+}
+.party-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+.party-card {
+    background: linear-gradient(180deg, #120408 0%, #080103 100%);
+    border: 1px solid #4a1520;
+    border-radius: 8px;
+    padding: 12px;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    transition: all 0.2s;
+}
+.party-card:hover {
+    border-color: #ff79c6;
+}
+.party-card.is-leader {
+    border-color: #d4af37;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+}
+.party-hp-bar {
+    height: 8px;
+    background: #200508;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 6px 0;
+    border: 1px solid #400a10;
+}
+.party-hp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #8a0515 0%, #ff1744 100%);
+    transition: width 0.3s;
+}
+.party-furia-bar {
+    height: 6px;
+    background: #051508;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid #0a3010;
+}
+.party-furia-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10ac84 0%, #2ed573 100%);
+    transition: width 0.3s;
+}
+.contrato-card {
+    background: #0d0406;
+    border: 1px solid #3d151c;
+    border-left: 4px solid var(--ouro);
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: all 0.2s;
+}
+.contrato-card:hover {
+    border-color: var(--ouro);
+    background: #15060a;
+}
+.cauldron-box {
+    text-align: center;
+    padding: 20px;
+    background: radial-gradient(circle, #25020c 0%, #090103 100%);
+    border: 2px solid #ff007f;
+    border-radius: 12px;
+    box-shadow: 0 0 25px rgba(255, 0, 127, 0.25);
+    margin-bottom: 15px;
+}
+.cauldron-progress {
+    height: 22px;
+    background: #140206;
+    border-radius: 11px;
+    overflow: hidden;
+    border: 1px solid #ff007f;
+    margin: 15px 0;
+    position: relative;
+}
+.cauldron-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #800040 0%, #ff007f 50%, #ff5252 100%);
+    transition: width 0.5s ease;
+}
+.trade-modal-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 15px;
+}
+@media(max-width: 600px) {
+    .trade-modal-container { grid-template-columns: 1fr; }
+}
+
+</style>
 </head>
 <body>
     <canvas id="bg-ambient-canvas"></canvas>
@@ -1377,7 +1858,208 @@
                     <span class="realm-icon">⚔️</span>
                     <span class="realm-label">Guerra</span>
                 </button>
+                <button class="realm-pill" data-realm="mundo2d" onclick="nav('mundo2d', this)" title="Mundo Aberto 2D Sandbox & Construção de Reinos">
+                    <span class="realm-icon">🌌</span>
+                    <span class="realm-label">Mundo 2D</span>
+                </button>
+                <button class="realm-pill" data-realm="social" onclick="nav('social', this)" title="Comitivas da Noite, Vínculos de Sangue, Mural de Contratos e Caldeirão Coletivo" style="border-color:#ff007f; color:#ff79c6;">
+                    <span class="realm-icon">🐺</span>
+                    <span class="realm-label">Social & Co-op</span>
+                </button>
             </nav>
+
+            <!-- MUNDO ABERTO 2D SANDBOX (GRID EM TEMPO REAL, CONSTRUÇÃO DE CLÃS E MINIONS) -->
+            <div id="aba-mundo2d" class="aba oculto">
+                <div class="card" style="margin-bottom: 10px; background: linear-gradient(180deg, #160408 0%, #060102 100%); border-color: var(--ouro);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <h3 style="margin:0; color:var(--ouro); font-size:1.2rem; letter-spacing:1px; font-family:'Cinzel Decorative','Cinzel',serif;">🌌 O MUNDO ABERTO 2D (SANDBOX)</h3>
+                            <div style="font-size:0.82rem; color:#aaa; margin-top:2px;">
+                                📍 Zona: <strong id="m2d-zona-nome" style="color:#0f5;">Santuário de Enoch (Seguro)</strong> | 
+                                Coords: <span id="m2d-coords" style="color:var(--ouro); font-weight:bold;">X: 40, Y: 40</span> |
+                                <span id="m2d-pvp-tag" style="color:#aaa;">🛡️ Zona de Paz</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <button class="btn-magick" onclick="recentralizarCamera2D()" style="padding:5px 10px; font-size:0.75rem;">🎯 Centralizar</button>
+                            <button class="btn-magick" onclick="recarregarMundo2D()" style="padding:5px 10px; font-size:0.75rem; border-color:#0f5; color:#0f5;">🔄 Sincronizar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas e Display da Matriz 2D -->
+                <div style="position:relative; width:100%; display:flex; justify-content:center; margin-bottom:6px;">
+                    <canvas id="canvas-mundo2d" width="760" height="460" style="border: 2px solid var(--sangue); border-radius: 8px; background: #050508; box-shadow: 0 0 25px rgba(0,0,0,0.9); max-width: 100%; cursor: crosshair; touch-action: none;"></canvas>
+                    <div id="m2d-notif-flutuante" style="position:absolute; top:15px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.88); border:1px solid var(--ouro); border-radius:4px; padding:6px 14px; font-size:0.8rem; color:#fff; display:none; pointer-events:none; z-index:100; text-shadow:0 0 5px #000;"></div>
+                </div>
+
+                <!-- Barra de Chat de Proximidade 2D -->
+                <div style="max-width:760px; margin:0 auto 10px auto; display:flex; gap:8px; align-items:center;">
+                    <span style="font-size:0.75rem; color:#ff79c6; font-family:'Cinzel',serif; white-space:nowrap;">💬 Sussurro [T]:</span>
+                    <input id="m2d-chat-input" type="text" placeholder="Fala aos jogadores próximos (pressiona Enter ou clica em Falar)..." style="flex:1; background:#0e0205; color:#fff; border:1px solid #4a1520; padding:6px 10px; border-radius:4px; font-size:0.8rem;" onkeydown="if(event.key==='Enter') enviarMensagemProximidade2D()">
+                    <button class="btn-magick" onclick="enviarMensagemProximidade2D()" style="padding:6px 14px; font-size:0.75rem; border-color:#00e5ff; color:#00e5ff;">🗣️ Falar</button>
+                </div>
+
+                <!-- Controles Direcionais e Ações Rápidas -->
+                <div style="background:#0a0203; border:1px solid #331518; border-radius:8px; padding:8px; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:center; gap:8px; margin-bottom:6px;">
+                        <button class="btn-magick" onclick="moverMundo2D(0, -1)" style="width:48px; height:42px; font-size:1.1rem;">⬆️</button>
+                    </div>
+                    <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom:6px;">
+                        <button class="btn-magick" onclick="moverMundo2D(-1, 0)" style="width:48px; height:42px; font-size:1.1rem;">⬅️</button>
+                        <button class="btn-magick" onclick="coletarEmFrente2D()" style="padding:6px 14px; font-size:0.8rem; border-color:#0f5; color:#0f5; font-weight:bold;">🌿 Coletar Nó em Frente</button>
+                        <button class="btn-magick" onclick="moverMundo2D(1, 0)" style="width:48px; height:42px; font-size:1.1rem;">➡️</button>
+                    </div>
+                    <div style="display:flex; justify-content:center; gap:8px;">
+                        <button class="btn-magick" onclick="moverMundo2D(0, 1)" style="width:48px; height:42px; font-size:1.1rem;">⬇️</button>
+                    </div>
+                    <div style="text-align:center; font-size:0.72rem; color:#888; margin-top:4px;">
+                        ⌨️ Também podes usar as teclas <strong>W, A, S, D</strong> ou <strong>Setas</strong> no teclado! Clique no mapa para andar.
+                    </div>
+                </div>
+
+                <!-- PALETA DE CONSTRUÇÃO DE CLÃ (SANDBOX MINECRAFT-STYLE) -->
+                <div class="card" style="margin-bottom: 12px; border-color: var(--ouro); background: linear-gradient(180deg, #100608 0%, #060203 100%);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <h4 style="margin:0; color:var(--ouro); font-size:0.95rem;">🧱 PALETA DE CONSTRUÇÃO DE CLÃ (SANDBOX)</h4>
+                        <button class="btn-magick" id="btn-toggle-demolir" onclick="alternarModoDemolir()" style="padding:4px 10px; font-size:0.75rem; border-color:#f55; color:#f55;">⛏️ Modo Demolição: OFF</button>
+                    </div>
+                    <p style="font-size:0.75rem; color:#888; margin:0 0 8px 0;">Escolhe a estrutura e clica numa coordenada livre do mapa para erigir o domínio do teu clã:</p>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:6px; margin-bottom:8px;">
+                        <button class="btn-build-block active" data-build="muralha_pedra" onclick="selecionarBlocoConstrucao('muralha_pedra', this)">🧱 Muralha (5 Ped, 1 Fer)</button>
+                        <button class="btn-build-block" data-build="portao_ferro" onclick="selecionarBlocoConstrucao('portao_ferro', this)">⛩️ Portão de Clã (4 Fer)</button>
+                        <button class="btn-build-block" data-build="altar_egregora" onclick="selecionarBlocoConstrucao('altar_egregora', this)">🔮 Altar (10 Ped, 5 Fer, 1 Alma)</button>
+                        <button class="btn-build-block" data-build="torre_balista" onclick="selecionarBlocoConstrucao('torre_balista', this)">🏹 Balista (8 Ped, 4 Fer)</button>
+                        <button class="btn-build-block" data-build="fonte_sangue" onclick="selecionarBlocoConstrucao('fonte_sangue', this)">🩸 Fonte (5 Ped, 2 Lót, 2 Vit)</button>
+                        <button class="btn-build-block" data-build="oficina_forja" onclick="selecionarBlocoConstrucao('oficina_forja', this)">⚒️ Oficina (10 Ped, 8 Fer)</button>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--ouro);" id="m2d-modo-texto">
+                        Modo Ativo: <strong>Construir Muralha de Pedra Rúnica</strong> (Clica no mapa para colocar)
+                    </div>
+                </div>
+
+                <!-- SERVOS DO REINO VIVOS NO MAPA 2D -->
+                <div class="card" style="border-color: #0f5; background: linear-gradient(180deg, #051409 0%, #020803 100%);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <div>
+                            <h4 style="margin:0; color:#0f5; font-size:0.95rem;">🤖 SERVOS DO REINO NO MUNDO 2D</h4>
+                            <span style="font-size:0.72rem; color:#aaa;">Trabalham de forma autónoma no mapa e depositam recursos no teu inventário</span>
+                        </div>
+                        <button class="btn-magick" onclick="abrirModalRecrutarMinion()" style="padding:5px 12px; font-size:0.78rem; border-color:#0f5; color:#0f5; font-weight:bold;">➕ Recrutar Servo (300 Gts)</button>
+                    </div>
+                    <div id="m2d-lista-minions" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:8px;">
+                        <p style="color:#555; font-size:0.8rem; text-align:center; grid-column:span 2;">Nenhum servo convocado ainda no plano 2D.</p>
+                    </div>
+                </div>
+            </div>
+
+            
+            <!-- ABA SOCIAL & CO-OP (COMITIVAS, VÍNCULOS, CONTRATOS E MULTIPLAYER) -->
+            <div id="aba-social" class="aba oculto">
+                <div class="card" style="border-color: #ff007f; background: linear-gradient(180deg, #180209 0%, #090103 100%); margin-bottom: 14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <h2 style="font-family:'Cinzel',serif; color:#ff79c6; margin:0; font-size:1.4rem; display:flex; align-items:center; gap:8px;">
+                                <span>🐺</span> ALIANÇA SOCIAL & CO-OP MULTIPLAYER
+                            </h2>
+                            <p style="margin:4px 0 0 0; font-size:0.8rem; color:#aaa;">
+                                Unam as vossas forças nas sombras. Caçadas em matilha, contratos mercenários e o Grande Caldeirão da Egrégora.
+                            </p>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn-magick" onclick="carregarPainelSocialCompleto()" style="padding:6px 14px; font-size:0.75rem; border-color:#00e5ff; color:#00e5ff;">🔄 Atualizar Status</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB-NAVEGAÇÃO SOCIAL -->
+                <div class="social-subnav">
+                    <button class="social-subnav-btn active" onclick="trocarAbaSocial('comitiva', this)">🐺 Comitiva da Noite (Party)</button>
+                    <button class="social-subnav-btn" onclick="trocarAbaSocial('vinculos', this)">🩸 Vínculos de Sangue</button>
+                    <button class="social-subnav-btn" onclick="trocarAbaSocial('contratos', this)">📜 Mural de Contratos P2P</button>
+                    <button class="social-subnav-btn" onclick="trocarAbaSocial('caldeirao', this)">🌑 Caldeirão da Egrégora</button>
+                    <button class="social-subnav-btn" onclick="trocarAbaSocial('roster', this)">👥 Vampiros no Véu</button>
+                </div>
+
+                <!-- 1. SEÇÃO COMITIVA DA NOITE -->
+                <div id="social-sec-comitiva">
+                    <div id="social-comitiva-container">
+                        <!-- Conteúdo injetado via carregarStatusComitiva() -->
+                    </div>
+                </div>
+
+                <!-- 2. SEÇÃO VÍNCULOS DE SANGUE -->
+                <div id="social-sec-vinculos" style="display:none;">
+                    <div class="card" style="border-color:#ff1744; background:#0c0205; margin-bottom:12px;">
+                        <h3 style="color:#ff5252; margin-top:0; font-family:'Cinzel',serif;">🩸 VÍNCULOS ETERNOS DE SANGUE</h3>
+                        <p style="font-size:0.8rem; color:#aaa;">
+                            Um laço sagrado forjado entre dois vampiros. Permite <b>Transfusão Vital Imediata</b> (salvar aliados à distância) e <b>Ressonância de Fúria</b> em acertos críticos.
+                        </p>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+                            <select id="sel-propor-vinculo" style="background:#150408; color:#fff; border:1px solid #4a1520; padding:6px; border-radius:4px; flex:1; min-width:200px;">
+                                <option value="">-- Seleciona um vampiro para forjar vínculo --</option>
+                            </select>
+                            <button class="btn-magick" onclick="forjarVinculoSangueFront()" style="padding:6px 14px; font-size:0.75rem; border-color:#ff1744; color:#ff1744;">🩸 Forjar Vínculo de Sangue</button>
+                        </div>
+                    </div>
+                    <div id="social-vinculos-lista" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px;">
+                        <!-- Injetado dinamicamente -->
+                    </div>
+                </div>
+
+                <!-- 3. SEÇÃO MURAL DE CONTRATOS MERCENÁRIOS -->
+                <div id="social-sec-contratos" style="display:none;">
+                    <div class="card" style="border-color:var(--ouro); background:#0c0802; margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div>
+                                <h3 style="color:var(--ouro); margin:0; font-family:'Cinzel',serif;">📜 MURAL MERCENÁRIO DA CORTE</h3>
+                                <span style="font-size:0.75rem; color:#888;">Ordens de serviço entre jogadores. O sangue da recompensa fica em custódia segura até à entrega.</span>
+                            </div>
+                            <button class="btn-magick" onclick="abrirModalPublicarContrato()" style="padding:6px 14px; font-size:0.75rem; border-color:var(--ouro); color:var(--ouro);">➕ Afixar Novo Contrato</button>
+                        </div>
+                    </div>
+                    <div id="social-contratos-lista">
+                        <!-- Injetado dinamicamente -->
+                    </div>
+                </div>
+
+                <!-- 4. SEÇÃO GRANDE CALDEIRÃO DA EGRÉGORA -->
+                <div id="social-sec-caldeirao" style="display:none;">
+                    <div class="cauldron-box">
+                        <div style="font-size:3rem; margin-bottom:5px;">🌋</div>
+                        <h2 style="color:#ff79c6; font-family:'Cinzel',serif; margin:0;">O GRANDE CALDEIRÃO CÓSMICO</h2>
+                        <p style="font-size:0.85rem; color:#bbb; max-width:600px; margin:8px auto;">
+                            Quando as oferendas coletivas de Vitae atingirem <b>5.000 Gts</b>, o Caldeirão transbordará e despertará o <b>Eclipse da Noite Eterna</b> para todos os vampiros do reino (+30% XP, +100% Drops e +25% Dano por 25 minutos)!
+                        </p>
+                        <div class="cauldron-progress">
+                            <div id="caldeirao-fill-bar" class="cauldron-fill" style="width: 0%;"></div>
+                        </div>
+                        <div id="caldeirao-status-txt" style="font-size:0.95rem; font-weight:bold; color:var(--ouro); margin-bottom:12px;">0 / 5.000 Gts Acumulados (0%)</div>
+                        
+                        <div id="caldeirao-eclipse-banner" style="display:none; background:linear-gradient(90deg, #400515, #800040); border:1px solid #ff007f; padding:10px; border-radius:6px; margin-bottom:12px;">
+                            <span style="font-size:1.1rem; color:#fff; font-weight:bold;">🌑 O ECLIPSE DA NOITE ETERNA ESTÁ ATIVO!</span>
+                            <div id="caldeirao-timer" style="font-size:0.85rem; color:#ff79c6; margin-top:4px;">Tempo restante: 25m 00s</div>
+                        </div>
+
+                        <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                            <button class="btn-magick" onclick="doarCaldeiraoFront(100)" style="border-color:#ff1744; color:#ff1744; padding:8px 16px;">🩸 Doar 100 Gts</button>
+                            <button class="btn-magick" onclick="doarCaldeiraoFront(500)" style="border-color:#ff007f; color:#ff007f; padding:8px 16px;">🩸 Doar 500 Gts</button>
+                            <button class="btn-magick" onclick="doarCaldeiraoFront(1000)" style="border-color:var(--ouro); color:var(--ouro); padding:8px 16px;">👑 Doar 1.000 Gts</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. SEÇÃO VAMPIROS NO VÉU (ROSTER) -->
+                <div id="social-sec-roster" style="display:none;">
+                    <div class="card" style="border-color:#00e5ff; background:#020b12; margin-bottom:12px;">
+                        <h3 style="color:#00e5ff; margin-top:0; font-family:'Cinzel',serif;">👥 VAMPIROS DESPERTOS NO REINO</h3>
+                        <p style="font-size:0.75rem; color:#aaa;">Iniciados presentes na cidade, no abismo e nos ermos. Convoca-os para a tua matilha ou inicia trocas diretas.</p>
+                    </div>
+                    <div id="social-roster-lista" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px;">
+                        <!-- Injetado dinamicamente -->
+                    </div>
+                </div>
+            </div>
 
             <!-- O MAPA DO REINO (HUB DE TERRITÓRIOS E MUNDO DE JOGO) -->
             <div id="aba-mapa" class="aba">
@@ -1548,7 +2230,95 @@
                             <option value="">Apenas eu (Solo)</option>
                         </select>
                     </div>
-                    <div id="modal-convite-coop" class="oculto" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:1000000; display:flex; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
+                    
+            <!-- MODAL DE TROCA DIRETA SEGURA P2P (TRADE WINDOW) -->
+            <div id="modal-troca-p2p" class="oculto" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:1000002; display:flex; justify-content:center; align-items:center; backdrop-filter:blur(6px);">
+                <div class="card" style="width:90%; max-width:650px; background:#0a0204; border:2px solid var(--ouro); box-shadow:0 0 25px rgba(212,175,55,0.25);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #331518; padding-bottom:8px;">
+                        <h3 style="color:var(--ouro); margin:0; font-family:'Cinzel',serif;">🤝 PACTO MERCANTIL DIRETO (P2P)</h3>
+                        <button onclick="fecharModalTroca()" style="background:none; border:none; color:#888; font-size:1.2rem; cursor:pointer;">✖</button>
+                    </div>
+
+                    <div class="trade-modal-container">
+                        <!-- Lado do Jogador -->
+                        <div style="background:#120306; border:1px solid #4a1520; border-radius:6px; padding:10px;">
+                            <h4 style="color:#0f5; margin-top:0; font-size:0.85rem;" id="trade-meu-titulo">A Tua Oferta</h4>
+                            <div style="font-size:0.75rem; color:#aaa; margin-bottom:5px;">Seleciona itens da tua bolsa:</div>
+                            <div id="trade-meus-itens" style="max-height:160px; overflow-y:auto; display:grid; gap:5px; margin-bottom:10px;">
+                                <!-- Itens da bolsa com checkbox -->
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <label style="font-size:0.75rem; color:var(--ouro);">Gts:</label>
+                                <input type="number" id="trade-meus-gts" value="0" min="0" style="background:#050102; color:var(--ouro); border:1px solid #4a1520; padding:4px 8px; width:90px; border-radius:4px;" onchange="atualizarOfertaTrocaFront()">
+                            </div>
+                            <div style="margin-top:10px;">
+                                <button id="trade-btn-travar" class="btn-magick" onclick="travarTrocaFront()" style="width:100%; border-color:#0f5; color:#0f5; font-size:0.75rem;">🔒 Travar Oferta</button>
+                            </div>
+                        </div>
+
+                        <!-- Lado do Parceiro -->
+                        <div style="background:#060812; border:1px solid #15224a; border-radius:6px; padding:10px;">
+                            <h4 style="color:#00e5ff; margin-top:0; font-size:0.85rem;" id="trade-aliado-titulo">Oferta do Aliado</h4>
+                            <div style="font-size:0.75rem; color:#aaa; margin-bottom:5px;">Itens oferecidos:</div>
+                            <div id="trade-aliado-itens" style="max-height:160px; overflow-y:auto; display:grid; gap:5px; margin-bottom:10px;">
+                                <p style="color:#555; font-size:0.75rem; text-align:center;">Nenhum item adicionado.</p>
+                            </div>
+                            <div style="font-size:0.75rem; color:var(--ouro);">
+                                Gts Ofertados: <b id="trade-aliado-gts" style="color:#fff;">0 Gts</b>
+                            </div>
+                            <div id="trade-aliado-status" style="margin-top:10px; font-size:0.75rem; color:#ff9800; font-weight:bold; text-align:center; padding:6px; background:#101015; border-radius:4px;">
+                                ⏳ Modificando oferta...
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; border-top:1px solid #331518; padding-top:10px;">
+                        <button onclick="fecharModalTroca()" class="btn-magick" style="border-color:#ff3838; color:#ff3838; font-size:0.75rem;">Cancelar</button>
+                        <button id="trade-btn-confirmar" class="btn-magick" onclick="confirmarTrocaFront()" disabled style="border-color:#555; color:#555; font-size:0.8rem; padding:8px 20px;">✅ Confirmar e Selar Troca</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL PUBLICAR CONTRATO -->
+            <div id="modal-publicar-contrato" class="oculto" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:1000002; display:flex; justify-content:center; align-items:center; backdrop-filter:blur(6px);">
+                <div class="card" style="width:90%; max-width:480px; background:#0c0406; border:2px solid var(--ouro);">
+                    <h3 style="color:var(--ouro); margin-top:0; font-family:'Cinzel',serif;">📜 PUBLICAR ORDEM MERCENÁRIA</h3>
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+                        <label style="font-size:0.75rem; color:#aaa;">Título do Contrato:</label>
+                        <input type="text" id="novo-cnt-titulo" placeholder="Ex: Fornecimento de Ferro Negro" style="background:#150508; color:#fff; border:1px solid #4a1520; padding:6px; border-radius:4px;">
+                        
+                        <label style="font-size:0.75rem; color:#aaa;">Descrição:</label>
+                        <textarea id="novo-cnt-desc" rows="2" placeholder="Descreva os termos da ordem..." style="background:#150508; color:#fff; border:1px solid #4a1520; padding:6px; border-radius:4px;"></textarea>
+
+                        <div style="display:flex; gap:10px;">
+                            <div style="flex:1;">
+                                <label style="font-size:0.75rem; color:#aaa;">Material Exigido:</label>
+                                <select id="novo-cnt-item" style="background:#150508; color:#fff; border:1px solid #4a1520; padding:6px; border-radius:4px; width:100%;">
+                                    <option value="ferroNegro">Ferro Negro</option>
+                                    <option value="pedra">Pedra Rúnica</option>
+                                    <option value="mandragora">Mandrágora</option>
+                                    <option value="beladona">Beladona</option>
+                                    <option value="lotusNegro">Lótus Negro</option>
+                                </select>
+                            </div>
+                            <div style="width:90px;">
+                                <label style="font-size:0.75rem; color:#aaa;">Qtd:</label>
+                                <input type="number" id="novo-cnt-qtd" value="20" min="1" style="background:#150508; color:#fff; border:1px solid #4a1520; padding:6px; border-radius:4px; width:100%;">
+                            </div>
+                        </div>
+
+                        <label style="font-size:0.75rem; color:#aaa;">Recompensa em Gts (em custódia):</label>
+                        <input type="number" id="novo-cnt-recompensa" value="500" min="200" style="background:#150508; color:var(--ouro); border:1px solid var(--ouro); padding:6px; border-radius:4px; font-weight:bold;">
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:15px;">
+                        <button onclick="document.getElementById('modal-publicar-contrato').classList.add('oculto')" class="btn-magick" style="border-color:#888; color:#888;">Cancelar</button>
+                        <button onclick="publicarContratoMercenarioFront()" class="btn-magick" style="border-color:var(--ouro); color:var(--ouro);">Afixar Ordem</button>
+                    </div>
+                </div>
+            </div>
+
+<div id="modal-convite-coop" class="oculto" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:1000000; display:flex; justify-content:center; align-items:center; backdrop-filter:blur(5px);">
                         <div class="card" style="width:320px; text-align:center; border:2px solid var(--sangue-claro); background:#0a0505;">
                             <h2 style="color:var(--ouro); margin-top:0;">CHAMADO OCULTO</h2>
                             <p id="convite-texto-desc" style="font-style:italic; color:#ccc;"></p>
@@ -1823,18 +2593,87 @@
                 </div>
             </div>
 
-            <!-- SUB-ABA 2: BOLSA & RELÍQUIAS -->
+            <!-- SUB-ABA 2: BOLSA & RELÍQUIAS (PAPERDOLL 8 SLOTS & FORJA) -->
             <div id="sub-perfil-bolsa" class="sub-section oculto">
-                <div class="card">
-                    <h3 style="margin-top:0;">Relíquias Evocadas</h3>
-                    <div id="eq-arma" class="equip-slot">Garras Limpas (Sem Arma)</div>
-                    <div id="eq-armadura" class="equip-slot">Pele Fria (Sem Armadura)</div>
-                    <div id="eq-amuleto" class="equip-slot">Aura Vazia (Sem Amuleto)</div>
+                <div class="card" style="border-color: var(--ouro); margin-bottom: 12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <h3 style="margin:0; color:var(--ouro); font-size:1.15rem;">🗡️ Arsenal & Relíquias Evocadas</h3>
+                        <div id="stats-combate-hud" style="font-size:0.75rem; color:#aaa;">
+                            <!-- Preenchido via JS -->
+                        </div>
+                    </div>
+                    <div class="paperdoll-grid">
+                        <!-- Coluna Esquerda: Elmo, Armadura, Botas -->
+                        <div class="paperdoll-col">
+                            <div id="slot-elmo" class="paperdoll-slot slot-vazio">👑 Elmo Vazio</div>
+                            <div id="slot-armadura" class="paperdoll-slot slot-vazio">🥋 Pele Fria (Sem Armadura)</div>
+                            <div id="slot-botas" class="paperdoll-slot slot-vazio">👢 Grevas Vazias</div>
+                        </div>
+
+                        <!-- Centro: Avatar e Atributos de Combate -->
+                        <div class="paperdoll-center">
+                            <div class="paperdoll-avatar-box">
+                                <div id="paperdoll-avatar-icone" style="font-size: 2.6rem;">🧛</div>
+                                <div id="paperdoll-nome-vamp" style="font-size:0.75rem; font-weight:bold; color:var(--ouro); margin-top:2px;"></div>
+                                <div id="paperdoll-nv-vamp" style="font-size:0.68rem; color:#aaa;">Grau 1</div>
+                            </div>
+                            <div id="paperdoll-stats-resumo" style="font-size:0.7rem; color:#ddd; line-height:1.3; background:rgba(0,0,0,0.5); border-radius:4px; padding:4px 6px; width:100%;">
+                                <!-- Resumo dinâmico -->
+                            </div>
+                        </div>
+
+                        <!-- Coluna Direita: Amuleto, Arma Principal, Arma Secundária, Anel 1, Anel 2 -->
+                        <div class="paperdoll-col">
+                            <div id="slot-amuleto" class="paperdoll-slot slot-vazio">📿 Aura Vazia (Sem Amuleto)</div>
+                            <div id="slot-armaPrincipal" class="paperdoll-slot slot-vazio">⚔️ Garras Limpas (Sem Arma)</div>
+                            <div id="slot-armaSecundaria" class="paperdoll-slot slot-vazio">🛡️ Mão Secundária Livre</div>
+                            <div id="slot-anel1" class="paperdoll-slot slot-vazio">💍 Anel 1 Vazio</div>
+                            <div id="slot-anel2" class="paperdoll-slot slot-vazio">💍 Anel 2 Vazio</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BANCADA DA FORJA DRACONIANA (CRAFTING PROCEDURAL) -->
+                <div class="card" style="border-color: #ff5722; margin-bottom: 12px; background: linear-gradient(180deg, #160805 0%, #0a0302 100%);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <h4 style="margin:0; color:#ff7043; font-size:0.95rem;">⚒️ Bigorna da Forja Draconiana</h4>
+                        <span id="craft-nv-armaria" style="font-size:0.75rem; color:#aaa;">Armaria Nv. 1</span>
+                    </div>
+                    <p style="font-size:0.75rem; color:#aaa; margin:0 0 8px 0;">Forja armamentos procedurais com propriedades mágicas gnósticas utilizando ferro, pedra e sangue:</p>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <select id="craft-slot-tipo" style="flex:1; min-width:140px; padding:6px; font-size:0.8rem; background:#0d0403; border:1px solid #ff7043; color:#fff;">
+                            <option value="armaPrincipal">⚔️ Arma Principal (Gládio/Athame/Foice)</option>
+                            <option value="armaSecundaria">🛡️ Mão Secundária (Escudo/Orbe/Grimório)</option>
+                            <option value="elmo">👑 Elmo / Diadema Noturno</option>
+                            <option value="armadura">🥋 Couraça / Manto Draconiano</option>
+                            <option value="amuleto">📿 Amuleto Astral de Lilith</option>
+                            <option value="anel">💍 Anel de Poder Qliphótico</option>
+                            <option value="botas">👢 Grevas / Passos da Sombra</option>
+                        </select>
+                        <button class="btn-magick" onclick="executarForjaDraconiana()" style="padding:6px 14px; font-size:0.8rem; border-color:#ff7043; color:#ff7043;">⚒️ Forjar (4 Ferro, 3 Pedra, 400 Gts)</button>
+                    </div>
+                    <div id="craft-feedback" style="font-size:0.75rem; color:#ff7043; margin-top:5px; min-height:16px;"></div>
                 </div>
                 
-                <div class="card">
-                    <h3 style="margin-top:0;">Caixa de Ossos (Inventário)</h3>
-                    <div id="lista-bolsa" style="max-height: 250px; overflow-y: auto;"></div>
+                <!-- CAIXA DE OSSOS (INVENTÁRIO) -->
+                <div class="card" style="margin-bottom: 12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <h3 style="margin:0;">Caixa de Ossos (Inventário)</h3>
+                        <span id="bolsa-capacidade-hud" style="font-size:0.75rem; color:#888;">0 itens</span>
+                    </div>
+                    <div id="lista-bolsa" style="max-height: 350px; overflow-y: auto; display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:8px;"></div>
+                </div>
+
+                <!-- MERCADO P2P DE ITENS ENTRE JOGADORES -->
+                <div class="card" style="border-color: var(--ouro); background: linear-gradient(180deg, #100802 0%, #050301 100%);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <h4 style="margin:0; color:var(--ouro); font-size:0.95rem;">⚖️ Bazar & Mercado de Artefatos P2P</h4>
+                        <button class="btn-magick" onclick="carregarMercadoItens()" style="padding:4px 8px; font-size:0.72rem; border-color:var(--ouro); color:var(--ouro);">🔄 Atualizar Mercado</button>
+                    </div>
+                    <p style="font-size:0.75rem; color:#888; margin:0 0 8px 0;">Artefatos sagrados e profanos negociados livremente entre Imortais por Sangue (Gts):</p>
+                    <div id="lista-mercado-itens" style="max-height: 240px; overflow-y: auto; display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:6px;">
+                        <p style="color:#555; font-size:0.8rem; text-align:center; grid-column:span 2;">A carregar ofertas astrais...</p>
+                    </div>
                 </div>
             </div>
 
@@ -2201,9 +3040,33 @@
             </div>
 
             <div id="chat-sec-profecias" class="sub-section">
-                <div class="card">
-                    <h3>Profecias Globais (O Mundo Oculto)</h3>
-                    <div id="log-global" class="log-box" style="height: 120px;"></div>
+                <div class="card" style="padding: 16px; border: 1px solid var(--panel-border); box-shadow: 0 4px 20px rgba(0,0,0,0.8);">
+                    <div class="profecias-header">
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.15em; display: flex; align-items: center; gap: 8px;">
+                                📜 Crônicas do Éter & Profecias Globais
+                            </h3>
+                            <span style="font-size: 0.8em; color: var(--text-muted);">Os ecos imortais dos feitos, decretos do Mestre e julgamentos cósmicos</span>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <span id="profecias-lua-badge" style="background: #150608; border: 1px solid var(--ouro); padding: 4px 10px; border-radius: 12px; font-size: 0.75em; color: var(--ouro); font-family: 'Cinzel';">
+                                🌙 Lua Minguante
+                            </span>
+                            <span id="profecias-balanca-badge" style="background: #0f0814; border: 1px solid var(--magia); padding: 4px 10px; border-radius: 12px; font-size: 0.75em; color: #d080ff; font-family: 'Cinzel';">
+                                ⚖️ Balança Cósmica: Equilíbrio
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="profecias-filtro-bar">
+                        <button class="profecias-pill active" onclick="filtrarProfecias('todos', this)">Todos os Ecos</button>
+                        <button class="profecias-pill" onclick="filtrarProfecias('mestre', this)">👑 Decretos do Mestre</button>
+                        <button class="profecias-pill" onclick="filtrarProfecias('ritual', this)">🩸 Rituais & Altar</button>
+                        <button class="profecias-pill" onclick="filtrarProfecias('guerra', this)">⚔️ Combates & Conclave</button>
+                        <button class="profecias-pill" onclick="filtrarProfecias('balanca', this)">⚖️ Balança & Ordem</button>
+                    </div>
+
+                    <div id="log-global" class="log-box"></div>
                 </div>
             </div>
         </div>
@@ -3798,6 +4661,27 @@ function usarHabilidadeCustom(habilidadeId) {
         document.querySelectorAll('.mob-nav-btn').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.realm-pill').forEach(el => el.classList.remove('active'));
 
+        if (abaId === 'social' && typeof carregarPainelSocialCompleto === 'function') {
+            setTimeout(carregarPainelSocialCompleto, 50);
+        }
+        if (abaId === 'mundo2d' && typeof inicializarMundo2D === 'function') {
+            setTimeout(inicializarMundo2D, 50);
+        }
+        if (abaId === 'perfil' && typeof renderizarPaperdollEquipamentos === 'function') {
+            setTimeout(renderizarPaperdollEquipamentos, 50);
+        }
+        if (abaId === 'leilao' && typeof carregarMercadoItens === 'function') {
+            setTimeout(carregarMercadoItens, 50);
+        }
+        if (abaId === 'mundo2d' && typeof inicializarMundo2D === 'function') {
+            setTimeout(inicializarMundo2D, 50);
+        }
+        if (abaId === 'perfil' && typeof renderizarPaperdollEquipamentos === 'function') {
+            setTimeout(renderizarPaperdollEquipamentos, 50);
+        }
+        if (abaId === 'leilao' && typeof carregarMercadoItens === 'function') {
+            setTimeout(carregarMercadoItens, 50);
+        }
         const abaTarget = document.getElementById('aba-' + abaId);
         if(abaTarget) {
             abaTarget.classList.remove('oculto');
@@ -4593,8 +5477,7 @@ function usarHabilidadeCustom(habilidadeId) {
     }
 
     async function uparAtr(nome) { try { const res = await fetch('/api/atributos/distribuir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, atributo: nome }) }); const dados = await res.json(); if(dados.erro) ocultoAlert(dados.erro); else jorrarSangue(); syncStatus(); } catch(e) { } }
-    async function equiparItem(idReliquia) { try { const res = await fetch('/api/inventario/equipar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, reliquiaId: idReliquia }) }); const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); syncStatus(); } catch(e) { } }
-    async function desequiparItem(slot) { try { const res = await fetch('/api/inventario/desequipar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, slot }) }); const dados = await res.json(); if(!dados.erro) playSfx('espada'); ocultoAlert(dados.erro || dados.relato); syncStatus(); } catch(e) { } }
+// [HOTFIX]: equiparItem e desequiparItem unificados na engine 8-slots
     async function aprimorarEquipamento(slot) { if(!(await ocultoConfirm(`Desejas usar a Bigorna Sombria na tua ${slot.toUpperCase()}? Consumirá Anima e Cinzas conforme o nível da relíquia.`))) return; try { const res = await fetch('/api/inventario/aprimorar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, slot }) }); const dados = await res.json(); if(dados.erro) ocultoAlert(dados.erro); else { jorrarSangue(); ocultoAlert(dados.relato); } syncStatus(); } catch(e) { } }
     async function mudarTitulo() { const val = document.getElementById('lista-titulos').value; try { await fetch('/api/perfil/titulo', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id, titulo: val }) }); syncStatus(); } catch(e) { } }
     async function invocarDespertar() { if(!(await ocultoConfirm("Suplicar à Mente Abissal consumirá 5000 Gts e 10 Fúria. Ela irá forjar uma habilidade única baseada no teu ser. Continuar?"))) return; abismoVoid(); try { const res = await fetch('/api/perfil/despertar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: meuVampiro.id }) }); const dados = await res.json(); ocultoAlert(dados.erro || dados.relato); syncStatus(); } catch(e) { } }
@@ -4616,16 +5499,50 @@ function usarHabilidadeCustom(habilidadeId) {
                 </div>`;
             }).join(''), true);
             
-            let logsGlobaisVisiveis = dados.logs.global;
+            let logsGlobaisVisiveis = dados.logs.global || [];
             if (meuVampiro && meuVampiro.nivel < 99) {
-                logsGlobaisVisiveis = dados.logs.global.filter(l => l.tipo !== 'O LIMBO' && l.tipo !== 'ALMA MASSIVA' && l.tipo !== 'DRENO REAL');
+                logsGlobaisVisiveis = logsGlobaisVisiveis.filter(l => l.tipo !== 'O LIMBO' && l.tipo !== 'ALMA MASSIVA' && l.tipo !== 'DRENO REAL');
             }
-            safeSet('log-global', logsGlobaisVisiveis.map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> ${l.relato}</div>`).join(''), true);
+            window.todosLogsGlobais = logsGlobaisVisiveis;
+            renderizarLogsGlobais();
 
-            safeSet('log-caca', dados.logs.caca.map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> ${l.relato}</div>`).join(''), true);
-            safeSet('log-guerra', dados.logs.guerra.map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> ${l.relato}</div>`).join(''), true);
+            if (dados.balancaCosmica) {
+                const reg = dados.balancaCosmica.regente || 'Equilíbrio';
+                safeSet('profecias-balanca-badge', `⚖️ Balança: ${reg}`);
+            }
+            if (dados.faseLua) {
+                const luaNome = typeof dados.faseLua === 'object' ? dados.faseLua.nome : dados.faseLua;
+                safeSet('profecias-lua-badge', `🌙 Lua ${luaNome || 'Minguante'}`);
+            }
+
+            safeSet('log-caca', (dados.logs.caca || []).map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> <span class="log-texto">${l.relato}</span></div>`).join(''), true);
+            safeSet('log-guerra', (dados.logs.guerra || []).map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> <span class="log-texto">${l.relato}</span></div>`).join(''), true);
             if(logsGlobaisVisiveis.length > 0) safeSet('world-ticker', `ÚLTIMA REVELAÇÃO DO ÉTER: ${logsGlobaisVisiveis[0].relato}`);
         } catch(e){}
+    }
+
+    window.filtroProfeciasAtual = 'todos';
+    function filtrarProfecias(filtro, btn) {
+        window.filtroProfeciasAtual = filtro;
+        document.querySelectorAll('.profecias-pill').forEach(p => p.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        renderizarLogsGlobais();
+    }
+
+    function renderizarLogsGlobais() {
+        const lista = window.todosLogsGlobais || [];
+        const f = window.filtroProfeciasAtual || 'todos';
+        let filtrados = lista;
+        if (f === 'mestre') {
+            filtrados = lista.filter(l => (l.tipo && (l.tipo.includes('MESTRE') || l.tipo.includes('ORÁCULO') || l.tipo.includes('SELO'))) || (l.relato && l.relato.includes('Mestre')));
+        } else if (f === 'ritual') {
+            filtrados = lista.filter(l => (l.tipo && (l.tipo.includes('RITUAL') || l.tipo.includes('SACRIFÍCIO') || l.tipo.includes('ALQUIMIA') || l.tipo.includes('DESPERTAR'))));
+        } else if (f === 'guerra') {
+            filtrados = lista.filter(l => (l.tipo && (l.tipo.includes('GUERRA') || l.tipo.includes('FENDA') || l.tipo.includes('CONCLAVE') || l.tipo.includes('COMBATE'))));
+        } else if (f === 'balanca') {
+            filtrados = lista.filter(l => (l.tipo && (l.tipo.includes('BALANÇA') || l.tipo.includes('ORDEM') || l.tipo.includes('INQUISIÇÃO'))));
+        }
+        safeSet('log-global', filtrados.map(l => `<div class="log-item"><span class="log-tipo">[${l.tipo}]</span> <span class="log-texto">${l.relato}</span></div>`).join(''), true);
     }
 
     let presaFocoAtual = null;
@@ -5805,8 +6722,27 @@ function usarHabilidadeCustom(habilidadeId) {
         document.getElementById('chat-input').value = '';
     }
 
-    socket.on('nova_mensagem', (dados) => { const box = document.getElementById('chat-box'); if(!box) return; let cssClass = dados.canal; if(dados.autor.includes('ORÁCULO') || dados.autor.includes('ABISSAL')) cssClass = 'ia'; box.innerHTML += `<div class="chat-msg ${cssClass}"><span class="chat-autor">${dados.autor}:</span>${dados.texto} <span class="chat-time" style="font-size:0.7em; color:#555;">${dados.hora}</span></div>`; box.scrollTop = box.scrollHeight; });
-    socket.on('historico_chat', (dados) => { const box = document.getElementById('chat-box'); if(!box) return; box.innerHTML = ""; dados.mensagens.forEach(m => { let cssClass = dados.canal; if(m.autor.includes('ABISSAL')) cssClass = 'ia'; box.innerHTML += `<div class="chat-msg ${cssClass}"><span class="chat-autor">${m.autor}:</span>${m.texto} <span class="chat-time" style="font-size:0.7em; color:#555;">${m.hora}</span></div>`; }); box.scrollTop = box.scrollHeight; });
+    socket.on('nova_mensagem', (dados) => { 
+        const box = document.getElementById('chat-box'); 
+        if(!box) return; 
+        let cssClass = dados.canal; 
+        if(dados.autor && (dados.autor.includes('ORÁCULO') || dados.autor.includes('ABISSAL'))) cssClass = 'ia'; 
+        if(dados.autor && dados.autor.includes('MESTRE')) cssClass = 'mestre ia'; 
+        box.innerHTML += `<div class="chat-msg ${cssClass}"><span class="chat-autor">${dados.autor}:</span>${dados.texto} <span class="chat-time" style="font-size:0.7em; color:#888;">${dados.hora}</span></div>`; 
+        box.scrollTop = box.scrollHeight; 
+    });
+    socket.on('historico_chat', (dados) => { 
+        const box = document.getElementById('chat-box'); 
+        if(!box) return; 
+        box.innerHTML = ""; 
+        (dados.mensagens || []).forEach(m => { 
+            let cssClass = dados.canal; 
+            if(m.autor && (m.autor.includes('ABISSAL') || m.autor.includes('ORÁCULO'))) cssClass = 'ia'; 
+            if(m.autor && m.autor.includes('MESTRE')) cssClass = 'mestre ia'; 
+            box.innerHTML += `<div class="chat-msg ${cssClass}"><span class="chat-autor">${m.autor}:</span>${m.texto} <span class="chat-time" style="font-size:0.7em; color:#888;">${m.hora}</span></div>`; 
+        }); 
+        box.scrollTop = box.scrollHeight; 
+    });
 
     function gerarConviteUniversal() { const webLink = `${window.location.origin}/?invite=${meuVampiro.id}`; navigator.clipboard.writeText(webLink).then(() => { safeSet('invite-status', `Link Mágico copiado para o ClipBoard:\n${webLink}`); }); }
     async function gerarConviteBot() { const tgt = document.getElementById('target-telegram').value; try { const res = await fetch('/api/convidar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ vampiroId: meuVampiro.id, tgTargetUsername: tgt }) }); const dados = await res.json(); if (dados.msgPronta) { if(tg && tg.openTelegramLink) tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(dados.link)}&text=${encodeURIComponent(dados.msgPronta)}`); else prompt("O teu Convite Sombrio (Copia e envia ao novato):", dados.link); } else ocultoAlert(dados.erro || dados.relato); } catch(e) {} }
@@ -6098,6 +7034,7 @@ function usarHabilidadeCustom(habilidadeId) {
         window.scrollTo({ top: 0, behavior: 'instant' });
         
         abismoVoid(); playSfx('magia'); atualizarBarras();
+        if (typeof renderizarHabilidadesArena === 'function') renderizarHabilidadesArena();
         loopIA = setInterval(logicaInimigoVisceral, 100);
     }
 
@@ -6532,18 +7469,10 @@ function usarHabilidadeCustom(habilidadeId) {
             return `<span style="font-size:0.75em; color:${cor}; border:1px solid ${cor}; padding:2px 5px; border-radius:3px; margin-left:5px; text-shadow:0 0 5px #000;">🛡️ ${txt}</span>`;
         }
 
-        const eq = meuVampiro.equipamentos;
-        safeSet('eq-arma', eq.arma ? `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div>${eq.arma.nome} ${renderDurabilidade(eq.arma.durabilidade)}</div><div><button class="btn-magick" onclick="repararItem('arma')" style="padding:5px; font-size:0.7em; margin-right:5px; border-color:#0f5; color:#0f5;">Reparar</button><button class="btn-magick" onclick="desequiparItem('arma')" style="width:auto; padding:5px; font-size:0.7em;">Tirar</button></div></div>` : '<div>Garras Limpas (Sem Arma)</div>', true);
-        safeSet('eq-armadura', eq.armadura ? `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div>${eq.armadura.nome} ${renderDurabilidade(eq.armadura.durabilidade)}</div><div><button class="btn-magick" onclick="repararItem('armadura')" style="padding:5px; font-size:0.7em; margin-right:5px; border-color:#0f5; color:#0f5;">Reparar</button><button class="btn-magick" onclick="desequiparItem('armadura')" style="width:auto; padding:5px; font-size:0.7em;">Tirar</button></div></div>` : '<div>Pele Fria (Sem Armadura)</div>', true);
-        safeSet('eq-amuleto', eq.amuleto ? `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div>${eq.amuleto.nome} ${renderDurabilidade(eq.amuleto.durabilidade)}</div><div><button class="btn-magick" onclick="repararItem('amuleto')" style="padding:5px; font-size:0.7em; margin-right:5px; border-color:#0f5; color:#0f5;">Reparar</button><button class="btn-magick" onclick="desequiparItem('amuleto')" style="width:auto; padding:5px; font-size:0.7em;">Tirar</button></div></div>` : '<div>Aura Vazia (Sem Amuleto)</div>', true);
-
-        if (meuVampiro.bolsa.length === 0) safeSet('lista-bolsa', "<p style='color:#555;font-size:0.8em;text-align:center;'>A caixa está oca.</p>", true);
-        else safeSet('lista-bolsa', meuVampiro.bolsa.map(i => `<div style="border: 1px solid #333; padding: 10px; margin-bottom: 5px; background: #050505;">
-        <strong style="color:var(--ouro);">${i.nome}</strong> <span style="font-size:0.7em;color:#888;">[${i.raridade}]</span> ${renderDurabilidade(i.durabilidade)}<br>
-        <span style="font-size:0.75em; color:var(--xp);">⚔️ Build: ${i.arquetipo || 'Misto'}</span><br>
-        <button class="btn-magick" onclick="equiparItem('${i.id}')" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto;">Assimilar Artefacto</button>
-        <button class="btn-magick" onmousedown="IniciarInspecao(event, 'reliquia', '${i.id}')" onmouseup="PararInspecao()" onmouseleave="PararInspecao()" ontouchstart="IniciarInspecao(event, 'reliquia', '${i.id}')" ontouchend="PararInspecao()" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto; border-color:#0f5; color:#0f5;">👁️ Segurar p/ Ver</button>
-        </div>`).join(''), true);
+        // [HOTFIX CRÍTICO]: Sincroniza Paperdoll de 8 slots e Bolsa moderna com miniaturas SVG procedurais
+        if (typeof renderizarPaperdollEquipamentos === 'function') {
+            renderizarPaperdollEquipamentos();
+        }
 
         // 4. PACTOS DA IA (QUESTS CORRIGIDAS)
         const boxPacto = document.getElementById('box-pacto');
@@ -7546,6 +8475,7 @@ socket.on('nova_mensagem', (dados) => {
     // Sobrescreve a renderização do Compêndio/UI para desenhar as Skills
    function syncUI() {
         if(!meuVampiro) return;
+        if (typeof renderizarPaperdollEquipamentos === 'function') renderizarPaperdollEquipamentos();
         if(meuVampiro.estado === 'Banido') return document.body.innerHTML = "<div style='display:flex; justify-content:center; align-items:center; height:100vh;'><h1 style='color:red; text-align:center;'>A TUA ALMA FOI DEVORADA PELO ABISMO.<br>O TEU SANGUE SECRETOU.</h1></div>";
         
         safeSet('ui-meu-nome', meuVampiro.nome); safeSet('ui-titulo', meuVampiro.tituloAtual); safeSet('ui-geracao', meuVampiro.geracao);
@@ -7620,18 +8550,7 @@ socket.on('nova_mensagem', (dados) => {
             safeSet('circulo-freq', dens.frequenciaRessonanciaHz || 432);
         }
 
-        const eq = meuVampiro.equipamentos;
-        safeSet('eq-arma', eq.arma ? `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div>${eq.arma.nome}</div><button class="btn-magick" onclick="desequiparItem('arma')" style="width:auto; padding:5px; margin:0; font-size:0.7em;">Tirar</button></div>` : '<div>Garras Limpas (Sem Arma)</div>', true);
-        safeSet('eq-armadura', eq.armadura ? `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div>${eq.armadura.nome}</div><button class="btn-magick" onclick="desequiparItem('armadura')" style="width:auto; padding:5px; margin:0; font-size:0.7em;">Tirar</button></div>` : '<div>Pele Fria (Sem Armadura)</div>', true);
-        safeSet('eq-amuleto', eq.amuleto ? `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><div>${eq.amuleto.nome}</div><button class="btn-magick" onclick="desequiparItem('amuleto')" style="width:auto; padding:5px; margin:0; font-size:0.7em;">Tirar</button></div>` : '<div>Aura Vazia (Sem Amuleto)</div>', true);
-
-        if (meuVampiro.bolsa.length === 0) safeSet('lista-bolsa', "<p style='color:#555;font-size:0.8em;text-align:center;'>A caixa está oca.</p>", true);
-        else safeSet('lista-bolsa', meuVampiro.bolsa.map(i => `<div style="border: 1px solid #333; padding: 10px; margin-bottom: 5px; background: #050505;">
-        <strong style="color:var(--ouro);">${i.nome}</strong> <span style="font-size:0.7em;color:#888;">[${i.raridade}]</span><br>
-        <span style="font-size:0.75em; color:var(--xp);">⚔️ Build: ${i.arquetipo || 'Misto'}</span><br>
-        <button class="btn-magick" onclick="equiparItem('${i.id}')" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto;">Assimilar Artefacto</button>
-        <button class="btn-magick" onmousedown="IniciarInspecao(event, 'reliquia', '${i.id}')" onmouseup="PararInspecao()" onmouseleave="PararInspecao()" ontouchstart="IniciarInspecao(event, 'reliquia', '${i.id}')" ontouchend="PararInspecao()" style="padding:5px; font-size:0.7em; margin-top:5px; width:auto; border-color:#0f5; color:#0f5;">👁️ Segurar p/ Ver</button>
-        </div>`).join(''), true);
+        // [HOTFIX]: renderizarPaperdollEquipamentos() é o único responsável pelo Paperdoll 8 Slots e Lista da Bolsa
         
         safeSet('p-drenado', numFmt(meuVampiro.estatisticas?.totalDrenado || 0)); 
         safeSet('p-secos', numFmt(meuVampiro.estatisticas?.mortaisSecos || 0));
@@ -8735,6 +9654,2302 @@ if(meuVampiro.geracao === 1) safeSet('alvo-osint-admin', document.getElementById
             syncStatus();
         } catch(e) {
             ocultoAlert("O Véu rejeitou a ação kármica.");
+        }
+    }
+
+
+    // ==========================================
+    // MEGAPACK RPG: PAPERDOLL 8 SLOTS, FORJA & MERCADO P2P
+    // ==========================================
+    function renderDurabilidade(dur) {
+        if (dur === undefined) dur = 100;
+        let cor = dur > 50 ? '#0f5' : (dur > 0 ? '#d4af37' : 'red');
+        let txt = dur > 0 ? `${dur}%` : 'PARTIDO';
+        return `<span style="font-size:0.72em; color:${cor}; border:1px solid ${cor}; padding:1px 4px; border-radius:3px; margin-left:4px; text-shadow:0 0 5px #000;">🛡️ ${txt}</span>`;
+    }
+
+    function obterSVGProceduralItem(i) {
+        if (!i) return '';
+        if (i.iconeMiniaturaSVG && typeof i.iconeMiniaturaSVG === 'string' && i.iconeMiniaturaSVG.includes('<svg')) {
+            return i.iconeMiniaturaSVG;
+        }
+        const cor = i.corRaridade || '#d4af37';
+        const icone = i.icone || '⚔️';
+        const idSafe = (i.id || 'item_' + Math.random().toString(36).substring(2, 6)).replace(/[^a-zA-Z0-9_-]/g, '_');
+        return `<svg viewBox="0 0 48 48" width="40" height="40" style="filter: drop-shadow(0 0 6px ${cor}); display:inline-block; vertical-align:middle;">
+            <defs>
+                <linearGradient id="grad_${idSafe}" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#1c0a10"/>
+                    <stop offset="50%" stop-color="#080204"/>
+                    <stop offset="100%" stop-color="#120508"/>
+                </linearGradient>
+            </defs>
+            <rect x="3" y="3" width="42" height="42" rx="8" fill="url(#grad_${idSafe})" stroke="${cor}" stroke-width="2"/>
+            <path d="M24 6 L42 24 L24 42 L6 24 Z" fill="${cor}" fill-opacity="0.15" stroke="${cor}" stroke-width="1.2"/>
+            <circle cx="24" cy="24" r="14" fill="none" stroke="${cor}" stroke-dasharray="2,2" stroke-width="0.8"/>
+            <text x="24" y="29" text-anchor="middle" font-size="18" fill="${cor}" style="user-select:none;">${icone}</text>
+        </svg>`;
+    }
+
+    
+    // =========================================================================
+    // CAMADA SOCIAL, CO-OP MULTIPLAYER & TRADE P2P
+    // =========================================================================
+    let comitivaAtualCache = null;
+    let sessaoTrocaAtual = null;
+    let baloesFala2D = []; // [ { x, y, texto, tempo, cor } ]
+
+    function trocarAbaSocial(secId, btn) {
+        document.querySelectorAll('.social-subnav-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        ['comitiva', 'vinculos', 'contratos', 'caldeirao', 'roster'].forEach(s => {
+            const el = document.getElementById('social-sec-' + s);
+            if (el) el.style.display = (s === secId) ? 'block' : 'none';
+        });
+
+        if (secId === 'comitiva') carregarStatusComitiva();
+        if (secId === 'vinculos') carregarVinculosSangue();
+        if (secId === 'contratos') carregarContratosMercenarios();
+        if (secId === 'caldeirao') carregarStatusCaldeirao();
+        if (secId === 'roster') carregarRosterJogadoresOnline();
+    }
+
+    async function carregarPainelSocialCompleto() {
+        if (!meuVampiro) return;
+        await Promise.all([
+            carregarStatusComitiva(),
+            carregarVinculosSangue(),
+            carregarContratosMercenarios(),
+            carregarStatusCaldeirao(),
+            carregarRosterJogadoresOnline()
+        ]);
+    }
+
+    // --- 1. COMITIVAS DA NOITE (HUNTING PARTY) ---
+    async function carregarStatusComitiva() {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch(`/api/social/comitiva/status?id=${meuVampiro.id}`);
+            const dados = await res.json();
+            const container = document.getElementById('social-comitiva-container');
+            if (!container) return;
+
+            const c = dados.comitiva;
+            comitivaAtualCache = c;
+
+            if (!c) {
+                container.innerHTML = `
+                    <div class="card" style="border-color:#4a1520; background:#0e0306; text-align:center; padding:25px;">
+                        <div style="font-size:2.5rem; margin-bottom:8px;">🐺</div>
+                        <h3 style="color:#ff79c6; font-family:'Cinzel',serif; margin:0;">És um Predador Solitário</h3>
+                        <p style="font-size:0.85rem; color:#aaa; max-width:500px; margin:8px auto 16px auto;">
+                            Funda uma <b>Comitiva da Noite</b> ou aguarda um chamado. Membros de comitiva partilham <b>+15% de Dano Coletivo</b>, <b>25% de Dreno Compartilhado</b> e disparam <b>Flanco de Matilha</b> contra monstros e chefes mundiais.
+                        </p>
+                        <div style="display:flex; justify-content:center; gap:8px; max-width:400px; margin:0 auto;">
+                            <input type="text" id="inp-nome-comitiva" placeholder="Nome da tua Matilha..." style="background:#180509; color:#fff; border:1px solid #ff007f; padding:8px 12px; border-radius:4px; flex:1;">
+                            <button class="btn-magick" onclick="criarComitivaFront()" style="border-color:#ff007f; color:#ff79c6; padding:8px 16px;">🐺 Fundar</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                let membrosHTML = (c.membros || []).map(m => {
+                    const hpPerc = Math.min(100, Math.floor((m.hpAtual / m.hpMax) * 100));
+                    const furiaPerc = Math.min(100, Math.floor((m.furia / (m.furiaMax || 10)) * 100));
+                    const isEu = m.id === meuVampiro.id;
+                    return `
+                        <div class="party-card ${m.isLider ? 'is-leader' : ''}">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:bold; color:${m.isLider ? 'var(--ouro)' : '#fff'}; font-size:0.9rem;">
+                                    ${m.isLider ? '👑 ' : ''}${m.nome} ${isEu ? '<span style="color:#ff79c6; font-size:0.75rem;">(Tu)</span>' : ''}
+                                </span>
+                                <span style="font-size:0.72rem; color:#888;">Grau ${m.nivel} (${m.raca})</span>
+                            </div>
+                            
+                            <div class="party-hp-bar">
+                                <div class="party-hp-fill" style="width: ${hpPerc}%;"></div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:#aaa;">
+                                <span>HP: ${m.hpAtual}/${m.hpMax}</span>
+                                <span>${m.sangue} Gts</span>
+                            </div>
+
+                            <div class="party-furia-bar" style="margin-top:4px;">
+                                <div class="party-furia-fill" style="width: ${furiaPerc}%;"></div>
+                            </div>
+                            <div style="font-size:0.65rem; color:#2ed573; margin-top:2px;">Fúria: ${m.furia}/${m.furiaMax}</div>
+
+                            <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size:0.7rem; color:#00e5ff;">📍 ${m.pos2D ? 'Mundo 2D (' + m.pos2D.x + ', ' + m.pos2D.y + ')' : 'No Sanctum'}</span>
+                                ${!isEu && m.pos2D ? `<button class="btn-magick" onclick="teleporteComitivaFront('${m.id}')" style="padding:2px 8px; font-size:0.65rem; border-color:#00e5ff; color:#00e5ff;">Passo Sombrio</button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = `
+                    <div class="card" style="border-color:#ff007f; background:#0c0205; margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                            <div>
+                                <h3 style="color:#ff79c6; font-family:'Cinzel',serif; margin:0; font-size:1.15rem;">
+                                    🐺 ${c.nome} <span style="font-size:0.75rem; color:var(--ouro); font-weight:normal;">[Líder: ${c.liderNome}]</span>
+                                </h3>
+                                <div style="font-size:0.75rem; color:#0f5; margin-top:3px;">
+                                    ✨ ${c.buffAtivo}
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn-magick" onclick="sairComitivaFront()" style="padding:5px 12px; font-size:0.72rem; border-color:#ff3838; color:#ff3838;">Sair da Comitiva</button>
+                            </div>
+                        </div>
+
+                        ${c.isLider || c.liderId === meuVampiro.id ? `
+                            <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+                                <select id="sel-convidar-comitiva" style="background:#150408; color:#fff; border:1px solid #ff007f; padding:6px; border-radius:4px; flex:1;">
+                                    <option value="">-- Convidar jogador online para a matilha --</option>
+                                </select>
+                                <button class="btn-magick" onclick="convidarParaComitivaFront()" style="padding:6px 14px; font-size:0.75rem; border-color:#ff007f; color:#ff79c6;">➕ Convidar</button>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="party-grid">
+                        ${membrosHTML}
+                    </div>
+                `;
+            }
+        } catch(e) {}
+    }
+
+    async function criarComitivaFront() {
+        if (!meuVampiro) return;
+        const nome = (document.getElementById('inp-nome-comitiva')?.value || '').trim();
+        try {
+            const res = await fetch('/api/social/comitiva/criar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, nome })
+            });
+            const d = await res.json();
+            if (d.erro) return ocultoAlert(d.erro);
+            playSfx('uivo');
+            showJuiceNotif("COMITIVA FUNDADA", d.relato);
+            carregarStatusComitiva();
+        } catch(e) { ocultoAlert("Falha ao criar comitiva."); }
+    }
+
+    async function convidarParaComitivaFront() {
+        if (!meuVampiro) return;
+        const convidadoId = document.getElementById('sel-convidar-comitiva')?.value;
+        if (!convidadoId) return ocultoAlert("Seleciona um iniciado.");
+        try {
+            const res = await fetch('/api/social/comitiva/convidar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, convidadoId })
+            });
+            const d = await res.json();
+            if (d.erro) return ocultoAlert(d.erro);
+            playSfx('magia');
+            showJuiceNotif("CONVOCAÇÃO", d.relato);
+        } catch(e) { ocultoAlert("Falha ao convidar."); }
+    }
+
+    async function sairComitivaFront() {
+        if (!meuVampiro) return;
+        const ok = await ocultoConfirm("Desejas romper com a tua Comitiva da Noite?");
+        if (!ok) return;
+        try {
+            const res = await fetch('/api/social/comitiva/sair', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id })
+            });
+            const d = await res.json();
+            if (d.erro) return ocultoAlert(d.erro);
+            showJuiceNotif("COMITIVA", d.relato);
+            carregarStatusComitiva();
+        } catch(e) { ocultoAlert("Falha ao sair."); }
+    }
+
+    function teleporteComitivaFront(alvoId) {
+        if (!meuVampiro) return;
+        if (typeof socket !== 'undefined' && socket) {
+            socket.emit('world2d_party_teleport', { id: meuVampiro.id, alvoId });
+        }
+        showJuiceNotif("PASSO SOMBRIO", "Translocaste-te pelas brumas até o teu aliado!");
+        if (typeof nav === 'function') nav('mundo2d');
+    }
+
+    // --- 2. VÍNCULOS DE SANGUE ---
+    async function carregarVinculosSangue() {
+        if (!meuVampiro) return;
+        const lista = document.getElementById('social-vinculos-lista');
+        if (!lista) return;
+
+        const vinculos = meuVampiro.vinculosSangue || [];
+        if (vinculos.length === 0) {
+            lista.innerHTML = `<p style="color:#666; font-size:0.8rem; text-align:center; grid-column:span 2; padding:20px;">Nenhum Vínculo de Sangue selado ainda. Escolhe um iniciado acima para entrelaçar as vossas veias!</p>`;
+            return;
+        }
+
+        lista.innerHTML = vinculos.map(v => `
+            <div style="background:#110307; border:1px solid #ff1744; border-radius:6px; padding:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:#ff5252; font-weight:bold; font-size:0.9rem;">🩸 ${v.parceiroNome}</span>
+                    <span style="font-size:0.72rem; color:var(--ouro);">Elo Grau ${v.nivelElo || 1}</span>
+                </div>
+                <div style="font-size:0.75rem; color:#aaa; margin:6px 0;">
+                    Volume Transfundido: <b style="color:#fff;">${v.gtsTrocados || 0} Gts</b>
+                </div>
+                <div style="font-size:0.7rem; color:#ff79c6; margin-bottom:8px;">
+                    ✨ Ressonância: Salvação Vital à Distância (+75% HP)
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button class="btn-magick" onclick="executarTransfusaoVitalFront('${v.parceiroId}', 200)" style="padding:4px 8px; font-size:0.68rem; border-color:#ff1744; color:#ff1744;">Doar 200 Gts</button>
+                    <button class="btn-magick" onclick="executarTransfusaoVitalFront('${v.parceiroId}', 500)" style="padding:4px 8px; font-size:0.68rem; border-color:#ff007f; color:#ff007f;">Doar 500 Gts</button>
+                    <button class="btn-magick" onclick="executarTransfusaoVitalFront('${v.parceiroId}', 1000)" style="padding:4px 8px; font-size:0.68rem; border-color:var(--ouro); color:var(--ouro);">Doar 1.000 Gts</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function forjarVinculoSangueFront() {
+        if (!meuVampiro) return;
+        const parceiroId = document.getElementById('sel-propor-vinculo')?.value;
+        if (!parceiroId) return ocultoAlert("Seleciona um vampiro para forjar o vínculo.");
+        try {
+            const res = await fetch('/api/social/vinculo/forjar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, parceiroId })
+            });
+            const d = await res.json();
+            if (d.erro) return ocultoAlert(d.erro);
+            playSfx('sangue');
+            showJuiceNotif("VÍNCULO SELADO", d.relato);
+            syncStatus();
+            setTimeout(carregarVinculosSangue, 300);
+        } catch(e) { ocultoAlert("Falha ao forjar vínculo."); }
+    }
+
+    async function executarTransfusaoVitalFront(parceiroId, quantiaGts) {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/social/vinculo/transfusao', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, parceiroId, quantiaGts })
+            });
+            const d = await res.json();
+            if (d.erro) return ocultoAlert(d.erro);
+            playSfx('sangue');
+            showJuiceNotif("TRANSFUSÃO VITAL", d.relato);
+            if (d.sangueRestante !== undefined) meuVampiro.sangue = d.sangueRestante;
+            syncUI();
+            carregarVinculosSangue();
+        } catch(e) { ocultoAlert("Falha na transfusão."); }
+    }
+
+    // --- 3. MURAL DE CONTRATOS MERCENÁRIOS ---
+    async function carregarContratosMercenarios() {
+        if (!meuVampiro) return;
+        const lista = document.getElementById('social-contratos-lista');
+        if (!lista) return;
+
+        try {
+            const res = await fetch('/api/social/contratos/listar');
+            const d = await res.json();
+            const contratos = d.contratos || [];
+
+            if (contratos.length === 0) {
+                lista.innerHTML = `<p style="color:#666; font-size:0.8rem; text-align:center; padding:25px;">O Mural Mercenário está silencioso. Afixa a primeira ordem de serviço!</p>`;
+                return;
+            }
+
+            lista.innerHTML = contratos.map(c => {
+                const isMeu = c.criadorId === meuVampiro.id;
+                const isAceitoPorMim = c.aceitoPor === meuVampiro.id;
+                return `
+                    <div class="contrato-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:6px;">
+                            <div>
+                                <h4 style="color:var(--ouro); margin:0; font-size:0.95rem;">📜 ${c.titulo}</h4>
+                                <span style="font-size:0.72rem; color:#888;">Autor: ${c.criadorNome} ${isMeu ? '(Tu)' : ''} • Tipo: ${c.tipo}</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <span style="font-size:0.95rem; font-weight:bold; color:#0f5;">💰 ${c.recompensaGts} Gts</span>
+                                <div style="font-size:0.68rem; color:${c.status === 'aberto' ? '#ff9800' : '#00e5ff'};">
+                                    [${c.status.toUpperCase()}] ${c.aceitoPorNome ? 'por ' + c.aceitoPorNome : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <p style="font-size:0.8rem; color:#ccc; margin:8px 0;">${c.descricao}</p>
+                        
+                        ${c.requisito ? `
+                            <div style="background:#150508; border:1px dashed #4a1520; padding:6px 10px; border-radius:4px; font-size:0.75rem; color:var(--ouro); display:inline-block; margin-bottom:8px;">
+                                Exigência: <b>${c.requisito.qtd}x [${c.requisito.item}]</b>
+                            </div>
+                        ` : ''}
+
+                        <div style="display:flex; justify-content:flex-end; gap:8px;">
+                            ${c.status === 'aberto' && !isMeu ? `
+                                <button class="btn-magick" onclick="aceitarContratoMercenarioFront('${c.id}')" style="padding:4px 12px; font-size:0.72rem; border-color:#00e5ff; color:#00e5ff;">Assumir Contrato</button>
+                            ` : ''}
+                            ${isAceitoPorMim ? `
+                                <button class="btn-magick" onclick="cumprirContratoMercenarioFront('${c.id}')" style="padding:4px 12px; font-size:0.72rem; border-color:#0f5; color:#0f5; font-weight:bold;">📦 Entregar Recursos e Reclamar Sangue</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch(e) {}
+    }
+
+    function abrirModalPublicarContrato() {
+        const m = document.getElementById('modal-publicar-contrato');
+        if (m) m.classList.remove('oculto');
+    }
+
+    async function publicarContratoMercenarioFront() {
+        if (!meuVampiro) return;
+        const titulo = document.getElementById('novo-cnt-titulo')?.value;
+        const descricao = document.getElementById('novo-cnt-desc')?.value;
+        const item = document.getElementById('novo-cnt-item')?.value;
+        const qtd = parseInt(document.getElementById('novo-cnt-qtd')?.value || '20');
+        const recompensaGts = parseInt(document.getElementById('novo-cnt-recompensa')?.value || '500');
+
+        if (!titulo) return ocultoAlert("Dá um título ao teu contrato.");
+        if (recompensaGts < 200) return ocultoAlert("Recompensa mínima de 200 Gts.");
+
+        try {
+            const res = await fetch('/api/social/contratos/publicar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: meuVampiro.id,
+                    tipo: 'coleta',
+                    titulo,
+                    descricao,
+                    recompensaGts,
+                    requisito: { item, qtd }
+                })
+            });
+            const d = await res.json();
+            if (d.erro) return ocultoAlert(d.erro);
+            playSfx('ouro');
+            showJuiceNotif("CONTRATO PUBLICADO", d.relato);
+            document.getElementById('modal-publicar-contrato').classList.add('oculto');
+            syncStatus();
+            carregarContratosMercenarios();
+        } catch(e) { ocultoAlert("Falha ao publicar contrato."); }
+    }
+
+    async function aceitarContratoMercenarioFront(contratoId) {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/social/contratos/aceitar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, contratoId })
+            });
+            const d = await res.json();
+            if (d.erro) return ocultoAlert(d.erro);
+            playSfx('espada');
+            showJuiceNotif("CONTRATO ASSUMIDO", d.relato);
+            carregarContratosMercenarios();
+        } catch(e) { ocultoAlert("Falha ao aceitar contrato."); }
+    }
+
+    async function cumprirContratoMercenarioFront(contratoId) {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/social/contratos/cumprir', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, contratoId })
+            });
+            const d = await res.json();
+            if (d.erro) return ocultoAlert(d.erro);
+            playSfx('ouro');
+            showJuiceNotif("RECOMPENSA RECLAMADA", d.relato);
+            syncStatus();
+            carregarContratosMercenarios();
+        } catch(e) { ocultoAlert("Falha ao entregar contrato."); }
+    }
+
+    // --- 4. GRANDE CALDEIRÃO DA EGRÉGORA ---
+    async function carregarStatusCaldeirao() {
+        try {
+            const res = await fetch('/api/social/caldeirao/status');
+            const d = await res.json();
+            const bar = document.getElementById('caldeirao-fill-bar');
+            const txt = document.getElementById('caldeirao-status-txt');
+            const banner = document.getElementById('caldeirao-eclipse-banner');
+            const timer = document.getElementById('caldeirao-timer');
+
+            if (bar) bar.style.width = d.progressoPercentual + '%';
+            if (txt) txt.innerHTML = `${d.acumulado} / ${d.meta} Gts Acumulados (${d.progressoPercentual}%)`;
+
+            if (banner && timer) {
+                if (d.eclipseAtivo) {
+                    banner.style.display = 'block';
+                    const mins = Math.floor(d.tempoRestanteSegundos / 60);
+                    const secs = d.tempoRestanteSegundos % 60;
+                    timer.innerText = `Tempo restante: ${mins}m ${secs < 10 ? '0' + secs : secs}s`;
+                } else {
+                    banner.style.display = 'none';
+                }
+            }
+        } catch(e) {}
+    }
+
+    async function doarCaldeiraoFront(quantiaGts) {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/social/caldeirao/doar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, quantiaGts })
+            });
+            const d = await res.json();
+            if (d.erro) return ocultoAlert(d.erro);
+            playSfx(d.eclipseAtivado ? 'sino' : 'sangue');
+            showJuiceNotif("OFERENDA AO CALDEIRÃO", d.relato);
+            syncStatus();
+            carregarStatusCaldeirao();
+        } catch(e) { ocultoAlert("Falha na oferenda."); }
+    }
+
+    // --- 5. ROSTER DE VAMPIROS ONLINE ---
+    async function carregarRosterJogadoresOnline() {
+        if (!meuVampiro) return;
+        const container = document.getElementById('social-roster-lista');
+        const selVinculo = document.getElementById('sel-propor-vinculo');
+        const selComitiva = document.getElementById('sel-convidar-comitiva');
+        if (!container) return;
+
+        try {
+            const res = await fetch(`/api/social/jogadores_online?meuId=${meuVampiro.id}`);
+            const d = await res.json();
+            const jogadores = d.jogadores || [];
+
+            // Popula seletores
+            if (selVinculo) {
+                selVinculo.innerHTML = '<option value="">-- Seleciona um vampiro para forjar vínculo --</option>' +
+                    jogadores.filter(j => j.id !== meuVampiro.id).map(j => `<option value="${j.id}">${j.nome} (Grau ${j.nivel})</option>`).join('');
+            }
+            if (selComitiva) {
+                selComitiva.innerHTML = '<option value="">-- Convidar jogador online para a matilha --</option>' +
+                    jogadores.filter(j => j.id !== meuVampiro.id).map(j => `<option value="${j.id}">${j.nome} (Grau ${j.nivel})</option>`).join('');
+            }
+
+            container.innerHTML = jogadores.map(j => {
+                const isEu = j.id === meuVampiro.id;
+                return `
+                    <div style="background:#0b0306; border:1px solid ${isEu ? '#ff007f' : '#331518'}; border-radius:6px; padding:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:bold; color:${isEu ? '#ff79c6' : 'var(--ouro)'}; font-size:0.88rem;">
+                                ${j.raca === 'lycan' ? '🐺' : '🧛'} ${j.nome} ${isEu ? '(Tu)' : ''}
+                            </span>
+                            <span style="font-size:0.7rem; color:#888;">Grau ${j.nivel}</span>
+                        </div>
+                        <div style="font-size:0.72rem; color:#aaa; margin:4px 0;">
+                            Clã: <span style="color:#00e5ff;">${j.clan || 'Sem Clã'}</span>
+                        </div>
+                        <div style="font-size:0.7rem; color:#0f5; margin-bottom:8px;">
+                            📍 ${j.pos2D ? j.pos2D.zona : 'No Sanctum'}
+                        </div>
+                        ${!isEu ? `
+                            <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                                <button class="btn-magick" onclick="iniciarTrocaDiretaFront('${j.id}')" style="padding:3px 8px; font-size:0.68rem; border-color:var(--ouro); color:var(--ouro);">🤝 Trocar</button>
+                                <button class="btn-magick" onclick="executarAcaoRosterRapida('convidar', '${j.id}')" style="padding:3px 8px; font-size:0.68rem; border-color:#ff007f; color:#ff79c6;">🐺 Matilha</button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        } catch(e) {}
+    }
+
+    function executarAcaoRosterRapida(acao, alvoId) {
+        if (acao === 'convidar') {
+            const sel = document.getElementById('sel-convidar-comitiva');
+            if (sel) sel.value = alvoId;
+            convidarParaComitivaFront();
+        }
+    }
+
+    // --- 6. TROCA DIRETA SEGURA P2P (TRADE WINDOW) ---
+    async function iniciarTrocaDiretaFront(alvoId) {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/social/trade/iniciar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, alvoId })
+            });
+            const d = await res.json();
+            if (d.erro) return ocultoAlert(d.erro);
+            sessaoTrocaAtual = d.sessao;
+            abrirModalTroca(d.sessao);
+            showJuiceNotif("TROCA P2P", "Sessão mercantil aberta!");
+        } catch(e) { ocultoAlert("Falha ao iniciar troca."); }
+    }
+
+    function abrirModalTroca(sessao) {
+        const m = document.getElementById('modal-troca-p2p');
+        if (!m) return;
+        m.classList.remove('oculto');
+        sessaoTrocaAtual = sessao;
+
+        const containerMeus = document.getElementById('trade-meus-itens');
+        if (containerMeus && meuVampiro) {
+            containerMeus.innerHTML = (meuVampiro.bolsa || []).map(item => {
+                const miniSvg = typeof obterSVGProceduralItem === 'function' ? obterSVGProceduralItem(item) : '⚔️';
+                return `
+                    <label style="display:flex; align-items:center; gap:8px; background:#080204; border:1px solid #331518; padding:4px; border-radius:4px; cursor:pointer;">
+                        <input type="checkbox" class="chk-trade-item" value="${item.id}" onchange="atualizarOfertaTrocaFront()">
+                        <div style="width:28px; height:28px;">${miniSvg}</div>
+                        <span style="font-size:0.75rem; color:${item.corRaridade || 'var(--ouro)'};">${item.nome}</span>
+                    </label>
+                `;
+            }).join('');
+        }
+    }
+
+    function fecharModalTroca() {
+        const m = document.getElementById('modal-troca-p2p');
+        if (m) m.classList.add('oculto');
+        sessaoTrocaAtual = null;
+    }
+
+    async function atualizarOfertaTrocaFront() {
+        if (!sessaoTrocaAtual || !meuVampiro) return;
+        const checks = Array.from(document.querySelectorAll('.chk-trade-item:checked')).map(c => c.value);
+        const gts = parseInt(document.getElementById('trade-meus-gts')?.value || '0');
+
+        try {
+            const res = await fetch('/api/social/trade/ofertar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sessaoId: sessaoTrocaAtual.id,
+                    id: meuVampiro.id,
+                    itemIds: checks,
+                    gts
+                })
+            });
+            const d = await res.json();
+            if (d.sessao) sessaoTrocaAtual = d.sessao;
+        } catch(e) {}
+    }
+
+    async function travarTrocaFront() {
+        if (!sessaoTrocaAtual || !meuVampiro) return;
+        try {
+            const res = await fetch('/api/social/trade/travar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessaoId: sessaoTrocaAtual.id, id: meuVampiro.id })
+            });
+            const d = await res.json();
+            if (d.sucesso) {
+                playSfx('espada');
+                document.getElementById('trade-btn-travar').innerText = "🔒 Oferta Travada";
+                document.getElementById('trade-btn-travar').style.borderColor = "#ffd700";
+                document.getElementById('trade-btn-travar').style.color = "#ffd700";
+                sessaoTrocaAtual = d.sessao;
+            }
+        } catch(e) {}
+    }
+
+    async function confirmarTrocaFront() {
+        if (!sessaoTrocaAtual || !meuVampiro) return;
+        try {
+            const res = await fetch('/api/social/trade/confirmar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessaoId: sessaoTrocaAtual.id, id: meuVampiro.id })
+            });
+            const d = await res.json();
+            if (d.erro) return ocultoAlert(d.erro);
+            if (d.concluida) {
+                playSfx('ouro');
+                showJuiceNotif("TROCA CONCLUÍDA", d.relato);
+                fecharModalTroca();
+                syncStatus();
+            }
+        } catch(e) { ocultoAlert("Falha ao confirmar troca."); }
+    }
+
+    // --- 7. BALÕES DE PROXIMIDADE 2D NO CANVAS ---
+    async function enviarFalaProximidade2D(texto) {
+        if (!meuVampiro || !texto || !texto.trim()) return;
+        try {
+            const res = await fetch('/api/social/proximidade/falar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, texto: texto.trim() })
+            });
+            const d = await res.json();
+            if (d.sucesso && d.msg) {
+                registrarBalaoFala2D(d.msg);
+            }
+        } catch(e) {}
+    }
+
+    async function enviarMensagemProximidade2D() {
+        const inp = document.getElementById('m2d-chat-input');
+        if (!inp) return;
+        const txt = inp.value.trim();
+        if (!txt) return;
+        inp.value = '';
+        await enviarFalaProximidade2D(txt);
+    }
+
+    function registrarBalaoFala2D(msg) {
+        if (!msg) return;
+        baloesFala2D.push({
+            x: msg.x,
+            y: msg.y,
+            jogadorId: msg.jogadorId,
+            nome: msg.nome,
+            texto: msg.texto,
+            expiraEm: Date.now() + 6000
+        });
+    }
+
+    // --- 8. ATAQUE AO CHEFE MUNDIAL AZAZEL NO 2D ---
+    async function atacarBossMundial2D() {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/mundo2d/atacar_boss', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id })
+            });
+            const d = await res.json();
+            if (d.erro) return ocultoAlert(d.erro);
+            playSfx(d.bossMorto ? 'sino' : 'espada');
+            showJuiceNotif(d.bossMorto ? "AZAZEL ANIQUILADO!" : "GOLPE NO CHEFE MUNDIAL", d.relato);
+            if (typeof triggerScreenShake === 'function') triggerScreenShake(8);
+            syncStatus();
+        } catch(e) { ocultoAlert("Falha ao golpear o chefe mundial."); }
+    }
+
+    // --- 9. SOCKET LISTENERS SOCIAIS ---
+    if (typeof socket !== 'undefined' && socket) {
+        socket.on('world2d_chat_bubble', (msg) => {
+            registrarBalaoFala2D(msg);
+        });
+
+        socket.on('social_party_update', () => {
+            carregarStatusComitiva();
+        });
+
+        socket.on('social_party_invite', (d) => {
+            if (meuVampiro && d.convidadoId === meuVampiro.id) {
+                playSfx('uivo');
+                showJuiceNotif("CONVOCAÇÃO DE MATILHA", `${d.convite.liderNome} convidou-te para a comitiva!`);
+                carregarStatusComitiva();
+            }
+        });
+
+        socket.on('social_caldeirao_update', () => {
+            carregarStatusCaldeirao();
+        });
+
+        socket.on('social_eclipse_iniciado', (d) => {
+            playSfx('sino');
+            showJuiceNotif("🌑 ECLIPSE DESPERTOU", d.relato);
+            carregarStatusCaldeirao();
+        });
+
+        socket.on('social_contratos_update', () => {
+            carregarContratosMercenarios();
+        });
+
+        socket.on('social_trade_invite', (d) => {
+            if (meuVampiro && d.alvoId === meuVampiro.id) {
+                playSfx('ouro');
+                sessaoTrocaAtual = d.sessao;
+                abrirModalTroca(d.sessao);
+            }
+        });
+
+        socket.on('social_trade_update', (sessao) => {
+            if (sessaoTrocaAtual && sessaoTrocaAtual.id === sessao.id) {
+                sessaoTrocaAtual = sessao;
+                // Atualiza lado do parceiro
+                const parceiro = (sessao.j1.id === meuVampiro.id) ? sessao.j2 : sessao.j1;
+                const meu = (sessao.j1.id === meuVampiro.id) ? sessao.j1 : sessao.j2;
+                
+                const containerAliado = document.getElementById('trade-aliado-itens');
+                if (containerAliado) {
+                    if (parceiro.itens.length === 0) {
+                        containerAliado.innerHTML = '<p style="color:#555; font-size:0.75rem; text-align:center;">Nenhum item ofertado.</p>';
+                    } else {
+                        containerAliado.innerHTML = parceiro.itens.map(it => {
+                            const miniSvg = typeof obterSVGProceduralItem === 'function' ? obterSVGProceduralItem(it) : '⚔️';
+                            return `<div style="display:flex; align-items:center; gap:6px; background:#04060e; padding:3px 6px; border-radius:3px;"><div style="width:24px; height:24px;">${miniSvg}</div><span style="font-size:0.75rem; color:${it.corRaridade || '#d4af37'};">${it.nome}</span></div>`;
+                        }).join('');
+                    }
+                }
+                const gtsAliado = document.getElementById('trade-aliado-gts');
+                if (gtsAliado) gtsAliado.innerText = (parceiro.gts || 0) + ' Gts';
+
+                const statusAliado = document.getElementById('trade-aliado-status');
+                if (statusAliado) {
+                    statusAliado.innerText = parceiro.travado ? "🔒 Oferta Travada pelo Aliado" : "⏳ Modificando oferta...";
+                    statusAliado.style.color = parceiro.travado ? "#0f5" : "#ff9800";
+                }
+
+                const btnConfirmar = document.getElementById('trade-btn-confirmar');
+                if (btnConfirmar) {
+                    if (meu.travado && parceiro.travado) {
+                        btnConfirmar.disabled = false;
+                        btnConfirmar.style.borderColor = "#0f5";
+                        btnConfirmar.style.color = "#0f5";
+                    } else {
+                        btnConfirmar.disabled = true;
+                        btnConfirmar.style.borderColor = "#555";
+                        btnConfirmar.style.color = "#555";
+                    }
+                }
+            }
+        });
+    }
+
+    function renderizarPaperdollEquipamentos() {
+        if (!meuVampiro) return;
+        const eq = meuVampiro.equipamentos || {};
+
+        // Garante estrutura completa dos 8 slots
+        const slots8 = [
+            { id: 'elmo', label: '👑 Elmo / Diadema', elId: 'slot-elmo' },
+            { id: 'armadura', label: '🥋 Couraça / Manto', elId: 'slot-armadura' },
+            { id: 'botas', label: '👢 Grevas / Botas', elId: 'slot-botas' },
+            { id: 'amuleto', label: '📿 Amuleto Astral', elId: 'slot-amuleto' },
+            { id: 'armaPrincipal', label: '⚔️ Arma Principal', elId: 'slot-armaPrincipal' },
+            { id: 'armaSecundaria', label: '🛡️ Mão Secundária', elId: 'slot-armaSecundaria' },
+            { id: 'anel1', label: '💍 Anel Primário', elId: 'slot-anel1' },
+            { id: 'anel2', label: '💍 Anel Secundário', elId: 'slot-anel2' }
+        ];
+
+        slots8.forEach(s => {
+            const el = document.getElementById(s.elId);
+            if (!el) return;
+            const item = eq[s.id];
+
+            if (item) {
+                el.className = "paperdoll-slot";
+                const miniSvg = obterSVGProceduralItem(item);
+                el.innerHTML = `
+                    <div class="slot-mini-box">${miniSvg}</div>
+                    <div class="slot-info-box">
+                        <span class="slot-nome-item" style="color:${item.corRaridade || 'var(--ouro)'};">${item.nome}</span>
+                        <div class="slot-sub-info">[${item.raridade || 'Raro'}] ${renderDurabilidade(item.durabilidade)}</div>
+                        <div class="slot-botoes-acao">
+                            <button class="btn-magick" onclick="desequiparItem('${s.id}')" style="padding:2px 6px; font-size:0.68em; width:auto;">Tirar</button>
+                            <button class="btn-magick" onclick="repararItem('${s.id}')" style="padding:2px 6px; font-size:0.68em; width:auto; border-color:#0f5; color:#0f5;">Reparar</button>
+                            <button class="btn-magick" onmousedown="IniciarInspecao(event, 'reliquia', '${item.id}')" onmouseup="PararInspecao()" onmouseleave="PararInspecao()" ontouchstart="IniciarInspecao(event, 'reliquia', '${item.id}')" ontouchend="PararInspecao()" style="padding:2px 6px; font-size:0.68em; width:auto; border-color:#00e5ff; color:#00e5ff;">👁️</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                el.className = "paperdoll-slot slot-vazio";
+                el.innerHTML = `<span style="color:#555;">${s.label} (Vazio)</span>`;
+            }
+        });
+
+        // Atualiza stats centrais do Paperdoll
+        safeSet('paperdoll-avatar-icone', meuVampiro.raca === 'lycan' ? '🐺' : '🧛');
+        safeSet('paperdoll-nome-vamp', meuVampiro.nome);
+        safeSet('paperdoll-nv-vamp', `Grau ${meuVampiro.nivel} ${meuVampiro.tituloAtual || ''}`);
+
+        const stats = meuVampiro.statsCombate || {};
+        const resumoHTML = `
+            <div style="display:flex; justify-content:space-between;"><span>⚔️ Dano Fís:</span><b style="color:#ff793f;">${stats.danoFisico || 0}</b></div>
+            <div style="display:flex; justify-content:space-between;"><span>🔮 Dano Mág:</span><b style="color:#b388ff;">${stats.danoMagico || 0}</b></div>
+            <div style="display:flex; justify-content:space-between;"><span>🛡️ Armadura:</span><b style="color:#00e5ff;">${stats.armadura || 0} (CA: ${meuVampiro.dnd?.classeArmadura || 10})</b></div>
+            <div style="display:flex; justify-content:space-between;"><span>💥 Crítico:</span><b style="color:#ffd700;">${stats.critico || 5}%</b></div>
+            <div style="display:flex; justify-content:space-between;"><span>🩸 Dreno:</span><b style="color:#ff1744;">${stats.rouboDeVida || 0}%</b></div>
+            <div style="display:flex; justify-content:space-between;"><span>⚡ Fúria Máx:</span><b style="color:#26de81;">${meuVampiro.maxAcao}</b></div>
+        `;
+        safeSet('paperdoll-stats-resumo', resumoHTML, true);
+        safeSet('stats-combate-hud', `HP: ${meuVampiro.hpAtual}/${meuVampiro.hpMax} | Fúria: ${meuVampiro.pontosAcao}/${meuVampiro.maxAcao}`);
+
+        // Atualiza nível de Armaria na forja
+        const nvArm = meuVampiro.oficios?.armaria?.nivel || 1;
+        safeSet('craft-nv-armaria', `Armaria Grau ${nvArm}`);
+
+        // Renderiza lista da Bolsa com miniaturas SVG
+        const listaBolsa = document.getElementById('lista-bolsa');
+        if (listaBolsa) {
+            safeSet('bolsa-capacidade-hud', `${meuVampiro.bolsa.length} itens`);
+            if (meuVampiro.bolsa.length === 0) {
+                listaBolsa.innerHTML = `<p style="color:#555; font-size:0.85em; text-align:center; grid-column:span 2; padding:15px;">A caixa de ossos está vazia. Explora masmorras ou forja armas na bigorna!</p>`;
+            } else {
+                listaBolsa.innerHTML = meuVampiro.bolsa.map(i => {
+                    const miniSvg = obterSVGProceduralItem(i);
+                    const cor = i.corRaridade || 'var(--ouro)';
+                    return `
+                        <div style="background:#0a0305; border:1px solid #331518; border-radius:6px; padding:8px; display:flex; gap:10px; align-items:center; transition:all 0.2s;" onmouseenter="this.style.borderColor='${cor}'" onmouseleave="this.style.borderColor='#331518'">
+                            <div class="slot-mini-box" style="border-color:${cor};">${miniSvg}</div>
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-size:0.82rem; font-weight:bold; color:${cor}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${i.nome}</div>
+                                <div style="font-size:0.7rem; color:#888;">
+                                    <span style="color:${cor};">[${i.raridade || 'Raro'}]</span> ${renderDurabilidade(i.durabilidade)} • Slot: ${i.tipo}
+                                </div>
+                                <div style="font-size:0.68rem; color:#aaa; margin-top:2px;">
+                                    ${i.danoFisico ? '⚔️' + i.danoFisico + ' ' : ''}
+                                    ${i.danoMagico ? '🔮' + i.danoMagico + ' ' : ''}
+                                    ${i.armadura ? '🛡️' + i.armadura + ' ' : ''}
+                                    ${i.critico ? '💥' + i.critico + '% ' : ''}
+                                    ${i.rouboDeVida ? '🩸' + i.rouboDeVida + '% ' : ''}
+                                </div>
+                                <div style="display:flex; gap:5px; margin-top:5px; flex-wrap:wrap;">
+                                    <button class="btn-magick" onclick="equiparItem('${i.id}')" style="padding:3px 8px; font-size:0.7em; width:auto; border-color:#0f5; color:#0f5;">⚔️ Equipar</button>
+                                    <button class="btn-magick" onclick="abrirModalAnunciarMercado('${i.id}')" style="padding:3px 8px; font-size:0.7em; width:auto; border-color:var(--ouro); color:var(--ouro);">💰 Vender</button>
+                                    <button class="btn-magick" onmousedown="IniciarInspecao(event, 'reliquia', '${i.id}')" onmouseup="PararInspecao()" onmouseleave="PararInspecao()" ontouchstart="IniciarInspecao(event, 'reliquia', '${i.id}')" ontouchend="PararInspecao()" style="padding:3px 8px; font-size:0.7em; width:auto; border-color:#00e5ff; color:#00e5ff;">👁️ Ver</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+    }
+
+    async function equiparItem(itemId, slot = null) {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/inventario/equipar_slot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, itemId, slot })
+            });
+            const dados = await res.json();
+            if (dados.erro) return ocultoAlert(dados.erro);
+            playSfx('espada');
+            showJuiceNotif("EQUIPAMENTO", dados.relato);
+
+            // [HOTFIX CRÍTICO]: Atualização IMEDIATA em tempo real sem precisar de F5
+            if (dados.equipamento) meuVampiro.equipamentos = dados.equipamento;
+            if (dados.bolsa) meuVampiro.bolsa = dados.bolsa;
+            if (dados.statsCombate) meuVampiro.statsCombate = dados.statsCombate;
+            renderizarPaperdollEquipamentos();
+            syncUI();
+            forcarSyncVisualRapido();
+        } catch(e) { ocultoAlert("Falha astral ao equipar relíquia."); }
+    }
+
+    async function desequiparItem(slot) {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/inventario/desequipar_slot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, slot })
+            });
+            const dados = await res.json();
+            if (dados.erro) return ocultoAlert(dados.erro);
+            playSfx('sangue');
+            showJuiceNotif("DESEQUIPAR", dados.relato);
+
+            // [HOTFIX CRÍTICO]: Atualização IMEDIATA em tempo real sem precisar de F5
+            if (dados.equipamento) meuVampiro.equipamentos = dados.equipamento;
+            if (dados.bolsa) meuVampiro.bolsa = dados.bolsa;
+            if (dados.statsCombate) meuVampiro.statsCombate = dados.statsCombate;
+            renderizarPaperdollEquipamentos();
+            syncUI();
+            forcarSyncVisualRapido();
+        } catch(e) { ocultoAlert("Falha ao desequipar fenda."); }
+    }
+
+    async function executarForjaDraconiana() {
+        if (!meuVampiro) return;
+        const slotTipo = document.getElementById('craft-slot-tipo')?.value || 'armaPrincipal';
+        safeSet('craft-feedback', "A bater o martelo na Bigorna Draconiana...");
+        try {
+            const res = await fetch('/api/craft/forjar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, slotTipo })
+            });
+            const dados = await res.json();
+            if (dados.erro) {
+                safeSet('craft-feedback', "❌ " + dados.erro);
+                return ocultoAlert(dados.erro);
+            }
+            playSfx('magia');
+            safeSet('craft-feedback', "✅ " + dados.relato);
+            showJuiceNotif("FORJA DRACONIANA", dados.relato);
+            syncStatus();
+        } catch(e) { safeSet('craft-feedback', "❌ Falha de conexão com a forja."); }
+    }
+
+    async function carregarMercadoItens() {
+        const lista = document.getElementById('lista-mercado-itens');
+        if (!lista) return;
+        lista.innerHTML = '<p style="color:#888; font-size:0.8rem; text-align:center; grid-column:span 2;">A consultar o Bazar Astral...</p>';
+        try {
+            const res = await fetch('/api/mercado/itens');
+            const dados = await res.json();
+            if (!dados.itens || dados.itens.length === 0) {
+                lista.innerHTML = '<p style="color:#555; font-size:0.8rem; text-align:center; grid-column:span 2;">Nenhum artefato anunciado no momento. Seja o primeiro a vender!</p>';
+                return;
+            }
+            lista.innerHTML = dados.itens.map(a => {
+                const i = a.item;
+                const cor = i.corRaridade || 'var(--ouro)';
+                const miniSvg = i.iconeMiniaturaSVG || '<span style="font-size:1.8rem;">⚔️</span>';
+                const isMeu = a.vendedorId === meuVampiro.id;
+                return `
+                    <div style="background:#090403; border:1px solid #3d1c10; border-radius:6px; padding:8px; display:flex; gap:8px; align-items:center;">
+                        <div class="slot-mini-box" style="border-color:${cor};">${miniSvg}</div>
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-size:0.8rem; font-weight:bold; color:${cor}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${i.nome}</div>
+                            <div style="font-size:0.7rem; color:#aaa;">Vendedor: <strong>${a.vendedorNome}</strong> | Preço: <strong style="color:var(--ouro);">${a.precoGts} Gts</strong></div>
+                            <div style="margin-top:4px;">
+                                ${isMeu 
+                                    ? `<button class="btn-magick" onclick="cancelarAnuncioMercado('${a.id}')" style="padding:2px 8px; font-size:0.7em; border-color:#f55; color:#f55;">Cancelar Anúncio</button>` 
+                                    : `<button class="btn-magick" onclick="comprarItemMercado('${a.id}')" style="padding:2px 8px; font-size:0.7em; border-color:#0f5; color:#0f5;">Comprar (${a.precoGts} Gts)</button>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch(e) { lista.innerHTML = '<p style="color:#f55; font-size:0.8rem; text-align:center;">Falha ao carregar bazar.</p>'; }
+    }
+
+    async function abrirModalAnunciarMercado(itemId) {
+        if (!meuVampiro) return;
+        const item = meuVampiro.bolsa.find(i => i.id === itemId);
+        if (!item) return;
+        const preco = prompt(`Defina o preço em Sangue (Gts) para vender [${item.nome}]:`, "500");
+        if (!preco || isNaN(preco) || Number(preco) < 50) return;
+
+        try {
+            const res = await fetch('/api/mercado/anunciar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, itemId, precoGts: Number(preco) })
+            });
+            const dados = await res.json();
+            if (dados.erro) return ocultoAlert(dados.erro);
+            ocultoAlert(dados.relato);
+            syncStatus();
+            carregarMercadoItens();
+        } catch(e) { ocultoAlert("Falha ao publicar anúncio."); }
+    }
+
+    async function comprarItemMercado(anuncioId) {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/mercado/comprar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, anuncioId })
+            });
+            const dados = await res.json();
+            if (dados.erro) return ocultoAlert(dados.erro);
+            playSfx('sangue');
+            ocultoAlert(dados.relato);
+            syncStatus();
+            carregarMercadoItens();
+        } catch(e) { ocultoAlert("Falha na compra astral."); }
+    }
+
+    async function cancelarAnuncioMercado(anuncioId) {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/mercado/cancelar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, anuncioId })
+            });
+            const dados = await res.json();
+            if (dados.erro) return ocultoAlert(dados.erro);
+            ocultoAlert(dados.relato);
+            syncStatus();
+            carregarMercadoItens();
+        } catch(e) { ocultoAlert("Falha ao cancelar anúncio."); }
+    }
+
+    // ==========================================
+    // PODERES AKÁSHICOS NO COMBATE
+    // ==========================================
+    function renderizarHabilidadesArena() {
+        const el = document.getElementById('arena-habilidades-dinamicas');
+        if (!el) return;
+        if (!meuVampiro || !meuVampiro.habilidadesAtivas || meuVampiro.habilidadesAtivas.length === 0) {
+            el.innerHTML = `<div style="grid-column: span 4; font-size:0.72rem; color:#666; text-align:center; padding:3px;">Sem poderes akáshicos ativos no Grimório.</div>`;
+            return;
+        }
+        el.innerHTML = meuVampiro.habilidadesAtivas.map(h => {
+            return `<button class="btn-hab-akashic" onclick="usarPoderAkashicoArena('${h.id}')" title="${h.nome} - Custo: ${h.custoFuria || 2} Fúria, ${h.custoGts || 50} Gts">
+                <span style="font-size:1.15rem;">${h.icone || '🔮'}</span>
+                <span style="font-size:0.72rem; font-weight:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:85px;">${h.nome}</span>
+                <span style="font-size:0.65rem; color:#f59e0b;">${h.custoFuria || 2}⚡|${h.custoGts || 50}🩸</span>
+            </button>`;
+        }).join('');
+    }
+
+    async function usarPoderAkashicoArena(habilidadeId) {
+        if (!combateAtivo || isSyncing) return;
+        const hab = (meuVampiro.habilidadesAtivas || []).find(h => h.id === habilidadeId);
+        if (!hab) return;
+
+        if (meuVampiro.pontosAcao < (hab.custoFuria || 2)) {
+            quebrarCombo(`FÚRIA INSUFICIENTE PARA ${hab.nome.toUpperCase()}!`);
+            return;
+        }
+        if (meuVampiro.sangue < (hab.custoGts || 50)) {
+            quebrarCombo(`VITAE INSUFICIENTE PARA ${hab.nome.toUpperCase()}!`);
+            return;
+        }
+
+        isSyncing = true;
+        try {
+            const res = await fetch('/api/combate/usar_habilidade_akashica', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, habilidadeId })
+            });
+            const dados = await res.json();
+            if (dados.erro) {
+                quebrarCombo(dados.erro);
+            } else {
+                meuVampiro.pontosAcao = dados.furiaRestante;
+                meuVampiro.sangue = dados.sangueRestante;
+                meuVampiro.hpAtual = dados.hpAtual;
+
+                playSfx('magia');
+                abismoVoid();
+                document.getElementById('arena-acao').classList.add('shake-screen');
+                setTimeout(() => document.getElementById('arena-acao').classList.remove('shake-screen'), 350);
+
+                if (dados.dano) {
+                    let danoFinal = dados.dano * (1 + combateDados.comboAtual * 0.1);
+                    if (combateDados.estadoInimigo === 'vulneravel') danoFinal *= 2.5;
+                    combateDados.hpAtualInimigo = Math.max(0, combateDados.hpAtualInimigo - danoFinal);
+                    spawnDanoText(`-${Math.floor(danoFinal)} 🔮`, '#a855f7');
+                    combateDados.comboAtual++;
+                    combateDados.maxCombo = Math.max(combateDados.maxCombo, combateDados.comboAtual);
+                }
+
+                if (dados.cura) {
+                    combateDados.hpAtualJogador = Math.min(combateDados.hpMaxJogador, combateDados.hpAtualJogador + dados.cura);
+                    spawnDanoText(`+${dados.cura} 🩸`, '#0f5');
+                    jorrarSangue();
+                }
+
+                if (dados.atordoamento) {
+                    combateDados.timerAcaoInimigo = 60;
+                    combateDados.estadoInimigo = 'vulneravel';
+                    safeSet('inimigo-status', 'PARALISADO PELO VAZIO');
+                    document.getElementById('inimigo-status').className = 'inimigo-intent intent-vulneravel';
+                }
+
+                safeSet('arena-feedback', dados.relato);
+                document.getElementById('arena-feedback').style.color = '#26de81';
+                atualizarBarras();
+
+                if (combateDados.hpAtualInimigo <= 0) {
+                    setTimeout(() => encerrarArenaFinal(`🏆 VITÓRIA AKÁSHICA!
+${meuVampiro.nome} destruiu o inimigo com o poder de [${hab.nome}]!`), 400);
+                }
+            }
+        } catch(e) {
+            quebrarCombo("FALHA NA CANALIZAÇÃO AKÁSHICA!");
+        } finally {
+            isSyncing = false;
+            renderizarHabilidadesArena();
+        }
+    }
+
+    // ==========================================
+    // MUNDO ABERTO 2D: CLIENT-SIDE ENGINE (COMPLETO & INTERLIGADO)
+    // ==========================================
+    let m2dCanvas = null;
+    let m2dCtx = null;
+    let m2dEstado = null;
+    let m2dCamera = { x: 40, y: 40 };
+    let m2dTileSize = 36;
+    let m2dBlocoSelecionado = 'muralha_pedra';
+    let m2dModoDemolir = false;
+    let m2dParticulas = [];
+    let m2dTextosFlutuantes = [];
+    let m2dInteracaoProxima = null;
+    let m2dSlashVfx = null;
+    let m2dAreaVfx = null;
+    let m2dUltimoAtaque = 0;
+
+    function inicializarMundo2D() {
+        m2dCanvas = document.getElementById('canvas-mundo2d');
+        if (!m2dCanvas) return;
+        m2dCtx = m2dCanvas.getContext('2d');
+        if (!m2dCanvas.dataset.iniciado) {
+            m2dCanvas.dataset.iniciado = 'true';
+            m2dCanvas.addEventListener('click', aoClicarCanvasMundo2D);
+            window.addEventListener('keydown', aoPressionarTeclaMundo2D);
+            window.addEventListener('resize', ajustarTamanhoCanvasMundo2D);
+            ajustarTamanhoCanvasMundo2D();
+        }
+        recarregarMundo2D();
+        requestAnimationFrame(renderLoopMundo2D);
+    }
+
+    function ajustarTamanhoCanvasMundo2D() {
+        if (!m2dCanvas) return;
+        const container = m2dCanvas.parentElement;
+        if (container) {
+            const maxW = Math.min(900, container.clientWidth || 760);
+            m2dCanvas.width = maxW;
+            m2dCanvas.height = Math.round(maxW * 0.6);
+        }
+    }
+
+    async function recarregarMundo2D() {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/mundo2d/entrar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id })
+            });
+            const dados = await res.json();
+            if (dados.sucesso) {
+                m2dEstado = dados.mapa;
+                m2dCamera.x = dados.jogador.x;
+                m2dCamera.y = dados.jogador.y;
+                atualizarHUDZonaMundo2D(dados.jogador.x, dados.jogador.y);
+                renderizarListaMinionsMundo2D();
+            }
+        } catch(e) {}
+    }
+
+    function recentralizarCamera2D() {
+        if (meuVampiro && m2dEstado && m2dEstado.jogadores[meuVampiro.id]) {
+            m2dCamera.x = m2dEstado.jogadores[meuVampiro.id].x;
+            m2dCamera.y = m2dEstado.jogadores[meuVampiro.id].y;
+            mostrarNotificacaoMundo2D("Câmera focada no Lorde.");
+        }
+    }
+
+    function atualizarHUDZonaMundo2D(x, y) {
+        if (!m2dEstado || !m2dEstado.grid) return;
+        const tipo = m2dEstado.grid[y]?.[x] || 1;
+        let nome = "Santuário de Enoch (Seguro)";
+        let tag = "🛡️ Zona de Paz";
+        let cor = "#0f5";
+
+        if (tipo === 3) {
+            nome = "Ermos de Gehenna (PvP & Guerra Livre)";
+            tag = "⚔️ ZONA PVP ABERTO";
+            cor = "#ff1744";
+        } else if (tipo === 2) {
+            nome = "Floresta de Espinhos (Coleta de Ervas)";
+            tag = "🌿 Zona de Coleta";
+            cor = "#26de81";
+        } else if (tipo === 4) {
+            nome = "Cordilheira de Obsidiana (Minas)";
+            tag = "⛰️ Mineração Ativa";
+            cor = "#fed330";
+        }
+
+        safeSet('m2d-zona-nome', nome);
+        const zNome = document.getElementById('m2d-zona-nome');
+        if (zNome) zNome.style.color = cor;
+        safeSet('m2d-pvp-tag', tag);
+        safeSet('m2d-coords', `X: ${x}, Y: ${y}`);
+    }
+
+    function mostrarNotificacaoMundo2D(txt) {
+        const box = document.getElementById('m2d-notif-flutuante');
+        if (!box) return;
+        box.innerText = txt;
+        box.style.display = 'block';
+        clearTimeout(box._timer);
+        box._timer = setTimeout(() => { box.style.display = 'none'; }, 2500);
+    }
+
+    function adicionarTextoFlutuante(txt, x, y, cor = '#fff') {
+        m2dTextosFlutuantes.push({
+            txt, x, y, cor,
+            duracao: 50,
+            progresso: 0,
+            vy: -0.6
+        });
+    }
+
+    function adicionarParticulas(x, y, cor, qtd = 8) {
+        for (let i = 0; i < qtd; i++) {
+            const angulo = Math.random() * Math.PI * 2;
+            const veloc = Math.random() * 2 + 0.5;
+            m2dParticulas.push({
+                x, y,
+                vx: Math.cos(angulo) * veloc,
+                vy: Math.sin(angulo) * veloc,
+                cor,
+                vida: 1.0,
+                decaimento: Math.random() * 0.04 + 0.02,
+                tamanho: Math.random() * 3 + 2
+            });
+        }
+    }
+
+    // ==========================================
+    // MOVIMENTO & INTERAÇÕES
+    // ==========================================
+    async function moverMundo2D(dx, dy) {
+        if (!meuVampiro || !m2dEstado) return;
+        try {
+            const res = await fetch('/api/mundo2d/mover', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, dx, dy })
+            });
+            const dados = await res.json();
+            if (dados.erro) {
+                mostrarNotificacaoMundo2D("⚠️ " + dados.erro);
+                return;
+            }
+            if (dados.sucesso && m2dEstado.jogadores[meuVampiro.id]) {
+                m2dEstado.jogadores[meuVampiro.id].x = dados.x;
+                m2dEstado.jogadores[meuVampiro.id].y = dados.y;
+                m2dCamera.x = dados.x;
+                m2dCamera.y = dados.y;
+                atualizarHUDZonaMundo2D(dados.x, dados.y);
+                verificarProximidadeMundo2D();
+            }
+        } catch(e) {}
+    }
+
+    function verificarProximidadeMundo2D() {
+        if (!meuVampiro || !m2dEstado) return;
+        const j = m2dEstado.jogadores[meuVampiro.id];
+        if (!j) return;
+
+        m2dInteracaoProxima = null;
+
+        // 1. Edificações da Cidade
+        const edifs = m2dEstado.edificacoesCidade || {};
+        for (let id in edifs) {
+            const ed = edifs[id];
+            const dist = Math.hypot(ed.x - j.x, ed.y - j.y);
+            if (dist <= 2.2) {
+                m2dInteracaoProxima = { tipo: 'edificacao', id, item: ed, prompt: `[E] ${ed.nome}` };
+                return;
+            }
+        }
+
+        // 2. Monstros
+        for (let id in m2dEstado.monstros) {
+            const mob = m2dEstado.monstros[id];
+            const dist = Math.hypot(mob.x - j.x, mob.y - j.y);
+            if (dist <= 2.2) {
+                m2dInteracaoProxima = { tipo: 'monstro', id, item: mob, prompt: `[Espaço] Golpear ${mob.nome} (Nv.${mob.nivel})` };
+                return;
+            }
+        }
+
+        // 3. Mortais
+        for (let id in m2dEstado.mortais) {
+            const m = m2dEstado.mortais[id];
+            const dist = Math.hypot(m.x - j.x, m.y - j.y);
+            if (dist <= 2.2) {
+                m2dInteracaoProxima = { tipo: 'mortal', id, item: m, prompt: `[E] 🩸 Morder ${m.nome} (Drenar Vitae)` };
+                return;
+            }
+        }
+
+        // 4. Nós de Recursos
+        for (let k in m2dEstado.nosRecursos) {
+            const no = m2dEstado.nosRecursos[k];
+            const dist = Math.hypot(no.x - j.x, no.y - j.y);
+            if (dist <= 2.2 && (no.quantidade > 0 || Date.now() > no.recargaAte)) {
+                m2dInteracaoProxima = { tipo: 'recurso', id: k, item: no, prompt: `[E] Extrair ${no.nome}` };
+                return;
+            }
+        }
+    }
+
+    function aoPressionarTeclaMundo2D(e) {
+        const aba = document.getElementById('aba-mundo2d');
+        if (!aba || aba.classList.contains('oculto')) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+
+        const k = e.key.toLowerCase();
+        if (k === 'w' || e.key === 'ArrowUp') { e.preventDefault(); moverMundo2D(0, -1); }
+        else if (k === 's' || e.key === 'ArrowDown') { e.preventDefault(); moverMundo2D(0, 1); }
+        else if (k === 'a' || e.key === 'ArrowLeft') { e.preventDefault(); moverMundo2D(-1, 0); }
+        else if (k === 'd' || e.key === 'ArrowRight') { e.preventDefault(); moverMundo2D(1, 0); }
+        else if (k === ' ' || k === 'spacebar') {
+            e.preventDefault();
+            executarAcaoPrincipalEspaco();
+        } else if (k === 'e') {
+            e.preventDefault();
+            executarAcaoSecundariaE();
+        } else if (k === 't') {
+            e.preventDefault();
+            document.getElementById('m2d-chat-input')?.focus();
+        } else if (k === 'b') {
+            e.preventDefault();
+            alternarPaletaConstrucao();
+        } else if (['1', '2', '3', '4'].includes(k)) {
+            e.preventDefault();
+            dispararPoderAkashicoHotbar(parseInt(k) - 1);
+        }
+    }
+
+        function executarAcaoPrincipalEspaco() {
+        // Verifica se está próximo do Chefe Mundial Azazel (62, 62)
+        if (m2dEstado && m2dEstado.worldBoss && m2dEstado.worldBoss.ativo && meuVampiro && m2dEstado.jogadores && m2dEstado.jogadores[meuVampiro.id]) {
+            const j = m2dEstado.jogadores[meuVampiro.id];
+            const dist = Math.hypot(j.x - m2dEstado.worldBoss.x, j.y - m2dEstado.worldBoss.y);
+            if (dist <= 4.5) {
+                atacarBossMundial2D();
+                return;
+            }
+        }
+        if (!m2dInteracaoProxima) {
+            // Golpe no ar com arma principal
+            executarSlashAnimacao();
+            return;
+        }
+
+        if (m2dInteracaoProxima.tipo === 'monstro') {
+            atacarMonstroEmFrente2D(m2dInteracaoProxima.id);
+        } else if (m2dInteracaoProxima.tipo === 'recurso') {
+            coletarNoEspecifico2D(m2dInteracaoProxima.item.x, m2dInteracaoProxima.item.y);
+        } else {
+            executarSlashAnimacao();
+        }
+    }
+
+    function executarAcaoSecundariaE() {
+        if (!m2dInteracaoProxima) {
+            mostrarNotificacaoMundo2D("Nada próximo para interagir.");
+            return;
+        }
+
+        if (m2dInteracaoProxima.tipo === 'edificacao') {
+            interagirComEdificacaoCidade(m2dInteracaoProxima.item);
+        } else if (m2dInteracaoProxima.tipo === 'mortal') {
+            morderMortalEmFrente2D(m2dInteracaoProxima.id);
+        } else if (m2dInteracaoProxima.tipo === 'recurso') {
+            coletarNoEspecifico2D(m2dInteracaoProxima.item.x, m2dInteracaoProxima.item.y);
+        } else if (m2dInteracaoProxima.tipo === 'monstro') {
+            atacarMonstroEmFrente2D(m2dInteracaoProxima.id);
+        }
+    }
+
+    function executarSlashAnimacao() {
+        if (!meuVampiro || !m2dEstado) return;
+        const j = m2dEstado.jogadores[meuVampiro.id];
+        if (!j) return;
+        playSfx('espada');
+        m2dSlashVfx = {
+            x: j.x + 0.5,
+            y: j.y + 0.5,
+            raio: 1.5,
+            frame: 0
+        };
+    }
+
+    function alternarPaletaConstrucao() {
+        const card = document.querySelector('.btn-build-block')?.closest('.card');
+        if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            mostrarNotificacaoMundo2D("🧱 Paleta de Construção Sandbox Ativa");
+        }
+    }
+
+    // ==========================================
+    // COMBATE VISCERAL & MORDIDA EM TEMPO REAL NO 2D
+    // ==========================================
+    async function atacarMonstroEmFrente2D(mobId) {
+        if (!meuVampiro || !m2dEstado) return;
+        const agora = Date.now();
+        if (agora - m2dUltimoAtaque < 300) return; // Cooldown rápido
+        m2dUltimoAtaque = agora;
+
+        try {
+            const res = await fetch('/api/mundo2d/atacar_mob', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, mobId })
+            });
+            const dados = await res.json();
+            if (dados.erro) return mostrarNotificacaoMundo2D(dados.erro);
+
+            playSfx('espada');
+            const mob = m2dEstado.monstros[mobId];
+            if (mob) {
+                adicionarParticulas(mob.x, mob.y, '#f00', 12);
+                adicionarTextoFlutuante(`-${dados.danoCausado} HP${dados.isCrit ? ' 💥 CRIT!' : ''}`, mob.x, mob.y - 0.4, dados.isCrit ? '#ffd700' : '#ff4757');
+                if (dados.curaDreno > 0) {
+                    adicionarTextoFlutuante(`+${dados.curaDreno} HP`, mob.x, mob.y - 0.8, '#2ed573');
+                }
+            }
+
+            mostrarNotificacaoMundo2D(dados.relato);
+            if (dados.mobMorto) {
+                delete m2dEstado.monstros[mobId];
+                if (dados.recompensa) {
+                    adicionarTextoFlutuante(`+${dados.recompensa.xp} XP | +${dados.recompensa.gts} Gts`, m2dCamera.x, m2dCamera.y - 1, '#26de81');
+                }
+            } else if (mob) {
+                mob.hp = dados.mobHp;
+            }
+
+            if (dados.hpAtual !== undefined) meuVampiro.hpAtual = dados.hpAtual;
+            if (dados.sangueTotal !== undefined) meuVampiro.sangue = dados.sangueTotal;
+            syncUI();
+            verificarProximidadeMundo2D();
+        } catch(e) {}
+    }
+
+    async function morderMortalEmFrente2D(mortalId) {
+        if (!meuVampiro || !m2dEstado) return;
+        try {
+            const res = await fetch('/api/mundo2d/morder_mortal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, mortalId })
+            });
+            const dados = await res.json();
+            if (dados.erro) return mostrarNotificacaoMundo2D(dados.erro);
+
+            playSfx('sangue');
+            const mortal = m2dEstado.mortais[mortalId];
+            if (mortal) {
+                adicionarParticulas(mortal.x, mortal.y, '#ff1744', 16);
+                adicionarTextoFlutuante(`🩸 +${dados.sangueDrenado} Gts`, mortal.x, mortal.y - 0.5, '#ff4757');
+            }
+
+            mostrarNotificacaoMundo2D(dados.relato);
+            if (dados.morto) {
+                delete m2dEstado.mortais[mortalId];
+            } else if (mortal) {
+                mortal.sangueAtual = dados.mortal.sangueAtual;
+            }
+
+            if (dados.hpAtual !== undefined) meuVampiro.hpAtual = dados.hpAtual;
+            if (dados.sangueTotal !== undefined) meuVampiro.sangue = dados.sangueTotal;
+            syncUI();
+            verificarProximidadeMundo2D();
+        } catch(e) {}
+    }
+
+    async function dispararPoderAkashicoHotbar(slotIdx) {
+        if (!meuVampiro) return;
+        const habs = meuVampiro.habilidadesAtivas || meuVampiro.colecaoHabilidades || [];
+        const hab = habs[slotIdx];
+        if (!hab) {
+            mostrarNotificacaoMundo2D(`Nenhum poder akáshico equipado no slot [${slotIdx + 1}].`);
+            return;
+        }
+
+        const j = m2dEstado.jogadores[meuVampiro.id];
+        if (!j) return;
+
+        try {
+            const res = await fetch('/api/mundo2d/usar_poder_area', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, habilidadeId: hab.id, x: j.x, y: j.y })
+            });
+            const dados = await res.json();
+            if (dados.erro) return mostrarNotificacaoMundo2D("⚠️ " + dados.erro);
+
+            playSfx('magia');
+            m2dAreaVfx = { x: j.x, y: j.y, raio: 3.5, frame: 0, cor: '#9b59b6' };
+            adicionarParticulas(j.x, j.y, '#9b59b6', 25);
+            adicionarTextoFlutuante(`⚡ ${hab.nome}!`, j.x, j.y - 1, '#9b59b6');
+            mostrarNotificacaoMundo2D(dados.relato);
+
+            if (dados.furiaRestante !== undefined) meuVampiro.pontosAcao = dados.furiaRestante;
+            if (dados.sangueRestante !== undefined) meuVampiro.sangue = dados.sangueRestante;
+            syncUI();
+            recarregarMundo2D();
+        } catch(e) {}
+    }
+
+    function interagirComEdificacaoCidade(ed) {
+        if (!ed) return;
+        mostrarNotificacaoMundo2D(`Acedendo a ${ed.nome}...`);
+
+        if (ed.acao === 'abismo') {
+            // Abre o portal para o Abismo / Dungeons procedurais
+            if (typeof nav === 'function') nav('abismo', document.querySelector('.realm-pill[data-realm="abismo"]'));
+            ocultoAlert(`🌀 [PORTAL DO ABISMO]: O vórtex dimensional sugou-te para as Criptas Antigas!`);
+        } else if (ed.acao === 'altar') {
+            // Sintoniza com o Altar Cósmico
+            abismoVoid();
+            playSfx('magia');
+            ocultoAlert(`🏛️ [ALTAR DA NOITE ETERNA]: Recebeste a comunhão astral dos Primordiais. As tuas veias fervem com a Bênção Cósmica!`);
+            syncStatus();
+        } else if (ed.acao === 'mercado') {
+            // Abre o Bazar P2P
+            if (typeof nav === 'function') nav('perfil', document.querySelector('.realm-pill[data-realm="perfil"]'));
+            alternarSubAbaPerfil('bolsa');
+            carregarMercadoItens();
+            mostrarNotificacaoMundo2D("💰 Bazar P2P Aberto.");
+        } else if (ed.acao === 'chat') {
+            // Conecta à Alta Corte / Conclave
+            if (typeof nav === 'function') nav('chat', document.querySelector('.realm-pill[data-realm="chat"]'));
+        } else if (ed.acao === 'forja') {
+            // Abre a Forja Draconiana
+            if (typeof nav === 'function') nav('perfil', document.querySelector('.realm-pill[data-realm="perfil"]'));
+            alternarSubAbaPerfil('bolsa');
+            document.getElementById('craft-slot-tipo')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (ed.acao === 'arena') {
+            // Abre a Arena de Gladiadores
+            if (typeof nav === 'function') nav('guerra', document.querySelector('.realm-pill[data-realm="clan"]'));
+        }
+    }
+
+    async function coletarNoEspecifico2D(x, y) {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/mundo2d/coletar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, x, y })
+            });
+            const dados = await res.json();
+            if (dados.erro) return mostrarNotificacaoMundo2D(dados.erro);
+            playSfx('sangue');
+            adicionarParticulas(x, y, '#26de81', 10);
+            adicionarTextoFlutuante(`+Material!`, x, y - 0.5, '#26de81');
+            mostrarNotificacaoMundo2D(dados.relato);
+            if (dados.no && m2dEstado) m2dEstado.nosRecursos[`${x}_${y}`] = dados.no;
+            syncStatus();
+        } catch(e) {}
+    }
+
+    // ==========================================
+    // CLIQUE NO CANVAS: MOVIMENTO, ATAQUE OU CONSTRUÇÃO
+    // ==========================================
+    async function aoClicarCanvasMundo2D(e) {
+        if (!m2dCanvas || !m2dEstado || !meuVampiro) return;
+        const rect = m2dCanvas.getBoundingClientRect();
+        const scaleX = m2dCanvas.width / rect.width;
+        const scaleY = m2dCanvas.height / rect.height;
+
+        const mouseX = (e.clientX - rect.left) * scaleX;
+        const mouseY = (e.clientY - rect.top) * scaleY;
+
+        const centroTelaX = m2dCanvas.width / 2;
+        const centroTelaY = m2dCanvas.height / 2;
+
+        const tileX = Math.floor((mouseX - centroTelaX) / m2dTileSize + m2dCamera.x);
+        const tileY = Math.floor((mouseY - centroTelaY) / m2dTileSize + m2dCamera.y);
+
+        if (tileX < 0 || tileY < 0 || tileX >= m2dEstado.largura || tileY >= m2dEstado.altura) return;
+
+        // Se clicou no botão de interação proxima prompt
+        if (m2dInteracaoProxima && mouseY > m2dCanvas.height - 70 && mouseY < m2dCanvas.height - 30) {
+            executarAcaoSecundariaE();
+            return;
+        }
+
+        // Modo Demolição
+        if (m2dModoDemolir) {
+            let estEncontrada = null;
+            for (let id in m2dEstado.estruturas) {
+                const est = m2dEstado.estruturas[id];
+                if (est.x === tileX && est.y === tileY) { estEncontrada = est; break; }
+            }
+            if (estEncontrada) {
+                if (confirm(`Desmantelar estrutura [${estEncontrada.nome}] em (${tileX}, ${tileY})?`)) {
+                    try {
+                        const res = await fetch('/api/mundo2d/demolir', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: meuVampiro.id, estruturaId: estEncontrada.id })
+                        });
+                        const d = await res.json();
+                        if (d.erro) return mostrarNotificacaoMundo2D(d.erro);
+                        delete m2dEstado.estruturas[estEncontrada.id];
+                        mostrarNotificacaoMundo2D(d.relato);
+                    } catch(e) {}
+                }
+            }
+            return;
+        }
+
+        const j = m2dEstado.jogadores[meuVampiro.id];
+        if (!j) return;
+        const dist = Math.hypot(j.x - tileX, j.y - tileY);
+
+        // Se clicou em Monstro próximo -> ataca
+        for (let id in m2dEstado.monstros) {
+            const m = m2dEstado.monstros[id];
+            if (m.x === tileX && m.y === tileY && dist <= 2.5) {
+                atacarMonstroEmFrente2D(id);
+                return;
+            }
+        }
+
+        // Se clicou em Mortal próximo -> morde
+        for (let id in m2dEstado.mortais) {
+            const m = m2dEstado.mortais[id];
+            if (m.x === tileX && m.y === tileY && dist <= 2.5) {
+                morderMortalEmFrente2D(id);
+                return;
+            }
+        }
+
+        // Se clicou em Edificação próxima -> interage
+        const edifs = m2dEstado.edificacoesCidade || {};
+        for (let id in edifs) {
+            const ed = edifs[id];
+            if (ed.x === tileX && ed.y === tileY && dist <= 2.5) {
+                interagirComEdificacaoCidade(ed);
+                return;
+            }
+        }
+
+        // Se clicou em Nó de recurso próximo -> colhe
+        const chaveRec = `${tileX}_${tileY}`;
+        if (m2dEstado.nosRecursos[chaveRec] && dist <= 2.5) {
+            coletarNoEspecifico2D(tileX, tileY);
+            return;
+        }
+
+        // Se clicou em tile adjacente com bloco selecionado -> constrói
+        if (dist > 0 && dist <= 2.5 && m2dBlocoSelecionado) {
+            try {
+                const res = await fetch('/api/mundo2d/construir', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: meuVampiro.id, tipoEstrutura: m2dBlocoSelecionado, x: tileX, y: tileY })
+                });
+                const d = await res.json();
+                if (d.erro) {
+                    mostrarNotificacaoMundo2D(d.erro);
+                } else {
+                    playSfx('magia');
+                    mostrarNotificacaoMundo2D(d.relato);
+                    m2dEstado.estruturas[d.estrutura.id] = d.estrutura;
+                    adicionarParticulas(tileX, tileY, '#d4af37', 15);
+                    syncStatus();
+                }
+                return;
+            } catch(e) {}
+        }
+
+        // Caso contrário, caminha
+        const dx = Math.sign(tileX - j.x);
+        const dy = Math.sign(tileY - j.y);
+        moverMundo2D(dx, dy);
+    }
+
+    function selecionarBlocoConstrucao(tipo, btn) {
+        m2dBlocoSelecionado = tipo;
+        m2dModoDemolir = false;
+        document.querySelectorAll('.btn-build-block').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        safeSet('m2d-modo-texto', `Modo Ativo: <strong>Construir ${tipo.replace('_', ' ').toUpperCase()}</strong> (Clica no mapa perto de ti)`);
+        safeSet('btn-toggle-demolir', "⛏️ Modo Demolição: OFF");
+        const bDem = document.getElementById('btn-toggle-demolir');
+        if (bDem) bDem.style.borderColor = '#f55';
+    }
+
+    function alternarModoDemolir() {
+        m2dModoDemolir = !m2dModoDemolir;
+        const btn = document.getElementById('btn-toggle-demolir');
+        if (m2dModoDemolir) {
+            m2dBlocoSelecionado = null;
+            document.querySelectorAll('.btn-build-block').forEach(b => b.classList.remove('active'));
+            if (btn) { btn.innerText = "⛏️ Modo Demolição: ATIVO"; btn.style.borderColor = '#0f5'; }
+            safeSet('m2d-modo-texto', "<strong style='color:#f55;'>MODO DEMOLIÇÃO ATIVO: Clica numa estrutura para desmantelar!</strong>");
+        } else {
+            selecionarBlocoConstrucao('muralha_pedra', document.querySelector('.btn-build-block'));
+        }
+    }
+
+    function renderizarListaMinionsMundo2D() {
+        const container = document.getElementById('m2d-lista-minions');
+        if (!container || !m2dEstado || !meuVampiro) return;
+
+        const meusMinions = Object.values(m2dEstado.minions || {}).filter(m => m.donoId === meuVampiro.id || m.clanId === meuVampiro.clan);
+        if (meusMinions.length === 0) {
+            container.innerHTML = '<p style="color:#555; font-size:0.8rem; text-align:center; grid-column:span 2; padding:10px;">Nenhum servo convocado ainda no plano 2D. Clica em [➕ Recrutar Servo] para animar um trabalhador!</p>';
+            return;
+        }
+
+        container.innerHTML = meusMinions.map(m => `
+            <div style="background:#061008; border:1px solid #14401c; border-radius:6px; padding:8px; display:flex; flex-direction:column; gap:4px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <strong style="color:#26de81; font-size:0.82rem;">${m.icone} ${m.nome}</strong>
+                    <span style="font-size:0.68rem; color:#aaa;">Pos: (${m.x}, ${m.y})</span>
+                </div>
+                <div style="font-size:0.72rem; color:#ccc;">Status: <em>${m.statusTexto || 'Trabalhando'}</em></div>
+                <div style="display:flex; gap:4px; margin-top:4px; flex-wrap:wrap;">
+                    <button class="btn-magick" onclick="ordenarMinionMundo('${m.id}', 'minerar')" style="padding:2px 6px; font-size:0.68rem;">⛏️ Minerar</button>
+                    <button class="btn-magick" onclick="ordenarMinionMundo('${m.id}', 'guardar')" style="padding:2px 6px; font-size:0.68rem;">🛡️ Guardar</button>
+                    <button class="btn-magick" onclick="ordenarMinionMundo('${m.id}', 'seguir')" style="padding:2px 6px; font-size:0.68rem;">🚶 Seguir</button>
+                    <button class="btn-magick" onclick="ordenarMinionMundo('${m.id}', 'idle')" style="padding:2px 6px; font-size:0.68rem; border-color:#888;">Parar</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function abrirModalRecrutarMinion() {
+        if (!meuVampiro) return;
+        const tipo = prompt("Escolhe o tipo de Servo a recrutar:\n1. mineiro (Lavra pedras e ferro)\n2. guardiao (Patrulha a base do clã)\n3. herbalista (Colhe ervas)\n4. cultista (Gera essência astral)", "mineiro");
+        if (!tipo) return;
+
+        try {
+            const res = await fetch('/api/mundo2d/recrutar_minion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, tipo: tipo.toLowerCase().trim() })
+            });
+            const dados = await res.json();
+            if (dados.erro) return ocultoAlert(dados.erro);
+            playSfx('magia');
+            showJuiceNotif("SERVO ANIMADO", dados.relato);
+            if (dados.minion && m2dEstado) m2dEstado.minions[dados.minion.id] = dados.minion;
+            syncStatus();
+            renderizarListaMinionsMundo2D();
+        } catch(e) { ocultoAlert("Falha ao recrutar servo."); }
+    }
+
+    async function ordenarMinionMundo(minionId, tarefa) {
+        if (!meuVampiro) return;
+        try {
+            const res = await fetch('/api/mundo2d/ordenar_minion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: meuVampiro.id, minionId, tarefa })
+            });
+            const dados = await res.json();
+            if (dados.erro) return ocultoAlert(dados.erro);
+            mostrarNotificacaoMundo2D(dados.relato);
+            if (dados.minion && m2dEstado) m2dEstado.minions[dados.minion.id] = dados.minion;
+            renderizarListaMinionsMundo2D();
+        } catch(e) {}
+    }
+
+    // ==========================================
+    // RENDER LOOP & ENGINE GRÁFICA DO CANVAS 2D
+    // ==========================================
+    function renderLoopMundo2D() {
+        if (!m2dCanvas || !m2dCtx) {
+            requestAnimationFrame(renderLoopMundo2D);
+            return;
+        }
+
+        const aba = document.getElementById('aba-mundo2d');
+        if (!aba || aba.classList.contains('oculto')) {
+            setTimeout(() => requestAnimationFrame(renderLoopMundo2D), 300);
+            return;
+        }
+
+        desenharQuadroMundo2D();
+        requestAnimationFrame(renderLoopMundo2D);
+    }
+
+    function desenharQuadroMundo2D() {
+        const ctx = m2dCtx;
+        const w = m2dCanvas.width;
+        const h = m2dCanvas.height;
+
+        ctx.fillStyle = '#050204';
+        ctx.fillRect(0, 0, w, h);
+
+        if (!m2dEstado || !m2dEstado.grid) {
+            ctx.fillStyle = '#888';
+            ctx.font = '14px Cinzel, serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('A sintonizar frequências do Mundo 2D...', w / 2, h / 2);
+            return;
+        }
+
+        const centroX = w / 2;
+        const centroY = h / 2;
+        const tileSize = m2dTileSize;
+
+        const camX = m2dCamera.x;
+        const camY = m2dCamera.y;
+
+        const minTileX = Math.max(0, Math.floor(camX - (centroX / tileSize) - 1));
+        const maxTileX = Math.min(m2dEstado.largura - 1, Math.ceil(camX + (centroX / tileSize) + 1));
+        const minTileY = Math.max(0, Math.floor(camY - (centroY / tileSize) - 1));
+        const maxTileY = Math.min(m2dEstado.altura - 1, Math.ceil(camY + (centroY / tileSize) + 1));
+
+        // 1. DESENHAR TERRENO DO GRID COM TEXTURA RICA
+        for (let y = minTileY; y <= maxTileY; y++) {
+            for (let x = minTileX; x <= maxTileX; x++) {
+                const screenX = centroX + (x - camX) * tileSize;
+                const screenY = centroY + (y - camY) * tileSize;
+                const tipo = m2dEstado.grid[y][x];
+
+                if (tipo === 1) {
+                    // Santuário de Enoch (Calçamento Nobre)
+                    ctx.fillStyle = (x + y) % 2 === 0 ? '#1e1c29' : '#171520';
+                    ctx.fillRect(screenX, screenY, tileSize, tileSize);
+                    ctx.strokeStyle = '#2d2840';
+                    ctx.strokeRect(screenX, screenY, tileSize, tileSize);
+                } else if (tipo === 2) {
+                    // Floresta de Espinhos (Terra escura com raízes)
+                    ctx.fillStyle = (x + y) % 2 === 0 ? '#0d1f14' : '#08170d';
+                    ctx.fillRect(screenX, screenY, tileSize, tileSize);
+                    ctx.strokeStyle = '#14381e';
+                    ctx.strokeRect(screenX, screenY, tileSize, tileSize);
+                } else if (tipo === 3) {
+                    // Ermos de Gehenna (Cinzas vulcânicas & veios de lava)
+                    ctx.fillStyle = (x + y) % 2 === 0 ? '#26090b' : '#1c0507';
+                    ctx.fillRect(screenX, screenY, tileSize, tileSize);
+                    ctx.strokeStyle = '#420f13';
+                    ctx.strokeRect(screenX, screenY, tileSize, tileSize);
+                } else if (tipo === 4) {
+                    // Cordilheira de Obsidiana (Rochas negras com reflexos)
+                    ctx.fillStyle = (x + y) % 2 === 0 ? '#222226' : '#17171a';
+                    ctx.fillRect(screenX, screenY, tileSize, tileSize);
+                    ctx.strokeStyle = '#35353d';
+                    ctx.strokeRect(screenX, screenY, tileSize, tileSize);
+                } else {
+                    ctx.fillStyle = '#020002';
+                    ctx.fillRect(screenX, screenY, tileSize, tileSize);
+                }
+            }
+        }
+
+        // 2. DESENHAR EDIFICAÇÕES DA CIDADE (SANTUÁRIO DE ENOCH)
+        const edifs = m2dEstado.edificacoesCidade || {};
+        for (let id in edifs) {
+            const ed = edifs[id];
+            if (ed.x < minTileX || ed.x > maxTileX || ed.y < minTileY || ed.y > maxTileY) continue;
+            const screenX = centroX + (ed.x - camX) * tileSize;
+            const screenY = centroY + (ed.y - camY) * tileSize;
+
+            // Halo iluminado da edificação
+            const pulse = Math.sin(Date.now() * 0.003) * 3;
+            ctx.beginPath();
+            ctx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize * 0.8 + pulse, 0, Math.PI * 2);
+            ctx.fillStyle = `${ed.cor || '#ffd700'}22`;
+            ctx.fill();
+
+            // Bloco estilizado da construção
+            ctx.fillStyle = 'rgba(25, 10, 18, 0.9)';
+            ctx.fillRect(screenX - 2, screenY - 2, tileSize + 4, tileSize + 4);
+            ctx.strokeStyle = ed.cor || 'var(--ouro)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(screenX - 2, screenY - 2, tileSize + 4, tileSize + 4);
+
+            // Ícone da edificação
+            ctx.font = '22px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(ed.icone || '🏛️', screenX + tileSize / 2, screenY + tileSize / 2 + 7);
+
+            // Nome e Subtítulo
+            ctx.fillStyle = ed.cor || '#ffd700';
+            ctx.font = 'bold 9px Cinzel, serif';
+            ctx.fillText(ed.nome.split(' ')[0], screenX + tileSize / 2, screenY - 4);
+        }
+
+        // 3. DESENHAR NÓS DE RECURSOS
+        for (let k in m2dEstado.nosRecursos) {
+            const no = m2dEstado.nosRecursos[k];
+            if (no.x < minTileX || no.x > maxTileX || no.y < minTileY || no.y > maxTileY) continue;
+            const screenX = centroX + (no.x - camX) * tileSize;
+            const screenY = centroY + (no.y - camY) * tileSize;
+
+            ctx.font = '18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(no.icone || '🌿', screenX + tileSize / 2, screenY + tileSize / 2 + 6);
+
+            if (no.quantidade > 0) {
+                ctx.fillStyle = '#0f5';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.fillText(no.quantidade, screenX + tileSize - 3, screenY + 9);
+            }
+        }
+
+        // 4. DESENHAR ESTRUTURAS DE CLÃ (SANDBOX MINECRAFT-STYLE)
+        for (let id in m2dEstado.estruturas) {
+            const est = m2dEstado.estruturas[id];
+            if (est.x < minTileX || est.x > maxTileX || est.y < minTileY || est.y > maxTileY) continue;
+            const screenX = centroX + (est.x - camX) * tileSize;
+            const screenY = centroY + (est.y - camY) * tileSize;
+
+            ctx.fillStyle = 'rgba(55, 12, 18, 0.85)';
+            ctx.fillRect(screenX + 2, screenY + 2, tileSize - 4, tileSize - 4);
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(screenX + 2, screenY + 2, tileSize - 4, tileSize - 4);
+
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(est.icone || '🧱', screenX + tileSize / 2, screenY + tileSize / 2 + 5);
+
+            ctx.fillStyle = '#ffd700';
+            ctx.font = '8px sans-serif';
+            ctx.fillText((est.clanNome || 'Clã').substring(0, 8), screenX + tileSize / 2, screenY - 2);
+        }
+
+        // 5. DESENHAR MONSTROS DO ABISMO
+        for (let id in m2dEstado.monstros) {
+            const mob = m2dEstado.monstros[id];
+            if (mob.x < minTileX || mob.x > maxTileX || mob.y < minTileY || mob.y > maxTileY) continue;
+            const screenX = centroX + (mob.x - camX) * tileSize;
+            const screenY = centroY + (mob.y - camY) * tileSize;
+
+            ctx.font = '18px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(mob.icone || '🦇', screenX + tileSize / 2, screenY + tileSize / 2 + 6);
+
+            const hpPct = Math.max(0, mob.hp / mob.hpMax);
+            ctx.fillStyle = '#300';
+            ctx.fillRect(screenX + 4, screenY - 4, tileSize - 8, 3);
+            ctx.fillStyle = '#f00';
+            ctx.fillRect(screenX + 4, screenY - 4, (tileSize - 8) * hpPct, 3);
+        }
+
+        
+        // 5.5 DESENHAR CHEFE MUNDIAL AZAZEL NOS ERMOS DE GEHENNA (62, 62)
+        const wb = m2dEstado.worldBoss;
+        if (wb && wb.ativo) {
+            const screenX = centroX + (wb.x - camX) * tileSize;
+            const screenY = centroY + (wb.y - camY) * tileSize;
+            if (wb.x >= minTileX - 2 && wb.x <= maxTileX + 2 && wb.y >= minTileY - 2 && wb.y <= maxTileY + 2) {
+                const pulse = Math.sin(Date.now() * 0.005) * 8;
+                ctx.beginPath();
+                ctx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize * 1.6 + pulse, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 23, 68, 0.28)';
+                ctx.fill();
+
+                ctx.font = '36px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('👹', screenX + tileSize / 2, screenY + tileSize / 2 + 12);
+
+                const hpPct = Math.max(0, wb.hp / wb.hpMax);
+                ctx.fillStyle = '#1c0205';
+                ctx.fillRect(screenX - tileSize, screenY - 20, tileSize * 3, 8);
+                ctx.fillStyle = '#ff1744';
+                ctx.fillRect(screenX - tileSize, screenY - 20, (tileSize * 3) * hpPct, 8);
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(screenX - tileSize, screenY - 20, tileSize * 3, 8);
+
+                ctx.fillStyle = '#ffd700';
+                ctx.font = 'bold 9px Cinzel, serif';
+                ctx.fillText(`[CHEFE MUNDIAL] AZAZEL (${wb.hp}/${wb.hpMax})`, screenX + tileSize / 2, screenY - 24);
+            }
+        }
+
+        // 6. DESENHAR MORTAIS / VÍTIMAS VAGANDO
+        for (let id in m2dEstado.mortais) {
+            const m = m2dEstado.mortais[id];
+            if (m.x < minTileX || m.x > maxTileX || m.y < minTileY || m.y > maxTileY) continue;
+            const screenX = centroX + (m.x - camX) * tileSize;
+            const screenY = centroY + (m.y - camY) * tileSize;
+
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(m.icone || '🧑‍💼', screenX + tileSize / 2, screenY + tileSize / 2 + 5);
+
+            ctx.fillStyle = '#ff7979';
+            ctx.font = '8px sans-serif';
+            ctx.fillText((m.nome || 'Mortal').split(' ')[0], screenX + tileSize / 2, screenY - 2);
+        }
+
+        // 7. DESENHAR SERVOS DO REINO (MINIONS VIVOS)
+        for (let id in m2dEstado.minions) {
+            const m = m2dEstado.minions[id];
+            if (m.x < minTileX || m.x > maxTileX || m.y < minTileY || m.y > maxTileY) continue;
+            const screenX = centroX + (m.x - camX) * tileSize;
+            const screenY = centroY + (m.y - camY) * tileSize;
+
+            ctx.beginPath();
+            ctx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 2 - 2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(38, 222, 129, 0.25)';
+            ctx.fill();
+
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(m.icone || '🤖', screenX + tileSize / 2, screenY + tileSize / 2 + 5);
+
+            // Speech bubble rápida do minion
+            ctx.fillStyle = '#26de81';
+            ctx.font = '8px sans-serif';
+            ctx.fillText(m.nome.split(' ')[0], screenX + tileSize / 2, screenY - 2);
+        }
+
+        // 8. DESENHAR OUTROS JOGADORES ONLINE
+        for (let id in m2dEstado.jogadores) {
+            if (meuVampiro && id === meuVampiro.id) continue;
+            const j = m2dEstado.jogadores[id];
+            if (j.x < minTileX || j.x > maxTileX || j.y < minTileY || j.y > maxTileY) continue;
+            const screenX = centroX + (j.x - camX) * tileSize;
+            const screenY = centroY + (j.y - camY) * tileSize;
+
+            const isMatilha = comitivaAtualCache && comitivaAtualCache.membros && comitivaAtualCache.membros.some(m => m.id === id);
+            if (isMatilha) {
+                ctx.beginPath();
+                ctx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 2 + 3, 0, Math.PI * 2);
+                ctx.strokeStyle = '#00e5ff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            ctx.beginPath();
+            ctx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 2 - 2, 0, Math.PI * 2);
+            ctx.fillStyle = isMatilha ? '#00b4d8' : (j.cor || '#ff3838');
+            ctx.fill();
+
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(j.icone || '🧛', screenX + tileSize / 2, screenY + tileSize / 2 + 5);
+
+            ctx.fillStyle = isMatilha ? '#00e5ff' : '#fff';
+            ctx.font = isMatilha ? 'bold 9px Cinzel, serif' : '9px Cinzel, serif';
+            ctx.fillText((isMatilha ? '🐺 ' : '') + j.nome, screenX + tileSize / 2, screenY - 3);
+        }
+
+        // 9. DESENHAR JOGADOR LOCAL COM ILUMINAÇÃO DE LANTERNA
+        if (meuVampiro && m2dEstado.jogadores[meuVampiro.id]) {
+            const j = m2dEstado.jogadores[meuVampiro.id];
+            const screenX = centroX + (j.x - camX) * tileSize;
+            const screenY = centroY + (j.y - camY) * tileSize;
+
+            // Halo pulsante de glória e vitae
+            ctx.beginPath();
+            ctx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 2 + 3, 0, Math.PI * 2);
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            // Sprite do Avatar
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(meuVampiro.raca === 'lycan' ? '🐺' : '🧛', screenX + tileSize / 2, screenY + tileSize / 2 + 7);
+
+            // Nome e Barra de HP acima da cabeça
+            ctx.fillStyle = '#ffd700';
+            ctx.font = 'bold 11px Cinzel, serif';
+            ctx.fillText(meuVampiro.nome, screenX + tileSize / 2, screenY - 7);
+
+            const hpRatio = Math.max(0, (meuVampiro.hpAtual || 0) / (meuVampiro.hpMax || 1000));
+            ctx.fillStyle = '#400';
+            ctx.fillRect(screenX - 4, screenY - 5, tileSize + 8, 3);
+            ctx.fillStyle = '#0f5';
+            ctx.fillRect(screenX - 4, screenY - 5, (tileSize + 8) * hpRatio, 3);
+        }
+
+        // 10. EFEITOS ESPECIAIS: SLASH ARCS & ONDAS AKÁSHICAS
+        if (m2dSlashVfx) {
+            m2dSlashVfx.frame++;
+            const sx = centroX + (m2dSlashVfx.x - camX) * tileSize;
+            const sy = centroY + (m2dSlashVfx.y - camY) * tileSize;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(sx, sy, tileSize * (0.8 + m2dSlashVfx.frame * 0.2), -0.5, 1.5);
+            ctx.strokeStyle = '#ff793f';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            ctx.restore();
+            if (m2dSlashVfx.frame > 5) m2dSlashVfx = null;
+        }
+
+        if (m2dAreaVfx) {
+            m2dAreaVfx.frame++;
+            const ax = centroX + (m2dAreaVfx.x - camX) * tileSize;
+            const ay = centroY + (m2dAreaVfx.y - camY) * tileSize;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(ax, ay, m2dAreaVfx.raio * tileSize * (m2dAreaVfx.frame / 15), 0, Math.PI * 2);
+            ctx.strokeStyle = m2dAreaVfx.cor || '#9b59b6';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.restore();
+            if (m2dAreaVfx.frame > 15) m2dAreaVfx = null;
+        }
+
+        // 11. PARTÍCULAS E TEXTOS FLUTUANTES
+        for (let i = m2dParticulas.length - 1; i >= 0; i--) {
+            const p = m2dParticulas[i];
+            p.x += p.vx * 0.1;
+            p.y += p.vy * 0.1;
+            p.vida -= p.decaimento;
+            if (p.vida <= 0) {
+                m2dParticulas.splice(i, 1);
+                continue;
+            }
+            const px = centroX + (p.x - camX) * tileSize;
+            const py = centroY + (p.y - camY) * tileSize;
+            ctx.beginPath();
+            ctx.arc(px, py, p.tamanho, 0, Math.PI * 2);
+            ctx.fillStyle = p.cor;
+            ctx.globalAlpha = p.vida;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+        }
+
+        for (let i = m2dTextosFlutuantes.length - 1; i >= 0; i--) {
+            const tf = m2dTextosFlutuantes[i];
+            tf.y += tf.vy * 0.05;
+            tf.progresso++;
+            if (tf.progresso >= tf.duracao) {
+                m2dTextosFlutuantes.splice(i, 1);
+                continue;
+            }
+            const tx = centroX + (tf.x - camX) * tileSize;
+            const ty = centroY + (tf.y - camY) * tileSize;
+            ctx.font = 'bold 12px Cinzel, sans-serif';
+            ctx.fillStyle = tf.cor;
+            ctx.textAlign = 'center';
+            ctx.fillText(tf.txt, tx, ty);
+        }
+
+        // 11.5. DESENHAR BALÕES DE PROXIMIDADE 2D NO CANVAS
+        const agoraFala = Date.now();
+        for (let i = baloesFala2D.length - 1; i >= 0; i--) {
+            const b = baloesFala2D[i];
+            if (agoraFala > b.expiraEm) {
+                baloesFala2D.splice(i, 1);
+                continue;
+            }
+            let bx = b.x;
+            let by = b.y;
+            if (m2dEstado && m2dEstado.jogadores && m2dEstado.jogadores[b.jogadorId]) {
+                bx = m2dEstado.jogadores[b.jogadorId].x;
+                by = m2dEstado.jogadores[b.jogadorId].y;
+            }
+            const sx = centroX + (bx - camX) * tileSize + tileSize / 2;
+            const sy = centroY + (by - camY) * tileSize - 20;
+
+            ctx.save();
+            ctx.font = '10px sans-serif';
+            const textWidth = ctx.measureText(b.texto).width;
+            const bubbleWidth = Math.min(220, Math.max(70, textWidth + 16));
+            const bubbleHeight = 22;
+            const bubbleX = sx - bubbleWidth / 2;
+            const bubbleY = sy - bubbleHeight;
+
+            ctx.fillStyle = 'rgba(12, 2, 6, 0.94)';
+            ctx.strokeStyle = '#00e5ff';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, 5);
+            else ctx.rect(bubbleX, bubbleY, bubbleWidth, bubbleHeight);
+            ctx.fill();
+            ctx.stroke();
+
+            // Cauda do balão
+            ctx.beginPath();
+            ctx.moveTo(sx - 4, bubbleY + bubbleHeight);
+            ctx.lineTo(sx, bubbleY + bubbleHeight + 4);
+            ctx.lineTo(sx + 4, bubbleY + bubbleHeight);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(12, 2, 6, 0.94)';
+            ctx.fill();
+            ctx.strokeStyle = '#00e5ff';
+            ctx.stroke();
+
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            let txtCortado = b.texto;
+            if (txtCortado.length > 30) txtCortado = txtCortado.substring(0, 28) + '...';
+            ctx.fillText(txtCortado, sx, bubbleY + bubbleHeight / 2);
+            ctx.restore();
+        }
+
+        // 12. ILUMINAÇÃO RADIAL DINÂMICA (FOG OF WAR / LANTERNA)
+        const radLantern = 240;
+        const gradLuz = ctx.createRadialGradient(centroX, centroY, 40, centroX, centroY, radLantern);
+        gradLuz.addColorStop(0, 'rgba(0, 0, 0, 0)');
+        gradLuz.addColorStop(0.7, 'rgba(0, 0, 0, 0.25)');
+        gradLuz.addColorStop(1, 'rgba(0, 0, 0, 0.7)');
+        ctx.fillStyle = gradLuz;
+        ctx.fillRect(0, 0, w, h);
+
+        // 13. HUD DA INTERAÇÃO PRÓXIMA (PROMPT NO CENTRO INFERIOR)
+        if (m2dInteracaoProxima) {
+            const promptY = h - 65;
+            ctx.save();
+            ctx.fillStyle = 'rgba(10, 2, 4, 0.92)';
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 1.5;
+            ctx.fillRect(centroX - 160, promptY, 320, 28);
+            ctx.strokeRect(centroX - 160, promptY, 320, 28);
+
+            ctx.fillStyle = '#ffd700';
+            ctx.font = 'bold 11px Cinzel, serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(m2dInteracaoProxima.prompt, centroX, promptY + 18);
+            ctx.restore();
+        }
+
+        // 14. HOTBAR DE AÇÕES RÁPIDAS (RODAPÉ DO CANVAS)
+        const hotbarY = h - 28;
+        ctx.save();
+        ctx.fillStyle = 'rgba(5, 2, 3, 0.9)';
+        ctx.fillRect(0, hotbarY, w, 28);
+        ctx.strokeStyle = '#331518';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(0, hotbarY, w, 28);
+
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#aaa';
+        ctx.fillText('[Espaço] ⚔️ Atacar  |  [E] 🩸 Interagir/Drenar  |  [1-4] 🌀 Poderes  |  [B] 🧱 Construir', centroX, hotbarY + 18);
+        ctx.restore();
+
+        // 15. MINI-MAPA RADAR (CANTO SUPERIOR DIREITO)
+        const miniSize = 85;
+        const miniX = w - miniSize - 8;
+        const miniY = 8;
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
+        ctx.fillRect(miniX, miniY, miniSize, miniSize);
+        ctx.strokeStyle = '#d4af37';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(miniX, miniY, miniSize, miniSize);
+
+        const escMin = miniSize / m2dEstado.largura;
+
+        // Santuário Central
+        ctx.fillStyle = 'rgba(0, 229, 255, 0.25)';
+        ctx.fillRect(miniX + 32 * escMin, miniY + 32 * escMin, 16 * escMin, 16 * escMin);
+
+        // Pontos de Monstros (Vermelho)
+        ctx.fillStyle = '#ff1744';
+        for (let id in m2dEstado.monstros) {
+            const m = m2dEstado.monstros[id];
+            ctx.fillRect(miniX + m.x * escMin, miniY + m.y * escMin, 2, 2);
+        }
+
+        // Pontos de Mortais (Rosa)
+        ctx.fillStyle = '#ff9ff3';
+        for (let id in m2dEstado.mortais) {
+            const m = m2dEstado.mortais[id];
+            ctx.fillRect(miniX + m.x * escMin, miniY + m.y * escMin, 2, 2);
+        }
+
+        // Pontos de Minions (Verde)
+        ctx.fillStyle = '#26de81';
+        for (let id in m2dEstado.minions) {
+            const m = m2dEstado.minions[id];
+            ctx.fillRect(miniX + m.x * escMin, miniY + m.y * escMin, 2, 2);
+        }
+
+        // Ponto do Jogador (Ouro)
+        if (meuVampiro && m2dEstado.jogadores[meuVampiro.id]) {
+            const j = m2dEstado.jogadores[meuVampiro.id];
+            ctx.fillStyle = '#ffd700';
+            ctx.fillRect(miniX + j.x * escMin - 1, miniY + j.y * escMin - 1, 4, 4);
         }
     }
 
