@@ -1227,7 +1227,7 @@
     <!-- TELA DE LOGIN HERMETICAMENTE ISOLADA (ESTRITAMENTE CAMPOS DE LOGIN) -->
     <div id="stage-login">
         <div id="ui-login" class="card login-card">
-            <h2 style="text-align: center; font-size: 2.2rem; margin-top: 0; margin-bottom: 6px; color: var(--ouro); font-family: 'Cinzel Decorative', 'Cinzel', serif; letter-spacing: 3px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);">SANGUINIS</h2>
+            <h2 id="titulo-login-secreto" onclick="cliqueTituloSecreto()" style="text-align: center; font-size: 2.2rem; margin-top: 0; margin-bottom: 6px; color: var(--ouro); font-family: 'Cinzel Decorative', 'Cinzel', serif; letter-spacing: 3px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.4); cursor: pointer; user-select: none;">SANGUINIS</h2>
             <p style="text-align: center; font-size: 0.8rem; color: #888; margin-top: 0; margin-bottom: 18px; font-family: 'Cinzel', serif; letter-spacing: 2px;">O PACTO DO SANGUE</p>
 
             <div id="msg-erro-login" style="color: var(--sangue-claro); text-align: center; font-weight: bold; margin-bottom: 12px; min-height: 20px; font-size: 0.88rem;"></div>
@@ -1244,9 +1244,6 @@
             <input type="text" id="in-nome" placeholder="O Teu Nome Oculto" autocomplete="username" style="margin-bottom: 12px; padding: 12px; font-size: 0.95rem; border-color: #3a151b;">
             <input type="password" id="in-senha" placeholder="A Tua Palavra-Passe Sagrada" autocomplete="current-password" style="margin-bottom: 18px; padding: 12px; font-size: 0.95rem; border-color: #3a151b;">
             <button onclick="auth()" id="btn-auth" style="width: 100%; padding: 14px; font-size: 1.05rem; letter-spacing: 1.5px; font-weight: bold; background: linear-gradient(180deg, var(--sangue) 0%, #300206 100%); border: 1px solid var(--sangue-claro); box-shadow: 0 0 20px rgba(255, 30, 47, 0.3);">ENTRAR NO REINO</button>
-            <div style="margin-top:12px; text-align:center;">
-                <button type="button" onclick="abrirModalAdminLogin()" style="background:transparent; border:1px dashed #664411; color:var(--ouro); font-size:0.75rem; padding:6px 12px; width:auto; cursor:pointer; border-radius:4px;">👑 Consagrar / Entrar como Mestre Supremo (Admin Nv.99)</button>
-            </div>
         </div>
     </div>
 
@@ -1935,6 +1932,21 @@
                             <button class="btn-magick" onclick="adminReviverJogadorUI()" style="width:auto; padding:8px 14px; margin:0; font-size:0.85rem; border-color:#0f5; color:#0f5;">Erguer</button>
                         </div>
                     </div>
+
+                    <!-- LIVRO DE VÍTIMAS REGISTRADAS (GESTÃO DE ALMAS E PRESAS) -->
+                    <div class="card" style="border-color: #9333ea; background: radial-gradient(circle at 50% 10%, #17041a 0%, #07010a 100%); margin-top: 14px; box-shadow: 0 0 15px rgba(147, 51, 234, 0.25);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <div>
+                                <h3 style="color:#d080ff; font-family:'Cinzel',serif; margin:0; text-shadow:0 0 10px rgba(208,128,255,0.4);">📜 LIVRO DE VÍTIMAS REGISTRADAS</h3>
+                                <span style="font-size:0.8rem; color:#aaa;">Gestão de Presas OSINT & Almas Vinculadas</span>
+                            </div>
+                            <button class="btn-magick" onclick="carregarVitimasMestre()" style="width:auto; padding:5px 12px; font-size:0.75rem; margin:0; border-color:#9333ea; color:#d080ff;">🔄 Atualizar Lista</button>
+                        </div>
+                        <p style="font-size:0.8rem; color:#888; margin-top:0; font-style:italic;">Almas humanas desveladas pelo Olhar de Nosferatu e atadas ao teu poder. Podes inspecionar na caça, vender o vínculo a outro jogador por Gts/Leilão ou soltar a presa desfazendo todos os laços astrais.</p>
+                        <div id="lista-vitimas-mestre" style="display:flex; flex-direction:column; gap:10px; max-height:400px; overflow-y:auto; padding-right:5px;">
+                            <div style="text-align:center; color:#666; padding:20px; font-style:italic;">A carregar almas registradas nas brumas...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1964,15 +1976,53 @@
 
             <!-- SUB-ABA 2: PRESA EM FOCO -->
             <div id="sub-caca-presa" class="sub-section oculto">
-                <div id="mortal-doc" class="card" style="border-color: var(--ouro); background: #0a0000;">
-                    <div style="font-family: 'Courier New', monospace; font-size: 0.65em; color: #444;" id="doc-hash"></div>
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+                    <select id="seletor-trocar-presa" onchange="trocarPresaFoco(this.value)" style="flex:1; margin:0; font-size:0.85rem; border-color:var(--ouro-sombra); background:#0c0204; color:var(--ouro); padding:8px;">
+                        <option value="">-- Selecionar Presa ou Vítima Registrada --</option>
+                    </select>
+                    <button class="btn-magick" onclick="carregarCaca()" style="width:auto; padding:8px 14px; margin:0; font-size:0.8rem;">🔄 Atualizar</button>
+                </div>
+
+                <div id="mortal-doc" class="card" style="border-color: var(--ouro); background: radial-gradient(circle at 50% 0%, #150205 0%, #080002 100%);">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="font-family: 'Courier New', monospace; font-size: 0.65em; color: #777;" id="doc-hash"></div>
+                        <span id="doc-status-badge" style="font-size:0.75rem; padding:2px 8px; border-radius:4px; border:1px solid #444; color:#ccc;">Vibrante</span>
+                    </div>
+
                     <div style="display: flex; justify-content: space-between; align-items:center; margin: 10px 0;">
-                        <div><h2 id="doc-id" style="margin:0; color:#fff;"></h2><span id="doc-rede" style="font-size: 0.75em; color: #888;"></span> <span style="color: #500;">|</span> <span id="doc-qualidade" style="font-size: 0.75em; color: var(--ouro); font-style: italic;"></span></div>
+                        <div>
+                            <h2 id="doc-id" style="margin:0; color:#fff; font-family:'Cinzel',serif;"></h2>
+                            <span id="doc-rede" style="font-size: 0.75em; color: #888;"></span> <span style="color: #500;">|</span> <span id="doc-qualidade" style="font-size: 0.75em; color: var(--ouro); font-style: italic;"></span>
+                        </div>
                         <h3 style="margin:0;"><span id="doc-hp" class="destaque" style="font-size: 1.4em;"></span> <span style="font-size:0.6em; color:#666;">Essência</span></h3>
                     </div>
-                    <div id="doc-aura" style="font-size: 0.85em; color: #aaa; font-style: italic; border-left: 2px solid var(--sangue-claro); padding-left: 10px; margin-bottom: 15px; background: #110000; padding: 10px;"></div>
-                    <div id="doc-status-extra" style="font-size: 0.85em; color: purple; margin-bottom: 10px; font-weight: bold;"></div>
-                    <select id="local-mordida">
+
+                    <!-- BARRA DE VITALIDADE SANGUÍNEA ANIMADA -->
+                    <div style="margin: 10px 0 14px 0;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:4px;">
+                            <span style="color:var(--text-muted);">Vitalidade / Essência Sanguínea</span>
+                            <span id="doc-hp-val" style="color:var(--sangue-claro); font-weight:bold;">2500 / 2500 HP</span>
+                        </div>
+                        <div style="width:100%; height:12px; background:#1c0306; border-radius:6px; overflow:hidden; border:1px solid #5a1015;">
+                            <div id="doc-hp-bar" style="height:100%; width:100%; background:linear-gradient(90deg, #8a0303 0%, #ff1e2f 100%); transition:width 0.4s ease; box-shadow:0 0 10px rgba(255,30,47,0.4);"></div>
+                        </div>
+                    </div>
+
+                    <!-- GRID DE QUALIDADES E ENERGIAS ASTRAIS -->
+                    <div id="doc-metricas-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:6px; background:#120306; padding:10px; border-radius:4px; border:1px solid #330a10; margin-bottom:12px; font-size:0.8rem;">
+                        <div>⚖️ Karma: <strong id="doc-karma" style="color:var(--ouro);">0</strong></div>
+                        <div>💎 Alma: <strong id="doc-alma" style="color:#d080ff;">Comum</strong></div>
+                        <div>🌊 Ressonância: <strong id="doc-ressonancia" style="color:#00e1d9;">Éter</strong></div>
+                        <div>📡 Vibração: <strong id="doc-hz" style="color:#0f5;">528 Hz</strong></div>
+                        <div>🔮 Polaridade: <strong id="doc-polaridade" style="color:#ffb6c1;">Neutra</strong></div>
+                        <div>🛡️ Vaso Influência: <strong id="doc-vaso" style="color:#f59e0b;">50%</strong></div>
+                    </div>
+
+                    <div id="doc-aura" style="font-size: 0.85em; color: #bbb; font-style: italic; border-left: 2px solid var(--sangue-claro); padding: 8px 12px; margin-bottom: 12px; background: #140205; border-radius: 0 4px 4px 0;"></div>
+                    <div id="doc-status-extra" style="font-size: 0.85em; color: #d080ff; margin-bottom: 12px; font-weight: bold;"></div>
+
+                    <label style="font-size:0.8rem; color:#aaa; margin-bottom:4px; display:block;">Ponto de Ataque / Rito Mágico:</label>
+                    <select id="local-mordida" style="margin-bottom:12px;">
                         <option value="pescoco">Garganta (Alto Dano | 25% Risco Falha)</option>
                         <option value="arteria">Artéria (Massivo | 45% Risco Falha)</option>
                         <option value="pulso" selected>Pulso de Prata (Lento e Seguro)</option>
@@ -1981,16 +2031,30 @@
                         <option value="purificar" style="color:#00ffff; font-weight:bold;">Purificação Sombria (-200 Gts. Cura +1000 HP da Presa)</option>
                         <option value="extorquir" style="color:purple">Hipnose Oculta (Rouba Influência em vez de Sangue)</option>
                     </select>
-                    <div class="grid-2">
-                        <button id="btn-drenar" onclick="drenarAtual()">Executar Acto</button>
-                        <button id="btn-maldicao" onclick="amaldicoarPresa()" style="border-color: purple; color: #f0f; background: transparent;" title="800 Gts">Cravar Domínio</button>
+
+                    <div class="grid-2" style="gap:8px; margin-bottom:8px;">
+                        <button id="btn-drenar" onclick="drenarAtual()" style="padding:10px;">🩸 Executar Acto</button>
+                        <button id="btn-maldicao" onclick="amaldicoarPresa()" style="border-color: purple; color: #f0f; background: transparent; padding:10px;" title="800 Gts">⚡ Cravar Domínio</button>
                     </div>
-                    <button id="btn-absolver" onclick="absolverPresa()" class="oculto" style="border-color: #0f5; color: #0f5; background: #051105; margin-top: 10px; width: 100%;">Absolver Alma (Apenas Primordial)</button>
-                    <div id="doc-hist" style="max-height: 80px; overflow-y:auto; font-size:0.8em; color:#888; margin-top: 10px; border-top: 1px solid #300; padding-top: 5px; font-style: italic;"></div>
+
+                    <div class="grid-2" style="gap:8px; margin-bottom:8px;">
+                        <button id="btn-vender-presa" onclick="abrirModalVenderPresaFoco()" style="border-color: var(--ouro); color: var(--ouro); background: #1a1005; padding:8px; font-size:0.82rem;">🤝 Vender a Outro Jogador</button>
+                        <button id="btn-soltar-presa" onclick="libertarPresaFoco()" style="border-color: #00e1d9; color: #00e1d9; background: #021517; padding:8px; font-size:0.82rem;">🕊️ Soltar & Desfazer Vínculo</button>
+                    </div>
+
+                    <button id="btn-absolver" onclick="absolverPresa()" class="oculto" style="border-color: #0f5; color: #0f5; background: #051105; margin-top: 6px; width: 100%; padding:9px;">⚖️ Absolver Alma do Servidor (Primordial)</button>
+
+                    <div id="doc-hist" style="max-height: 100px; overflow-y:auto; font-size:0.8em; color:#888; margin-top: 12px; border-top: 1px solid #300; padding-top: 8px; font-style: italic;"></div>
                 </div>
-                <div id="sem-presa-msg" class="card" style="display:none; text-align:center; color:#888; padding:25px;">
-                    <p style="font-style:italic;">Nenhuma presa capturada no momento.</p>
-                    <button class="btn-magick" onclick="switchSubSection('caca', 'vilas')">Rastrear Vilas Mortais</button>
+
+                <div id="sem-presa-msg" class="card" style="display:none; text-align:center; color:#888; padding:35px 20px; background:#080203; border-color:#4a1015;">
+                    <div style="font-size:2.2rem; margin-bottom:8px;">🎯</div>
+                    <h3 style="color:var(--ouro); margin-bottom:6px;">Nenhuma Presa em Foco</h3>
+                    <p style="font-style:italic; font-size:0.85rem; color:#aaa; margin-top:0; margin-bottom:18px;">Escolhe um mortal nas Vilas Humanas, no teu Pasto de Almas ou seleciona uma vítima registrada para iniciar o rito.</p>
+                    <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                        <button class="btn-magick" onclick="switchSubSection('caca', 'vilas')" style="width:auto; padding:8px 16px;">🩸 Rastrear Vilas Mortais</button>
+                        <button class="btn-magick" onclick="switchSubSection('caca', 'pasto')" style="width:auto; padding:8px 16px; border-color:var(--ouro); color:var(--ouro);">🐑 Ver Pasto de Almas</button>
+                    </div>
                 </div>
             </div>
 
@@ -4557,21 +4621,256 @@ function usarHabilidadeCustom(habilidadeId) {
         } catch(e){}
     }
 
-    function abrirPresaMercado(hash) {
-        fetch('/api/mercado').then(r => r.json()).then(dados => {
-            const m = dados.mortais.find(x => x.hash === hash); if(!m) return; hashAlvoAtual = hash;
-            const elDoc = document.getElementById('mortal-doc'); if(elDoc) elDoc.classList.remove('oculto');
+    let presaFocoAtual = null;
+
+    async function abrirPresaMercado(hash) {
+        if (!hash) return;
+        try {
+            const res = await fetch('/api/mercado');
+            const dados = await res.json();
+            let m = (dados.mortais || []).find(x => x.hash === hash);
+
+            // Se não localizou nos mortais do rebanho aberto, verifica se é uma vítima registrada do jogador
+            if (!m && meuVampiro && meuVampiro.alvosNosferatu) {
+                const v = meuVampiro.alvosNosferatu.find(a => a.alvoId === hash || a.nomeAstral.toLowerCase() === hash.toLowerCase());
+                if (v) {
+                    m = {
+                        hash: v.alvoId,
+                        id: v.nomeAstral,
+                        plataforma: v.urlPerfil ? 'OSINT' : (v.instagram ? 'Instagram' : 'OSINT'),
+                        hp: v.sangueHp || 2500,
+                        hpMax: 2500,
+                        estado: v.estadoAstral || 'Vibrante',
+                        qualidade: `${v.arquetipoAbissal || 'Presa Registrada'} [${v.ressonanciaElemental || 'Éter'}]`,
+                        leituraAura: v.analiseIA || 'Alma desvelada pelo Olhar de Nosferatu.',
+                        donoSelo: meuVampiro.nome,
+                        dadosOsint: v
+                    };
+                }
+            }
+
+            if (!m) return;
+            hashAlvoAtual = hash;
+            presaFocoAtual = m;
+
+            const elDoc = document.getElementById('mortal-doc');
+            const elSem = document.getElementById('sem-presa-msg');
+            if (elDoc) elDoc.style.display = 'block';
+            if (elSem) elSem.style.display = 'none';
+
             if (typeof switchSubSection === 'function') switchSubSection('caca', 'presa');
-            
-            safeSet('doc-hash', `SIGILO: ${hash}`); safeSet('doc-id', m.id); safeSet('doc-rede', m.plataforma); safeSet('doc-hp', numFmt(m.estado === 'Limbo' ? 0 : m.hp)); safeSet('doc-qualidade', m.qualidade); safeSet('doc-aura', m.leituraAura); safeSet('doc-status-extra', m.donoSelo ? `⚠️ ESCRAVO DE: ${m.donoSelo}` : '🔓 ALMA LIVRE');
-            
-            const btn = document.getElementById('btn-drenar'); 
-            if(btn) { if(m.estado === 'Limbo' || m.estado === 'No Leilao') { btn.innerText = "SANGUE INACESSÍVEL"; btn.disabled = true; } else { btn.innerText = "EXECUTAR ACÇÃO"; btn.disabled = false; } }
-            
-            const btnAbsolver = document.getElementById('btn-absolver'); 
-            if (btnAbsolver) { if (meuVampiro && meuVampiro.geracao === 1) btnAbsolver.classList.remove('oculto'); else btnAbsolver.classList.add('oculto'); }
-            if(elDoc) elDoc.scrollIntoView({behavior: "smooth"});
-        }).catch(e=>{});
+
+            safeSet('doc-hash', `SIGILO ASTRAL: ${m.hash}`);
+            safeSet('doc-id', m.id);
+            safeSet('doc-rede', (m.plataforma || 'HUMANO').toUpperCase());
+            safeSet('doc-qualidade', m.qualidade || 'Comum');
+            safeSet('doc-aura', m.leituraAura || 'Sem leituras perceptíveis.');
+
+            // Vitalidade e Barra Visual Animada
+            const hpAtual = m.estado === 'Limbo' ? 0 : (m.hp ?? 2500);
+            const hpMax = m.hpMax || 2500;
+            const pctHp = Math.max(0, Math.min(100, Math.round((hpAtual / hpMax) * 100)));
+            safeSet('doc-hp', numFmt(hpAtual));
+            safeSet('doc-hp-val', `${numFmt(hpAtual)} / ${numFmt(hpMax)} HP (${pctHp}%)`);
+            const barEl = document.getElementById('doc-hp-bar');
+            if (barEl) {
+                barEl.style.width = `${pctHp}%`;
+                if (pctHp <= 20) barEl.style.background = '#ff0000';
+                else if (pctHp <= 50) barEl.style.background = 'linear-gradient(90deg, #d97706, #ef4444)';
+                else barEl.style.background = 'linear-gradient(90deg, #8a0303 0%, #ff1e2f 100%)';
+            }
+
+            // Badge de Estado Astral
+            const badgeEl = document.getElementById('doc-status-badge');
+            if (badgeEl) {
+                badgeEl.innerText = m.estado || 'Vibrante';
+                if (m.estado === 'Limbo') {
+                    badgeEl.style.background = '#2a0505'; badgeEl.style.borderColor = '#ff1e2f'; badgeEl.style.color = '#ff5555';
+                } else if (m.estado === 'No Leilao') {
+                    badgeEl.style.background = '#2a1a05'; badgeEl.style.borderColor = 'var(--ouro)'; badgeEl.style.color = 'var(--ouro)';
+                } else {
+                    badgeEl.style.background = '#052a10'; badgeEl.style.borderColor = '#0f5'; badgeEl.style.color = '#0f5';
+                }
+            }
+
+            // Métricas / Qualidades do Alvo (se tiver dados OSINT)
+            const osint = m.dadosOsint || {};
+            safeSet('doc-karma', osint.pesoKarmico ?? 'Neutro');
+            safeSet('doc-alma', osint.essencia || 'Mundana');
+            safeSet('doc-ressonancia', osint.ressonanciaElemental || 'Éter');
+            safeSet('doc-hz', (osint.frequenciaVibracionalHz ? `${osint.frequenciaVibracionalHz} Hz` : '528 Hz'));
+            safeSet('doc-polaridade', osint.polaridadeAlma || 'Neutra');
+            safeSet('doc-vaso', (osint.vasoInfluencia ? `${osint.vasoInfluencia}%` : '50%'));
+
+            // Vínculo / Domínio
+            const statusEl = document.getElementById('doc-status-extra');
+            if (statusEl) {
+                if (m.donoSelo) {
+                    statusEl.innerHTML = `🔒 <strong>Vínculo:</strong> Marcado por <span style="color:var(--ouro);">${m.donoSelo}</span>`;
+                } else {
+                    statusEl.innerHTML = `🔓 <strong>Vínculo:</strong> <span style="color:#0f5;">Alma Livre (Sem dono)</span>`;
+                }
+            }
+
+            // Botão Drenar
+            const btnDrenar = document.getElementById('btn-drenar');
+            if (btnDrenar) {
+                if (m.estado === 'Limbo') {
+                    btnDrenar.innerText = "ALMA NO LIMBO"; btnDrenar.disabled = true;
+                } else if (m.estado === 'No Leilao') {
+                    btnDrenar.innerText = "SELADO EM LEILÃO"; btnDrenar.disabled = true;
+                } else {
+                    btnDrenar.innerText = "🩸 Executar Acto"; btnDrenar.disabled = false;
+                }
+            }
+
+            // Botão Absolver
+            const btnAbsolver = document.getElementById('btn-absolver');
+            if (btnAbsolver) {
+                if (meuVampiro && (meuVampiro.geracao === 1 || meuVampiro.admin)) btnAbsolver.classList.remove('oculto');
+                else btnAbsolver.classList.add('oculto');
+            }
+
+            // Atualizar o seletor com o item atual
+            const seletor = document.getElementById('seletor-trocar-presa');
+            if (seletor && seletor.value !== hash) {
+                seletor.value = hash;
+            }
+
+            if (elDoc) elDoc.scrollIntoView({ behavior: "smooth" });
+        } catch(e) {
+            console.warn("Erro ao abrir presa:", e);
+        }
+    }
+
+    async function carregarCaca() {
+        try {
+            await carregarAldeias();
+            await carregarMercado();
+            await atualizarSeletorPresas();
+            if (hashAlvoAtual) {
+                abrirPresaMercado(hashAlvoAtual);
+            } else {
+                const elDoc = document.getElementById('mortal-doc');
+                const elSem = document.getElementById('sem-presa-msg');
+                if (elDoc) elDoc.style.display = 'none';
+                if (elSem) elSem.style.display = 'block';
+            }
+        } catch(e) {
+            console.warn("Aviso ao carregar caça:", e);
+        }
+    }
+
+    function trocarPresaFoco(hash) {
+        if (!hash) {
+            hashAlvoAtual = null;
+            presaFocoAtual = null;
+            const elDoc = document.getElementById('mortal-doc');
+            const elSem = document.getElementById('sem-presa-msg');
+            if (elDoc) elDoc.style.display = 'none';
+            if (elSem) elSem.style.display = 'block';
+            return;
+        }
+        abrirPresaMercado(hash);
+    }
+
+    async function atualizarSeletorPresas() {
+        const seletor = document.getElementById('seletor-trocar-presa');
+        if (!seletor) return;
+        try {
+            const res = await fetch('/api/mercado');
+            const dados = await res.json();
+            const mortais = dados.mortais || [];
+            const vitimasReg = (meuVampiro && meuVampiro.alvosNosferatu) ? meuVampiro.alvosNosferatu : [];
+
+            let html = '<option value="">-- Selecionar Presa ou Vítima Registrada --</option>';
+            if (vitimasReg.length > 0) {
+                html += '<optgroup label="📜 Vítimas Registradas (Teu Livro)">';
+                vitimasReg.forEach(v => {
+                    html += `<option value="${v.alvoId}" ${hashAlvoAtual === v.alvoId ? 'selected' : ''}>👁️ ${v.nomeAstral} (${v.estadoAstral || 'Vigília'})</option>`;
+                });
+                html += '</optgroup>';
+            }
+            if (mortais.length > 0) {
+                html += '<optgroup label="🩸 Presas do Rebanho Aberto">';
+                mortais.forEach(m => {
+                    html += `<option value="${m.hash}" ${hashAlvoAtual === m.hash ? 'selected' : ''}>${m.id} [${m.plataforma}] - ${numFmt(m.hp)} HP</option>`;
+                });
+                html += '</optgroup>';
+            }
+            seletor.innerHTML = html;
+            if (hashAlvoAtual) seletor.value = hashAlvoAtual;
+        } catch(e) {}
+    }
+
+    async function abrirModalVenderPresaFoco() {
+        if (!hashAlvoAtual || !meuVampiro) return ocultoAlert("Nenhuma presa selecionada.");
+        const alvoNome = presaFocoAtual ? presaFocoAtual.id : hashAlvoAtual;
+        const modo = await ocultoConfirm(`Desejas anunciar [${alvoNome}] no LEILÃO P2P de Almas? (Clica em OK para LEILÃO P2P, ou CANCELAR para venda direta a um jogador específico)`);
+        if (modo) {
+            const precoStr = prompt(`Qual o valor em Gts (sangue) para ofertar a alma de [${alvoNome}] no Leilão P2P?`, "1000");
+            if (!precoStr) return;
+            const preco = parseInt(precoStr) || 1000;
+            try {
+                const res = await fetch('/api/nosferatu/vender_alvo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminId: meuVampiro.id, alvoId: hashAlvoAtual, precoGts: preco, modalidade: 'leilao' })
+                });
+                const dados = await res.json();
+                if (dados.sucesso) {
+                    ocultoAlert(`🕯️ ${dados.relato}`);
+                    await syncStatus();
+                    carregarCaca();
+                } else {
+                    ocultoAlert(dados.erro || "Falha ao anunciar alma.");
+                }
+            } catch(e) { ocultoAlert("Erro de rede."); }
+        } else {
+            const jogador = prompt(`Digita o NOME do jogador que receberá o pacto da alma de [${alvoNome}]:`);
+            if (!jogador) return;
+            const precoStr = prompt(`Preço em Gts a cobrar de ${jogador} (0 para transferência gratuita):`, "500");
+            if (precoStr === null) return;
+            const preco = parseInt(precoStr) || 0;
+            try {
+                const res = await fetch('/api/nosferatu/vender_alvo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ adminId: meuVampiro.id, alvoId: hashAlvoAtual, compradorNome: jogador, precoGts: preco, modalidade: 'direta' })
+                });
+                const dados = await res.json();
+                if (dados.sucesso) {
+                    ocultoAlert(`🤝 ${dados.relato}`);
+                    await syncStatus();
+                    carregarCaca();
+                } else {
+                    ocultoAlert(dados.erro || "Falha na transferência.");
+                }
+            } catch(e) { ocultoAlert("Erro de rede."); }
+        }
+    }
+
+    async function libertarPresaFoco() {
+        if (!hashAlvoAtual || !meuVampiro) return ocultoAlert("Nenhuma presa selecionada.");
+        const alvoNome = presaFocoAtual ? presaFocoAtual.id : hashAlvoAtual;
+        if (!(await ocultoConfirm(`Tens certeza de que desejas quebrar o Fio de Prata e libertar a alma de [${alvoNome}] de todas as amarras místicas?`))) return;
+        try {
+            const res = await fetch('/api/nosferatu/libertar_alvo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ adminId: meuVampiro.id, alvoId: hashAlvoAtual })
+            });
+            const dados = await res.json();
+            if (dados.sucesso) {
+                ocultoAlert(`🕊️ ${dados.relato}`);
+                hashAlvoAtual = null;
+                presaFocoAtual = null;
+                await syncStatus();
+                carregarCaca();
+            } else {
+                ocultoAlert(dados.erro || "Falha ao desfazer vínculo.");
+            }
+        } catch(e) { ocultoAlert("Erro de rede."); }
     }
 
 

@@ -4,6 +4,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const fs = require('fs');
 const TelegramBot = require('node-telegram-bot-api'); 
 const { MongoClient } = require('mongodb');
 const { ShadowCore, AstrolabioLunar } = require('./ShadowCore.js');
@@ -102,39 +103,129 @@ app.get('/api/build-info', (req, res) => {
 
 
 // ==========================================
-// INICIALIZAÇÃO DO NÚCLEO E MONGODB ATLAS
+// BANCO DE DADOS INTEGRADO & MONGODB ATLAS
 // ==========================================
 const core = new ShadowCore();
+const DB_FILE_PATH = path.join(__dirname, 'data', 'sanguinis_banco.json');
+
+function salvarBancoLocal() {
+    try {
+        const dir = path.dirname(DB_FILE_PATH);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        const data = {
+            vampiros: core.vampiros || {},
+            rebanho: core.rebanho || {},
+            clans: core.clans || {},
+            leilaoP2P: core.leilaoP2P || [],
+            leilaoIdCounter: core.leilaoIdCounter || 1,
+            logs: core.logs || { global: [], caca: [], guerra: [] },
+            manuscritos: core.manuscritos || [],
+            grimorioCustomizado: core.grimorioCustomizado || {},
+            balancaCosmica: core.balancaCosmica || { tiamat: 0, seth: 0, regente: 'Equilíbrio' },
+            evocacaoAtiva: core.evocacaoAtiva || null,
+            fendaAtiva: core.fendaAtiva || {},
+            pactosAtivos: core.pactosAtivos || {},
+            reliquiasCustomizadas: core.reliquiasCustomizadas || [],
+            historicoChat: core.historicoChat || { global: [], clan: {}, privado: {} },
+            reinos: core.reinos || {},
+            ultimaGravacao: new Date().toISOString()
+        };
+        const tempPath = DB_FILE_PATH + '.tmp';
+        fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
+        fs.renameSync(tempPath, DB_FILE_PATH);
+    } catch (e) {
+        console.error("❌ Falha ao salvar banco de dados integrado local:", e.message);
+    }
+}
+
+function carregarBancoLocal() {
+    try {
+        if (fs.existsSync(DB_FILE_PATH)) {
+            const raw = fs.readFileSync(DB_FILE_PATH, 'utf8');
+            if (raw && raw.trim().length > 0) {
+                const doc = JSON.parse(raw);
+                if (doc.vampiros) core.vampiros = doc.vampiros;
+                if (doc.rebanho) core.rebanho = doc.rebanho;
+                if (doc.clans) core.clans = doc.clans;
+                if (doc.leilaoP2P) core.leilaoP2P = doc.leilaoP2P;
+                if (doc.leilaoIdCounter) core.leilaoIdCounter = doc.leilaoIdCounter;
+                if (doc.logs) core.logs = doc.logs;
+                if (doc.manuscritos) core.manuscritos = doc.manuscritos;
+                if (doc.grimorioCustomizado) core.grimorioCustomizado = doc.grimorioCustomizado;
+                if (doc.balancaCosmica) core.balancaCosmica = doc.balancaCosmica;
+                if (doc.evocacaoAtiva !== undefined) core.evocacaoAtiva = doc.evocacaoAtiva;
+                if (doc.fendaAtiva) core.fendaAtiva = doc.fendaAtiva;
+                if (doc.pactosAtivos) core.pactosAtivos = doc.pactosAtivos;
+                if (doc.reliquiasCustomizadas) core.reliquiasCustomizadas = doc.reliquiasCustomizadas;
+                if (doc.historicoChat) core.historicoChat = doc.historicoChat;
+                if (doc.reinos) core.reinos = doc.reinos;
+                if (typeof core._construirFuncoesCustomizadas === 'function' && core.grimorioCustomizado) {
+                    Object.assign(core.grimorio, core._construirFuncoesCustomizadas(core.grimorioCustomizado));
+                }
+                console.log(`💾 [BANCO INTEGRADO] Base de dados restaurada de ${DB_FILE_PATH} com sucesso! (${Object.keys(core.vampiros).length} vampiros/contas carregados)`);
+                return true;
+            }
+        }
+    } catch (e) {
+        console.error("❌ Erro ao ler banco integrado local:", e.message);
+    }
+    return false;
+}
 
 async function inicializarServidor() {
-    console.log("A conectar ao Monólito do MongoDB Atlas...");
+    console.log("🌌 Inicializando persistência do reino...");
+    const carregouLocal = carregarBancoLocal();
+
+    let mongoConectado = false;
     if (MONGO_URI) {
         try {
+            console.log("A conectar ao Monólito do MongoDB Atlas...");
             const client = new MongoClient(MONGO_URI); await client.connect();
             const db = client.db('sanguinis_db'); core.collection = db.collection('registos_akashicos');
             const doc = await core.collection.findOne({ _id: 'MATRIZ_PRINCIPAL' });
             
             if (doc) {
-                core.vampiros = doc.vampiros || {}; core.rebanho = doc.rebanho || {}; core.clans = doc.clans || {};
-                core.leilaoP2P = doc.leilaoP2P || []; core.leilaoIdCounter = doc.leilaoIdCounter || 1;
-                core.logs = doc.logs || { global: [], caca: [], guerra: [] };
-                core.manuscritos = doc.manuscritos || []; core.grimorioCustomizado = doc.grimorioCustomizado || {};
-                core.balancaCosmica = doc.balancaCosmica || { tiamat: 0, seth: 0, regente: 'Equilíbrio' };
-                core.evocacaoAtiva = doc.evocacaoAtiva || null; core.fendaAtiva = doc.fendaAtiva || {};
-                core.pactosAtivos = doc.pactosAtivos || {}; core.reliquiasCustomizadas = doc.reliquiasCustomizadas || [];
-                core.historicoChat = doc.historicoChat || { global: [], clan: {}, privado: {} };
-                core.reinos = doc.reinos || {};
-                Object.assign(core.grimorio, core._construirFuncoesCustomizadas(core.grimorioCustomizado));
+                if (!carregouLocal || Object.keys(core.vampiros).length === 0) {
+                    core.vampiros = doc.vampiros || {}; core.rebanho = doc.rebanho || {}; core.clans = doc.clans || {};
+                    core.leilaoP2P = doc.leilaoP2P || []; core.leilaoIdCounter = doc.leilaoIdCounter || 1;
+                    core.logs = doc.logs || { global: [], caca: [], guerra: [] };
+                    core.manuscritos = doc.manuscritos || []; core.grimorioCustomizado = doc.grimorioCustomizado || {};
+                    core.balancaCosmica = doc.balancaCosmica || { tiamat: 0, seth: 0, regente: 'Equilíbrio' };
+                    core.evocacaoAtiva = doc.evocacaoAtiva || null; core.fendaAtiva = doc.fendaAtiva || {};
+                    core.pactosAtivos = doc.pactosAtivos || {}; core.reliquiasCustomizadas = doc.reliquiasCustomizadas || [];
+                    core.historicoChat = doc.historicoChat || { global: [], clan: {}, privado: {} };
+                    core.reinos = doc.reinos || {};
+                    Object.assign(core.grimorio, core._construirFuncoesCustomizadas(core.grimorioCustomizado));
+                    salvarBancoLocal();
+                }
                 console.log("🦇 Almas carregadas da escuridão do Atlas.");
-            } else { console.log("🌑 O Abismo está vazio."); }
-
-            core._salvarBancoDeDados = () => {
-                const data = { vampiros: core.vampiros, rebanho: core.rebanho, clans: core.clans, leilaoP2P: core.leilaoP2P, leilaoIdCounter: core.leilaoIdCounter, logs: core.logs, manuscritos: core.manuscritos, grimorioCustomizado: core.grimorioCustomizado, balancaCosmica: core.balancaCosmica, evocacaoAtiva: core.evocacaoAtiva, fendaAtiva: core.fendaAtiva, pactosAtivos: core.pactosAtivos, reliquiasCustomizadas: core.reliquiasCustomizadas, historicoChat: core.historicoChat, reinos: core.reinos };
-                core.collection.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: data }, { upsert: true }).catch(console.error);
-            };
-
+            } else { console.log("🌑 O Abismo do Atlas está vazio."); }
+            mongoConectado = true;
         } catch (error) { console.error("❌ CRÍTICO: Falha na conexão MongoDB Atlas! ", error.message); }
-    } else { console.warn("⚠️ MONGO_URI não definida. Memória volátil."); }
+    }
+
+    if (!mongoConectado) {
+        console.log(`💾 [BANCO INTEGRADO] Operando com Banco de Dados Integrado Local (${DB_FILE_PATH}). Persistência 100% ativa!`);
+    }
+
+    core._salvarBancoDeDados = () => {
+        salvarBancoLocal();
+        if (mongoConectado && core.collection) {
+            const data = { vampiros: core.vampiros, rebanho: core.rebanho, clans: core.clans, leilaoP2P: core.leilaoP2P, leilaoIdCounter: core.leilaoIdCounter, logs: core.logs, manuscritos: core.manuscritos, grimorioCustomizado: core.grimorioCustomizado, balancaCosmica: core.balancaCosmica, evocacaoAtiva: core.evocacaoAtiva, fendaAtiva: core.fendaAtiva, pactosAtivos: core.pactosAtivos, reliquiasCustomizadas: core.reliquiasCustomizadas, historicoChat: core.historicoChat, reinos: core.reinos };
+            core.collection.updateOne({ _id: 'MATRIZ_PRINCIPAL' }, { $set: data }, { upsert: true }).catch(console.error);
+        }
+    };
+
+    // Auto-save periódico a cada 30 segundos
+    setInterval(() => {
+        try {
+            if (typeof core._salvarBancoDeDados === 'function') core._salvarBancoDeDados();
+        } catch(e) {}
+    }, 30000);
+
+    // Salvar ao encerrar processo
+    process.on('SIGINT', () => { salvarBancoLocal(); process.exit(0); });
+    process.on('SIGTERM', () => { salvarBancoLocal(); process.exit(0); });
 }
 
 // ==========================================
@@ -561,6 +652,23 @@ app.post('/api/nosferatu/rasgar_veu', async (req, res) => {
         } else {
             admin.alvosNosferatu.push(dossie);
         }
+
+        // Espelha no rebanho do jogo para caça, dreno e comércio
+        if (!core.rebanho) core.rebanho = {};
+        core.rebanho[dossie.alvoId] = {
+            hash: dossie.alvoId,
+            identificadorVisivel: dossie.nomeAstral,
+            plataforma: dossie.urlPerfil ? 'OSINT' : (dossie.instagram ? 'Instagram' : (dossie.twitter ? 'Twitter' : 'OSINT')),
+            sangueAtual: 2500,
+            sangueMax: 2500,
+            estado: 'Vibrante',
+            qualidade: `${dossie.arquetipoAbissal} [${dossie.ressonanciaElemental}]`,
+            leituraAura: (dossie.analiseIA || 'Alma mapeada pelo Olhar de Nosferatu.').substring(0, 300),
+            maldicaoArcana: { selo: 'nosferatu', donoId: admin.id, donoNome: admin.nome },
+            registroMordidas: [],
+            dadosOsint: dossie
+        };
+
         core._salvarBancoDeDados();
         forcarSyncJogador(admin.id);
 
@@ -857,6 +965,184 @@ app.post('/api/nosferatu/acao_karmica', async (req, res) => {
     } catch(e) {
         console.error('Nosferatu Ação Kármica Error:', e);
         res.status(500).json({ erro: "O Véu rejeitou a acção kármica." });
+    }
+});
+
+// ==========================================
+// GESTÃO DE VÍTIMAS REGISTRADAS (MESTRE)
+// ==========================================
+
+app.get('/api/nosferatu/vitimas_mestre', (req, res) => {
+    try {
+        const { adminId } = req.query;
+        const admin = core.vampiros[adminId];
+        if (!admin) return res.status(404).json({ erro: "Iniciado não encontrado." });
+
+        const vitimas = (admin.alvosNosferatu || []).map(v => {
+            const mortal = core.rebanho ? core.rebanho[v.alvoId] : null;
+            return {
+                ...v,
+                hpAtual: mortal ? mortal.sangueAtual : (v.sangueHp || 2500),
+                hpMax: mortal ? mortal.sangueMax : 2500,
+                estadoMortal: mortal ? mortal.estado : (v.estadoAstral || 'Vibrante')
+            };
+        });
+        res.json({ vitimas });
+    } catch(e) {
+        console.error("Erro ao listar vítimas:", e);
+        res.status(500).json({ erro: "Falha ao obter lista de vítimas." });
+    }
+});
+
+app.post('/api/nosferatu/vender_alvo', (req, res) => {
+    try {
+        const { adminId, alvoId, compradorNome, precoGts, modalidade } = req.body;
+        const vendedor = core.vampiros[adminId];
+        if (!vendedor) return res.status(404).json({ erro: "Iniciador inválido." });
+
+        if (!vendedor.alvosNosferatu || vendedor.alvosNosferatu.length === 0) {
+            return res.status(404).json({ erro: "Não possuis presas registradas no teu Livro das Sombras." });
+        }
+
+        const idxAlvo = vendedor.alvosNosferatu.findIndex(a => a.alvoId === alvoId || a.nomeAstral.toLowerCase() === (alvoId || '').toLowerCase());
+        if (idxAlvo === -1) {
+            return res.status(404).json({ erro: "Vítima não localizada em teus registros." });
+        }
+
+        const alvo = vendedor.alvosNosferatu[idxAlvo];
+        const preco = Math.max(0, parseInt(precoGts) || 0);
+
+        if (modalidade === 'leilao') {
+            const anuncio = {
+                id: core.leilaoIdCounter++,
+                vendedorId: vendedor.id,
+                vendedorNome: vendedor.nome,
+                tipo: 'alma_humana',
+                quantia: 1,
+                preco: preco || 1000,
+                hashMortal: alvo.alvoId,
+                nomeMortal: alvo.nomeAstral,
+                dadosAlvo: JSON.parse(JSON.stringify(alvo)),
+                dataCriacao: Date.now()
+            };
+            core.leilaoP2P.push(anuncio);
+            alvo.estadoAstral = 'No Leilão das Sombras';
+            if (core.rebanho && core.rebanho[alvo.alvoId]) {
+                core.rebanho[alvo.alvoId].estado = 'No Leilao';
+            }
+            core._registrarEventoEspecial('global', 'LEILÃO DE ALMAS', `[${vendedor.nome}] colocou o pacto da alma de [${alvo.nomeAstral}] à venda no Leilão P2P por ${anuncio.preco} Gts!`, true);
+            core._salvarBancoDeDados();
+            io.emit('sync_geral');
+            return res.json({ sucesso: true, relato: `A alma de [${alvo.nomeAstral}] foi ofertada no Leilão P2P por ${anuncio.preco} Gts!`, anuncioId: anuncio.id });
+        }
+
+        // Venda Direta
+        if (!compradorNome || !compradorNome.trim()) {
+            return res.status(400).json({ erro: "Informa o nome do jogador comprador." });
+        }
+
+        let comprador = null;
+        for (let id in core.vampiros) {
+            if (core.vampiros[id].nome.toLowerCase() === compradorNome.trim().toLowerCase() || core.vampiros[id].id === compradorNome.trim()) {
+                comprador = core.vampiros[id];
+                break;
+            }
+        }
+
+        if (!comprador) {
+            return res.status(404).json({ erro: `Jogador [${compradorNome}] não encontrado no reino.` });
+        }
+        if (comprador.id === vendedor.id) {
+            return res.status(400).json({ erro: "Não podes vender uma alma para ti mesmo." });
+        }
+
+        if (preco > 0) {
+            if ((comprador.sangue || 0) < preco) {
+                return res.status(400).json({ erro: `[${comprador.nome}] não possui ${preco} Gts de sangue para adquirir este vínculo (possui ${comprador.sangue || 0} Gts).` });
+            }
+            comprador.sangue -= preco;
+            vendedor.sangue = (vendedor.sangue || 0) + preco;
+        }
+
+        if (!comprador.alvosNosferatu) comprador.alvosNosferatu = [];
+        const alvoTransferido = {
+            ...alvo,
+            estadoAstral: `Sob jugo de ${comprador.nome}`,
+            dataTransferencia: Date.now(),
+            mestreAnterior: vendedor.nome
+        };
+
+        vendedor.alvosNosferatu.splice(idxAlvo, 1);
+        comprador.alvosNosferatu.push(alvoTransferido);
+
+        if (core.rebanho && core.rebanho[alvo.alvoId]) {
+            core.rebanho[alvo.alvoId].estado = 'Vibrante';
+            core.rebanho[alvo.alvoId].maldicaoArcana = {
+                selo: 'transferido',
+                donoId: comprador.id,
+                donoNome: comprador.nome
+            };
+        }
+
+        core._registrarEventoEspecial('global', 'PACTO TRANSFERIDO', `[${vendedor.nome}] vendeu o vínculo de [${alvo.nomeAstral}] para [${comprador.nome}] por ${preco} Gts!`, true);
+        core._salvarBancoDeDados();
+        forcarSyncJogador(vendedor.id);
+        forcarSyncJogador(comprador.id);
+        io.emit('sync_geral');
+
+        res.json({
+            sucesso: true,
+            relato: `Vínculo com [${alvo.nomeAstral}] transferido com sucesso para [${comprador.nome}] por ${preco} Gts!`,
+            alvo: alvoTransferido
+        });
+    } catch(e) {
+        console.error("Erro ao vender alvo:", e);
+        res.status(500).json({ erro: "Falha ao selar venda da alma." });
+    }
+});
+
+app.post('/api/nosferatu/libertar_alvo', (req, res) => {
+    try {
+        const { adminId, alvoId } = req.body;
+        const admin = core.vampiros[adminId];
+        if (!admin) return res.status(404).json({ erro: "Iniciador inválido." });
+
+        if (!admin.alvosNosferatu || admin.alvosNosferatu.length === 0) {
+            return res.status(404).json({ erro: "Nenhum alvo registrado." });
+        }
+
+        const idx = admin.alvosNosferatu.findIndex(a => a.alvoId === alvoId || a.nomeAstral.toLowerCase() === (alvoId || '').toLowerCase());
+        if (idx === -1) {
+            return res.status(404).json({ erro: "Vítima não encontrada em teus registros." });
+        }
+
+        const alvo = admin.alvosNosferatu[idx];
+        const nomeAlvo = alvo.nomeAstral;
+
+        alvo.estadoAstral = 'Alma Libertada (Vínculo Rompido)';
+        alvo.maldicoesAtivas = [];
+        alvo.vulnerabilidadeEspiritual = 10;
+        alvo.resistenciaPsiquica = 95;
+
+        if (core.rebanho && core.rebanho[alvo.alvoId]) {
+            core.rebanho[alvo.alvoId].maldicaoArcana = null;
+            core.rebanho[alvo.alvoId].estado = 'Vibrante';
+        }
+
+        admin.alvosNosferatu.splice(idx, 1);
+
+        core._registrarEventoEspecial('global', 'ALMA LIBERTADA', `[${admin.nome}] rompeu o Fio de Prata e libertou a alma de [${nomeAlvo}] de qualquer servidão terrena!`, true);
+        core._salvarBancoDeDados();
+        forcarSyncJogador(admin.id);
+        io.emit('sync_geral');
+
+        res.json({
+            sucesso: true,
+            relato: `O vínculo com [${nomeAlvo}] foi totalmente desfeito. A alma foi absolvida e devolvida à sua própria jornada mundana.`
+        });
+    } catch(e) {
+        console.error("Erro ao libertar alvo:", e);
+        res.status(500).json({ erro: "Falha ao quebrar vínculo astral." });
     }
 });
 

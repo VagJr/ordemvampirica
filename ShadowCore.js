@@ -1279,7 +1279,27 @@ class ShadowCore {
         
         v.sangue -= a.preco; const vend = this.vampiros[a.vendedorId]; if (vend) vend.sangue += a.preco;
         
-        if (a.tipo === 'mortal') { const m = this.rebanho[a.hashMortal]; if (m) { m.estado = 'Vibrante'; m.maldicaoArcana = { selo: 'comprado', donoId: v.id, donoNome: v.nome }; } }
+        if (a.tipo === 'mortal' || a.tipo === 'alma_humana') { 
+            const m = this.rebanho[a.hashMortal]; 
+            if (m) { 
+                m.estado = 'Vibrante'; 
+                m.maldicaoArcana = { selo: 'comprado', donoId: v.id, donoNome: v.nome }; 
+            }
+            if (a.dadosAlvo) {
+                if (!v.alvosNosferatu) v.alvosNosferatu = [];
+                const clone = Object.assign({}, a.dadosAlvo, {
+                    estadoAstral: `Sob jugo de ${v.nome}`,
+                    dataTransferencia: Date.now(),
+                    mestreAnterior: a.vendedorNome
+                });
+                v.alvosNosferatu.push(clone);
+                const vend = this.vampiros[a.vendedorId];
+                if (vend && vend.alvosNosferatu) {
+                    const vIdx = vend.alvosNosferatu.findIndex(x => x.alvoId === a.hashMortal);
+                    if (vIdx >= 0) vend.alvosNosferatu.splice(vIdx, 1);
+                }
+            }
+        }
         else if (a.tipo === 'reliquia') { v.bolsa.push(a.itemObj); }
         else { v.inventario[a.tipo] = (v.inventario[a.tipo] || 0) + a.quantia; }
         
