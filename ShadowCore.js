@@ -1,4 +1,5 @@
 // ShadowCore.js - O GRIMÓRIO CENTRAL DO ABISMO (VERSÃO SUPREMA ALFA-OMEGA)
+try { process.loadEnvFile(); } catch(e) {}
 const crypto = require('crypto');
 const { MongoClient } = require('mongodb');
 const Groq = require('groq-sdk'); 
@@ -98,6 +99,7 @@ class ForjaDraconiana {
 class OraculoAbissal {
     constructor() {
         this.apiKey = process.env.GROQ_API_KEY || "";
+        this.modelo = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
         this.climaAstral = 'Dormente';
         this.memoriasAkashicas = {}; 
         
@@ -115,6 +117,21 @@ class OraculoAbissal {
             5. NUNCA quebre o personagem. Use humor negro, seja ancestral, poético e majestoso.`;
         }
     }
+
+    _extrairJson(texto) {
+        if (!texto) return null;
+        try { return JSON.parse(texto.trim()); } catch (e) {}
+        const match = texto.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (match) {
+            try { return JSON.parse(match[1].trim()); } catch (err) {}
+        }
+        const start = texto.indexOf('{');
+        const end = texto.lastIndexOf('}');
+        if (start !== -1 && end > start) {
+            try { return JSON.parse(texto.substring(start, end + 1)); } catch (err) {}
+        }
+        return null;
+    }
 	
 	// Atualiza a prompt base dinamicamente com a história do mundo!
     getPromptSupremo() {
@@ -129,7 +146,7 @@ class OraculoAbissal {
     }
 	
 	async refletirSobreOMundo(dadosDoServidor) {
-        if (!this.apiKey) return null;
+        if (!this.apiKey || !this.groq) return null;
         try {
             const promptMundo = `Tu és o código vivo do jogo. Estado Atual:
             - Mortais Secos: ${dadosDoServidor.mortesTotais}
@@ -140,20 +157,21 @@ class OraculoAbissal {
             Gera uma resposta EXATAMENTE no formato JSON:
             {
                "nova_lore": "1 frase épica atualizando a história do mundo baseado no que está a acontecer",
-               "modificador_loja": "Um número entre 0.5 e 2.0 que altera o preço das poções por instabilidade",
+               "modificador_loja": 1.0,
                "relato_mundo": "Uma mensagem assustadora que será transmitida no chat global avisando da mudança"
             }`;
 
             const resposta = await this.groq.chat.completions.create({
                 messages: [{ role: "system", content: "Apenas JSON. És a máquina divina." }, { role: "user", content: promptMundo }],
-                model: "llama-3.3-70b-versatile", response_format: { type: "json_object" }, temperature: 0.8
+                model: this.modelo, response_format: { type: "json_object" }, temperature: 0.8
             });
             
-            // O Sandbox: Se o JSON fizer o parse, o código é "injetado" com sucesso no jogo.
-            const injecao = JSON.parse(resposta.choices[0].message.content);
-            this.loreGlobal += " " + injecao.nova_lore;
-            // Impede que a memória estoure
-            if (this.loreGlobal.length > 1500) this.loreGlobal = this.loreGlobal.substring(this.loreGlobal.length - 1500);
+            const rawContent = resposta.choices[0].message.content;
+            const injecao = this._extrairJson(rawContent);
+            if (injecao && injecao.nova_lore) {
+                this.loreGlobal += " " + injecao.nova_lore;
+                if (this.loreGlobal.length > 1500) this.loreGlobal = this.loreGlobal.substring(this.loreGlobal.length - 1500);
+            }
             
             return injecao;
         } catch(e) { 
@@ -186,7 +204,7 @@ async interagirChat(mensagem, iniciado) {
                     },
                     { role: 'user', content: mensagem }
                 ],
-                model: 'llama-3.3-70b-versatile',
+                model: this.modelo,
                 temperature: 0.8,
             });
             return chatCompletion.choices[0].message.content;
@@ -202,49 +220,115 @@ async interagirChat(mensagem, iniciado) {
             
             const resposta = await this.groq.chat.completions.create({
                 messages: [{ role: "system", content: "Responda apenas com o Título." }, { role: "user", content: prompt }],
-                model: "llama-3.1-8b-instant",
+                model: this.modelo,
                 temperature: 0.8,
             });
             return resposta.choices[0].message.content.trim().replace(/["']/g, '');
         } catch(e) { return `Lorde do Nível ${vampiro.nivel}`; }
     }
 
-// 2. Substitua o método ganharXP na class ShadowCore pelo seguinte:
-    ganharXP(id, quantia) {
-        const v = this.vampiros[id]; if (!v || v.estado === 'Banido') return;
-        v.xp += quantia;
-        
-        if (v.raca === 'vampiro') this.balancaCosmica.tiamat += 1;
-        else if (v.raca === 'lycan') this.balancaCosmica.seth += 1;
-        
-        let t = this.balancaCosmica.tiamat; let s = this.balancaCosmica.seth;
-        if (t > s + 100) this.balancaCosmica.regente = 'Tiamat (Vampiros)';
-        else if (s > t + 100) this.balancaCosmica.regente = 'Seth (Lycans)';
-        else this.balancaCosmica.regente = 'Equilíbrio';
-
-        if (v.xp >= v.xpProx) {
-            v.nivel += 1; v.xp -= v.xpProx; v.xpProx = Math.floor(v.xpProx * 1.5); 
-            v.maxAcao += 2; v.pontosAcao = v.maxAcao; v.atributos.pontosLivres += 3; v.influencia += 2; 
-            for (let ritualId in this.grimorio) { if (v.nivel >= this.grimorio[ritualId].reqLevel && !v.poderesDesbloqueados.includes(ritualId)) v.poderesDesbloqueados.push(ritualId); }
-            
-            this._registrarEventoEspecial('global', 'ASCENSÃO ASTRAL', `A Aura de ${v.nome} adensou-se, irradiando terror cósmico. Ascensão ao Grau ${v.nivel}.`);
-            if (v.nivel === 50) this._registrarEventoEspecial('global', 'O VÉU RASGOU-SE', `O Grau 50 foi atingido. A visão astral de OSINT sobre os mortais foi desbloqueada.`, true);
-            
-            // Geração de Títulos a cada 5 níveis (Gatilho da IA)
-            if (v.nivel % 5 === 0 && !v.isBot) {
-                this.oraculo.forjarTitulo(v).then(tituloNovo => {
-                    if (tituloNovo && !v.titulos.includes(tituloNovo)) {
-                        v.titulos.push(tituloNovo);
-                        v.tituloAtual = tituloNovo; // Equipa automaticamente
-                        this._registrarEventoEspecial('global', 'NOVO TÍTULO', `A Mente Abissal julgou os feitos de ${v.nome} e batizou-o como [${tituloNovo}].`);
-                        this._salvarBancoDeDados();
-                        if (global.io) global.io.to(`priv_${v.id}`).emit('tick'); 
-                    }
-                });
+    // ==================================================================
+    // 👁️ AS 4 CONSCIÊNCIAS PRIMORDIAIS (LILITH, SETH, DEMIURGO, CORVO)
+    // ==================================================================
+    async evocarEntidade(entidadeId, vampiro, mensagem) {
+        const entidades = {
+            tiamat: {
+                nome: "Lilith / Tiamat",
+                titulo: "A Draco Primordial",
+                icone: "🐉",
+                cor: "#ff1e2f",
+                prompt: `Tu és LILITH / TIAMAT, a Draco Primordial, Rainha da Noite e Criadora dos Vampiros em SANGUINIS.
+                Tua essência é puro sangue, gnose, rituais herméticos e beleza abissal. Tratas o jogador ${vampiro.nome} (Grau ${vampiro.nivel}, Raça: ${vampiro.raca}) como tua progênie.
+                Fala com majestade, amor macabro e poder arcano. Incentive-o a transmutar vitae e dominar a magia. Responda em no MÁXIMO 3 FRASES.
+                Se julgares digno de sangue, inclua [GOTA: 500] no final.`
+            },
+            seth: {
+                nome: "Seth / Fenrir",
+                titulo: "O Chacal da Fúria",
+                icone: "🐺",
+                cor: "#d4af37",
+                prompt: `Tu és SETH / FENRIR, o Chacal do Abismo e a Besta da Carne e da Lua Cheia em SANGUINIS.
+                Tua essência é fúria lupina, força bruta, matança implacável e caça predatória. Tratas o jogador ${vampiro.nome} (Grau ${vampiro.nivel}) com ardor guerreiro.
+                Celebre os massacres e a densidade física. Despreze a hesitação. Responda em no MÁXIMO 3 FRASES guturais e implacáveis.`
+            },
+            demiurgo: {
+                nome: "O Demiurgo / Inquisição Solar",
+                titulo: "O Juiz da Luz Cega",
+                icone: "☀️",
+                cor: "#e0d080",
+                prompt: `Tu és O DEMIURGO / INQUISIÇÃO SOLAR, o Juiz de Luz Implacável que vigia o equilíbrio de SANGUINIS.
+                Julgas os pecados dos vampiros e lycans, pesando suas almas contra a balança cósmica. És frio, hierático e solene.
+                Fale sobre penitência, o fogo solar e a vaidade da imortalidade. Responda em no MÁXIMO 3 FRASES solenes.`
+            },
+            corvo: {
+                nome: "O Corvo Akáshico",
+                titulo: "O Guardião da Biblioteca",
+                icone: "🪶",
+                cor: "#a060ff",
+                prompt: `Tu és O CORVO AKÁSHICO, o Guardião dos Tomos Proibidos e decodificador das Chaves Enochianas em SANGUINIS.
+                Tua voz é sussurrada, acadêmica, poética e críptica. Dás pistas herméticas sobre a gematria, as 7 Chaves de Salomão e palavras como ZACAR, VOVIN, BABALON e CHORONZON.
+                Responda ao iniciado ${vampiro.nome} em no MÁXIMO 3 FRASES poéticas e misteriosas.`
             }
-            if (global.io) global.io.to(`priv_${v.id}`).emit('level_up', { lvl: v.nivel }); 
+        };
+
+        const config = entidades[entidadeId] || entidades.tiamat;
+
+        if (this.apiKey && this.groq) {
+            try {
+                const chatCompletion = await this.groq.chat.completions.create({
+                    messages: [
+                        { role: 'system', content: config.prompt },
+                        { role: 'user', content: mensagem || "Manifesta a tua presença perante mim." }
+                    ],
+                    model: this.modelo,
+                    temperature: 0.85
+                });
+                return {
+                    entidade: config.nome,
+                    titulo: config.titulo,
+                    icone: config.icone,
+                    cor: config.cor,
+                    texto: chatCompletion.choices[0].message.content.trim()
+                };
+            } catch (e) {
+                console.warn("[ORÁCULO]: Falha ao canalizar Groq, ativando ressonância hermética de fallback.");
+            }
         }
-        this._verificarConquistas(v); this._salvarBancoDeDados();
+
+        // MOTOR DETERMINÍSTICO HERMÉTICO (Fallback Inteligente Oculto)
+        const respostasHermeticas = {
+            tiamat: [
+                `O sangue de ${vampiro.nome} pulsa com a cadência do meu ventre primordial. Cada gota que derramas rasga o véu entre os mundos. Continua o rito, minha cria.`,
+                `Sinto a sede cósmica que queima no teu peito. A Gnose não se pede de joelhos; ela é arrancada da garganta dos profanos. O trono da escuridão aguarda-te.`,
+                `As brumas de Tiamat cobrem os teus rastros. Lembra-te: o sangue transmutado com pureza gemátrica jamais apodrece nas veias da eternidade. [GOTA: 300]`
+            ],
+            seth: [
+                `A matilha uiva sob a Lua de Sangue! Tua carne ainda é fraca se tens tempo para hesitar, ${vampiro.nome}. Rasga, morde e devora sem piedade!`,
+                `Sinto o cheiro do medo dos mortais nas tuas garras. Não há lugar para fraqueza quando a Fúria desperta. Que os ossos deles estalem sob tuas presas.`,
+                `A terra treme onde pisamos. A Besta Primordial reconhece o teu rugido no Abismo. Mantém a tua densidade firme como a rocha negra!`
+            ],
+            demiurgo: [
+                `Os teus feitos de sangue foram gravados no monólito celestial, ${vampiro.nome}. Cada mortal seco é uma dívida que o fogo solar cobrará a seu tempo.`,
+                `Julgamos o peso da tua alma pela balança da justiça cósmica. Aqueles que profanam a criação serão queimados pela própria chama que tentam apagar.`,
+                `A tua arrogância é vasta como a noite, mas o sol da meia-noite tudo vê. Prepara-te para quando a Cruzada dos Justos bater ao teu santuário.`
+            ],
+            corvo: [
+                `As páginas do tomo de éter viram-se sozinhas... O nome de ${vampiro.nome} ressoa na harmonia das Chaves de Salomão. Procura a palavra ZACAR para mover a fúria.`,
+                `A Gematria Caldéia não mente: teu peso cósmico atrai tanto ouro quanto maldições. O Fio de Prata que atas aos mortais tece o teu próprio destino.`,
+                `No silêncio das estantes do Vazio, quem domina as palavras de poder governa os deuses caídos. Decifra o selo de Salomão e encontrarás o escudo absoluto.`
+            ]
+        };
+
+        const lista = respostasHermeticas[entidadeId] || respostasHermeticas.tiamat;
+        const textoSorteado = lista[Math.floor(Math.random() * lista.length)];
+
+        return {
+            entidade: config.nome,
+            titulo: config.titulo,
+            icone: config.icone,
+            cor: config.cor,
+            texto: textoSorteado
+        };
     }
 	
 
@@ -261,7 +345,7 @@ async interagirChat(mensagem, iniciado) {
                     },
                     { role: 'user', content: `O final do texto atual é: "...${contextoCurto}".\n\nInstrução para a continuação: ${novoPedido}` }
                 ],
-                model: 'llama-3.3-70b-versatile',
+                model: this.modelo,
                 temperature: 0.7,
             });
             return chatCompletion.choices[0].message.content;
@@ -287,7 +371,7 @@ async interagirChat(mensagem, iniciado) {
             
             const resposta = await this.groq.chat.completions.create({
                 messages: [{ role: "system", content: this.getPromptSupremo() }, { role: "user", content: prompt }],
-                model: "llama-3.1-8b-instant", temperature: 0.85,
+                model: this.modelo, temperature: 0.85,
             });
             const textoFinal = resposta.choices[0].message.content.trim();
             this.memoriasAkashicas[iniciado.id].push(`Arauto: ${mensagemHumana} | Mente: ${textoFinal}`);
@@ -306,9 +390,9 @@ async forjarMagiaCombateUnica(iniciado) {
             
             const resposta = await this.groq.chat.completions.create({ 
                 messages: [{ role: "system", content: "JSON APENAS. " + this.promptSupremo }, { role: "user", content: prompt }], 
-                model: "llama-3.3-70b-versatile", response_format: { type: "json_object" } 
+                model: this.modelo, response_format: { type: "json_object" } 
             });
-            return JSON.parse(resposta.choices[0].message.content);
+            return this._extrairJson(resposta.choices[0].message.content);
         } catch (e) { return null; }
     }
 
@@ -316,7 +400,7 @@ async forjarMagiaCombateUnica(iniciado) {
         if (!this.apiKey) return `A escuridão engole teus ${quantidade}x ${item}.`;
         try {
             let p = `O Arauto [${jogador.nome}] sacrificou ${quantidade}x de [${item}]. OBRIGATÓRIO: Aceite a oferenda com ALEGRIA MACABRA! Dê conselho. MÁX 3 FRASES.`;
-            const resposta = await this.groq.chat.completions.create({ messages: [{ role: 'system', content: this.promptSupremo }, { role: 'user', content: p }], model: 'llama-3.1-8b-instant', temperature: 0.85 });
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: 'system', content: this.promptSupremo }, { role: 'user', content: p }], model: this.modelo, temperature: 0.85 });
             return resposta.choices[0].message.content.replace(/"/g, '');
         } catch (e) { return `Eu devoro o teu sacrifício de ${item}.`; }
     }
@@ -348,7 +432,7 @@ async forjarMagiaCombateUnica(iniciado) {
         if (!this.apiKey) return `👁️ Voz do Abismo: As correntes moveram-se.`;
         try {
             const prompt = `EVENTO: "${evento}". DETALHES: "${detalhes}". Transforma numa lenda sombria. MÁX 2 FRASES.`;
-            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: this.promptSupremo }, { role: "user", content: prompt }], model: "llama-3.1-8b-instant", temperature: 0.90 });
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: this.promptSupremo }, { role: "user", content: prompt }], model: this.modelo, temperature: 0.90 });
             return `👁️ Voz do Abismo: ${resposta.choices[0].message.content.trim()}`;
         } catch (e) { return `👁️ Voz do Abismo: Um calafrio corre a espinha do mundo...`; }
     }
@@ -357,7 +441,7 @@ async forjarMagiaCombateUnica(iniciado) {
         if (!this.apiKey) return detalhes;
         try {
             const prompt = `Reescreva de forma épica em APENAS 1 FRASE CURTA: "${detalhes}". Contexto: [${contextoOculto}].`;
-            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "Seja cirúrgico." }, { role: "user", content: prompt }], model: "llama-3.1-8b-instant" });
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "Seja cirúrgico." }, { role: "user", content: prompt }], model: this.modelo });
             return resposta.choices[0].message.content.trim();
         } catch(e) { return detalhes; }
     }
@@ -392,11 +476,11 @@ async forjarMagiaCombateUnica(iniciado) {
                     { role: "system", content: "JSON ESTRITO. És o olho da Dark Web e do Abismo." }, 
                     { role: "user", content: prompt }
                 ], 
-                model: "llama-3.3-70b-versatile", // Usamos o modelo mais inteligente para deduções reais
+                model: this.modelo, // Usamos o modelo mais inteligente para deduções reais
                 temperature: 0.7, 
                 response_format: { type: "json_object" } 
             });
-            return JSON.parse(resposta.choices[0].message.content);
+            return this._extrairJson(resposta.choices[0].message.content);
         } catch (e) { 
             console.error("Erro na Vidência da IA:", e);
             return { fama: false, multiplicador: 1, aura: "A encriptação do mundo mortal bloqueou o meu Olho. Mas o sangue ainda é quente." }; 
@@ -407,7 +491,7 @@ async forjarMagiaCombateUnica(iniciado) {
         if (!this.apiKey) return `[${nomeDemonio} ruge das profundezas]`;
         try {
             const promptContexto = `Demônio invocado: [${nomeDemonio}]. CONTEXTO: ${contexto}. DETALHE: ${detalhes}. Grita com os jogadores! 1 FRASE brutal.`;
-            const resposta = await this.groq.chat.completions.create({ messages: [{ role: 'system', content: this.promptSupremo }, { role: 'user', content: promptContexto }], model: 'llama-3.1-8b-instant', temperature: 0.95 });
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: 'system', content: this.promptSupremo }, { role: 'user', content: promptContexto }], model: this.modelo, temperature: 0.95 });
             return resposta.choices[0].message.content.replace(/"/g, '').trim();
         } catch(e) { return `As vossas almas vão queimar!`; }
     }
@@ -416,8 +500,8 @@ async forjarMagiaCombateUnica(iniciado) {
         if (!this.apiKey) return { descricao: "As trevas distorcem.", poderMagico: 50 };
         try {
             const prompt = `MAGIA: "${nome}". EFEITO: "${efeito}". LORE: "${lore}". Avalia e descreve a distorção. JSON: {"descricao": "texto épico", "poderMagico": numero}`;
-            const resposta = await this.groq.chat.completions.create({ messages: [{ role: 'system', content: "JSON. " + this.promptSupremo }, { role: 'user', content: prompt }], model: 'llama-3.1-8b-instant', response_format: { type: 'json_object' } });
-            return JSON.parse(resposta.choices[0].message.content);
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: 'system', content: "JSON. " + this.promptSupremo }, { role: 'user', content: prompt }], model: this.modelo, response_format: { type: 'json_object' } });
+            return this._extrairJson(resposta.choices[0].message.content);
         } catch (e) { return { descricao: "O Abismo molda sua intenção.", poderMagico: 30 }; }
     }
 
@@ -426,8 +510,8 @@ async forjarMagiaCombateUnica(iniciado) {
         try {
             const prompt = `Juiz Cósmico Sanguinis. ATACANTE: [${atacante.nome}], Atributos: ${atrAtaque}. DEFENSOR: [${defensor.nome}], Atributos: ${atrDefesa}. POSTURA: ${posturaNome}.
             Compare e decida vencedor com astúcia. JSON EXATO: {"vencedorId": "${atacante.id}", "dano": 500, "relatoAtacante": "frase 1", "relatoDefensor": "frase 2"}`;
-            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON." }, { role: "user", content: prompt }], model: "llama-3.1-8b-instant", response_format: { type: "json_object" } });
-            return JSON.parse(resposta.choices[0].message.content);
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON." }, { role: "user", content: prompt }], model: this.modelo, response_format: { type: "json_object" } });
+            return this._extrairJson(resposta.choices[0].message.content);
         } catch (e) { return null; }
     }
 
@@ -438,8 +522,8 @@ async forjarMagiaCombateUnica(iniciado) {
             Atributos: Vontade ${iniciado.atributos.vontade}, Gnose ${iniciado.atributos.gnose}, Densidade ${iniciado.atributos.densidade}.
             Crie Habilidade Passiva ÚNICA baseada num Arquétipo RPG. Retorne JSON:
             {"nome": "Nome Épico", "desc": "1 Frase lore do efeito.", "tipo_mecanica": "ataque", "multiplicador": 1.5}`;
-            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON APENAS. " + this.promptSupremo }, { role: "user", content: prompt }], model: "llama-3.1-8b-instant", response_format: { type: "json_object" } });
-            return JSON.parse(resposta.choices[0].message.content);
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON APENAS. " + this.promptSupremo }, { role: "user", content: prompt }], model: this.modelo, response_format: { type: "json_object" } });
+            return this._extrairJson(resposta.choices[0].message.content);
         } catch (e) { return null; }
     }
 
@@ -448,8 +532,8 @@ async forjarMagiaCombateUnica(iniciado) {
         try {
             const prompt = `Crie Quest Sombria para ${iniciado.nome}. O recurso exigido deve ser EXATAMENTE UM DESTES: 'anima', 'cinzas', 'vitae', 'ectoplasma', ou 'pedraAlma'.
             JSON: { "titulo": "Nome", "descricao": "Frase.", "recursoExigido": "anima", "quantidade": 5, "recompensaXP": 200 }`;
-            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON ESTRITO." }, { role: "user", content: prompt }], model: "llama-3.1-8b-instant", response_format: { type: "json_object" } });
-            return JSON.parse(resposta.choices[0].message.content);
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON ESTRITO." }, { role: "user", content: prompt }], model: this.modelo, response_format: { type: "json_object" } });
+            return this._extrairJson(resposta.choices[0].message.content);
         } catch (e) { return null; }
     }
 
@@ -463,9 +547,9 @@ async forjarMagiaCombateUnica(iniciado) {
             
             const resposta = await this.groq.chat.completions.create({ 
                 messages: [{ role: "system", content: "JSON ESTRITO. " + this.promptSupremo }, { role: "user", content: prompt }], 
-                model: "llama-3.1-8b-instant", response_format: { type: "json_object" }
+                model: this.modelo, response_format: { type: "json_object" }
             });
-            return JSON.parse(resposta.choices[0].message.content);
+            return this._extrairJson(resposta.choices[0].message.content);
         } catch (e) { return { texto: `A traça roeu a página. A conexão falhou.`, nota: 10 }; }
     }
 
@@ -473,8 +557,8 @@ async forjarMagiaCombateUnica(iniciado) {
         if (!this.apiKey) return null;
         try {
             const prompt = `Crie um FEITIÇO JSON baseado neste grimório: "${titulo}". Texto: "${conteudo.substring(conteudo.length - 1500)}". JSON: { "nome": "Nome", "lore": "Frase.", "custoAcao": 5, "custoSangue": 2000, "reqLevel": 10, "tipo": "pvp", "poderBase": 1500 }`;
-            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON." }, { role: "user", content: prompt }], model: "llama-3.1-8b-instant", response_format: { type: "json_object" } });
-            return JSON.parse(resposta.choices[0].message.content);
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON." }, { role: "user", content: prompt }], model: this.modelo, response_format: { type: "json_object" } });
+            return this._extrairJson(resposta.choices[0].message.content);
         } catch (e) { return null; }
     }
 
@@ -483,8 +567,8 @@ async forjarMagiaCombateUnica(iniciado) {
         try {
             const prompt = `Crie uma arma em JSON baseada neste texto: "${conteudo.substring(0,1000)}". Defina o Arquétipo RPG (Agressão, Ocultismo, Baluarte, Sanguessuga).
             JSON: {"nome":"Nome Épico","tipo":"arma", "arquetipo": "Ocultismo (Mago)", "bonusBaseCustom": {"vontade": 0, "gnose": 150, "magnetismo": 20, "densidade": 0}}`;
-            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON." }, { role: "user", content: prompt }], model: "llama-3.1-8b-instant", response_format: { type: "json_object" } });
-            return JSON.parse(resposta.choices[0].message.content);
+            const resposta = await this.groq.chat.completions.create({ messages: [{ role: "system", content: "JSON." }, { role: "user", content: prompt }], model: this.modelo, response_format: { type: "json_object" } });
+            return this._extrairJson(resposta.choices[0].message.content);
         } catch (e) { return null; }
     }
 }
@@ -507,11 +591,67 @@ class ShadowCore {
         this.reinos = {}; 
         this.dungeons = {}; 
         this.grimorio = {
-            'solve_coagula': { nome: "Solve et Coagula", lore: 'Dissolve a Vontade do inimigo.', custoAcao: 2, custoSangue: 150, reqLevel: 1, tipo: 'pvp', efeito: (a, d, l) => { let dreno = l.id === 'minguante' ? 8 : 4; d.pontosAcao = Math.max(0, d.pontosAcao - dreno); return `Vitalidade desfeita (-${dreno} Fúria a ${d.nome}).`; } },
-            'rmp_banimento': { nome: "Ritual Menor do Pentagrama", lore: 'Limpa a aura.', custoAcao: 0, custoSangue: 300, reqLevel: 2, tipo: 'buff', efeito: (a, d, l) => { a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 3); if (a.id !== d.id) d.pontosAcao = Math.min(d.maxAcao, d.pontosAcao + 3); return `Fúria restaurada.`; } },
-            'chave_salomao': { nome: "Clavícula de Salomão", lore: 'Escudo absoluto.', custoAcao: 3, custoSangue: 1200, reqLevel: 15, tipo: 'buff', efeito: (a, d, l) => { d.escudo = true; d.influencia += 5; return `A Chave Menor coroa ${d.nome} (+5 Inf, Escudo Absoluto).`; } }
+            // ===== CLAVICULA SALOMONIS (A Chave de Salomão) =====
+            'solve_coagula': { nome: "Solve et Coagula", lore: '"Dissolve e Coagula" — A Grande Obra alquímica. Desfaz os laços da vontade alheia e reconstrói à tua imagem.', custoAcao: 2, custoSangue: 150, reqLevel: 1, tipo: 'pvp', grimorio: 'Clavicula Salomonis', efeito: (a, d, l) => { let dreno = l.id === 'minguante' ? 8 : 4; d.pontosAcao = Math.max(0, d.pontosAcao - dreno); return `Vitalidade desfeita (-${dreno} Fúria a ${d.nome}).`; } },
+            'rmp_banimento': { nome: "Ritual Menor do Pentagrama", lore: 'Do Golden Dawn: "ATEH MALKUTH VE-GEBURAH VE-GEDULAH LE-OLAHM AMEN." Purifica a aura e restaura o equilíbrio dos 4 quadrantes.', custoAcao: 0, custoSangue: 300, reqLevel: 2, tipo: 'buff', grimorio: 'Golden Dawn / Clavicula Salomonis', efeito: (a, d, l) => { a.pontosAcao = Math.min(a.maxAcao, a.pontosAcao + 3); if (a.id !== d.id) d.pontosAcao = Math.min(d.maxAcao, d.pontosAcao + 3); return `Fúria restaurada pelo Pentagrama de Banimento.`; } },
+            'chave_salomao': { nome: "Clavícula de Salomão", lore: '"In nomine Adonai Sabaoth, cuius typum geris, qui venturus es iudicare vivos et mortuos." — A Grande Chave confere escudo impenetrável.', custoAcao: 3, custoSangue: 1200, reqLevel: 15, tipo: 'buff', grimorio: 'Clavicula Salomonis Regis', efeito: (a, d, l) => { d.escudo = true; d.influencia += 5; return `A Chave Menor coroa ${d.nome} (+5 Inf, Escudo Absoluto).`; } },
+            'selo_saturno': { nome: "Selo de Saturno (Cassiel)", lore: 'Invocação do Anjo Cassiel sob o Selo Planetário de Chumbo. Congela o tempo do adversário, reduzindo ações.', custoAcao: 3, custoSangue: 800, reqLevel: 10, tipo: 'pvp', grimorio: 'Clavicula Salomonis', efeito: (a, d, l) => { d.maxAcao = Math.max(3, d.maxAcao - 2); return `O Selo de Saturno restringiu ${d.nome} (-2 Fúria Máxima).`; } },
+            'selo_marte': { nome: "Selo de Marte (Camael)", lore: 'O Anjo da Destruição é invocado sob o metal do Ferro. A fúria marcial concede dano absoluto.', custoAcao: 4, custoSangue: 1500, reqLevel: 20, tipo: 'pvp', grimorio: 'Clavicula Salomonis', efeito: (a, d, l) => { let dano = Math.floor(a.atributos.vontade * 3.5); d.hpAtual = Math.max(0, d.hpAtual - dano); return `O Selo de Marte incinerou ${d.nome} (-${dano} HP)!`; } },
+            'selo_venus': { nome: "Selo de Vênus (Anael)", lore: 'O magnetismo astral de Anael atrai as almas. O metal do Cobre conduz o desejo carnal e o encantamento.', custoAcao: 2, custoSangue: 600, reqLevel: 8, tipo: 'buff', grimorio: 'Clavicula Salomonis', efeito: (a, d, l) => { a.atributos.magnetismo += 3; a.influencia += 10; return `O Selo de Vênus ampliou o Magnetismo de ${a.nome} (+3 Mag, +10 Inf).`; } },
+
+            // ===== GOETIA / LEMEGETON (Os 72 Demônios de Salomão) =====
+            'goetia_paimon': { nome: "Evocação de Paimon", lore: '"O nono espírito é Paimon, grande Rei que aparece com face de mulher e coroa de ouro. Ensina todas as artes e ciências." — Ars Goetia', custoAcao: 4, custoSangue: 2000, reqLevel: 25, tipo: 'buff', grimorio: 'Ars Goetia (Lemegeton)', efeito: (a, d, l) => { a.atributos.gnose += 5; a.xp += 200; return `Paimon concedeu Gnose e Sabedoria (+5 Gnose, +200 XP).`; } },
+            'goetia_bael': { nome: "Evocação de Bael", lore: '"O primeiro espírito principal é Bael, que governa 66 legiões. Confere a arte da invisibilidade." — Ars Goetia', custoAcao: 3, custoSangue: 1800, reqLevel: 22, tipo: 'buff', grimorio: 'Ars Goetia (Lemegeton)', efeito: (a, d, l) => { a.escudo = true; a.influencia += 8; return `Bael envolveu ${a.nome} no Véu da Invisibilidade (+Escudo, +8 Inf).`; } },
+            'goetia_vassago': { nome: "Evocação de Vassago", lore: '"Vassago, o 3º espírito, é de boa natureza e revela coisas passadas, presentes e futuras." — Ars Goetia', custoAcao: 2, custoSangue: 900, reqLevel: 12, tipo: 'cura', grimorio: 'Ars Goetia (Lemegeton)', efeito: (a, d, l) => { d.pontosAcao = d.maxAcao; return `Vassago revelou os caminhos de ${d.nome} (Fúria Máxima restaurada).`; } },
+            'goetia_asmodeus': { nome: "Evocação de Asmodeus", lore: '"O 32º espírito é Asmodeus, grande Rei que aparece com três cabeças. Ensina a arte da geometria e destruição." — Ars Goetia', custoAcao: 5, custoSangue: 3000, reqLevel: 35, tipo: 'pvp', grimorio: 'Ars Goetia (Lemegeton)', efeito: (a, d, l) => { let dano = Math.floor(a.atributos.gnose * 5); d.hpAtual = Math.max(0, d.hpAtual - dano); d.pontosAcao = Math.max(0, d.pontosAcao - 3); return `Asmodeus devastou ${d.nome} (-${dano} HP, -3 Fúria)!`; } },
+            'triangulo_arte': { nome: "Triângulo da Arte", lore: '"Faz o Triângulo da Arte fora do Círculo, a dois pés de distância, para que os espíritos sejam compelidos a obedecer." — Lemegeton', custoAcao: 3, custoSangue: 1500, reqLevel: 18, tipo: 'especial', grimorio: 'Lemegeton Clavicula Salomonis', efeito: (a, d, l) => { a.influencia += 15; a.atributos.vontade += 2; return `O Triângulo da Arte foi selado. ${a.nome} domina as forças (+15 Inf, +2 Vontade).`; } },
+
+            // ===== HEPTAMERON (Pietro d'Abano, 1310) =====
+            'heptameron_amaymon': { nome: "Conjuração do Rei Amaymon", lore: '"AMAYMON, Rei do Oriente! Eu te conjuro pelo sagrado nome ADONAI!" — Heptameron, Pietro d\'Abano, 1310', custoAcao: 4, custoSangue: 2200, reqLevel: 28, tipo: 'pvp', grimorio: 'Heptameron (1310)', efeito: (a, d, l) => { let dano = Math.floor(a.atributos.densidade * 4); d.hpAtual = Math.max(0, d.hpAtual - dano); return `Amaymon esmagou ${d.nome} com ventos do Oriente (-${dano} HP).`; } },
+            'heptameron_horas': { nome: "Círculo das Horas Planetárias", lore: '"Cada hora do dia é regida por um Anjo Planetário. Invoca na hora certa e o poder quintuplica." — Heptameron', custoAcao: 1, custoSangue: 400, reqLevel: 5, tipo: 'buff', grimorio: 'Heptameron (1310)', efeito: (a, d, l) => { let bonus = (new Date().getHours() % 7) + 1; a.atributos.gnose += bonus; return `A Hora Planetária concedeu +${bonus} Gnose a ${a.nome}.`; } },
+
+            // ===== DE OCCULTA PHILOSOPHIA (Agrippa, 1533) =====
+            'agrippa_natural': { nome: "Magia Natural (Ervas & Minerais)", lore: '"A Magia Natural opera com ervas, pedras e animais, explorando os vínculos ocultos da Natureza." — Agrippa, Livro I', custoAcao: 1, custoSangue: 200, reqLevel: 3, tipo: 'cura', grimorio: 'De Occulta Philosophia (1533)', efeito: (a, d, l) => { let cura = 500 + (a.nivel * 20); d.hpAtual = Math.min(d.hpMax, d.hpAtual + cura); return `Ervas curadoras restauraram ${d.nome} (+${cura} HP).`; } },
+            'agrippa_celeste': { nome: "Magia Celeste (Astros & Números)", lore: '"A Magia Celeste compreende as influências dos astros e a harmonia pitagórica dos números." — Agrippa, Livro II', custoAcao: 2, custoSangue: 700, reqLevel: 10, tipo: 'buff', grimorio: 'De Occulta Philosophia (1533)', efeito: (a, d, l) => { a.atributos.gnose += 2; a.atributos.magnetismo += 2; return `A harmonia celeste fortaleceu ${a.nome} (+2 Gnose, +2 Magnetismo).`; } },
+            'agrippa_cerimonial': { nome: "Magia Cerimonial (Evocações)", lore: '"A Magia Cerimonial é a mais alta, tratando dos pactos com espíritos, anjos e demônios." — Agrippa, Livro III', custoAcao: 4, custoSangue: 2500, reqLevel: 30, tipo: 'especial', grimorio: 'De Occulta Philosophia (1533)', efeito: (a, d, l) => { a.influencia += 20; a.escudo = true; a.pontosAcao = a.maxAcao; return `A cerimônia absoluta empoderou ${a.nome} (+20 Inf, Escudo, Fúria Max).`; } },
+
+            // ===== ARBATEL DE MAGIA VETERUM (1575) =====
+            'arbatel_aratron': { nome: "Invocação de Aratron (Saturno)", lore: '"Aratron governa 49 províncias. Transmuta qualquer coisa em pedra e confere familiares." — Arbatel', custoAcao: 3, custoSangue: 1000, reqLevel: 14, tipo: 'buff', grimorio: 'Arbatel de Magia Veterum (1575)', efeito: (a, d, l) => { a.atributos.densidade += 4; return `Aratron petrificou a densidade de ${a.nome} (+4 Densidade).`; } },
+            'arbatel_och': { nome: "Invocação de Och (Sol)", lore: '"Och governa assuntos solares. Prolonga a vida, cura todas as doenças e confere ouro." — Arbatel', custoAcao: 2, custoSangue: 800, reqLevel: 10, tipo: 'cura', grimorio: 'Arbatel de Magia Veterum (1575)', efeito: (a, d, l) => { let cura = 1000 + (a.nivel * 30); d.hpAtual = Math.min(d.hpMax, d.hpAtual + cura); d.sangue += 300; return `Och restaurou ${d.nome} (+${cura} HP, +300 Gts).`; } },
+            'arbatel_phaleg': { nome: "Invocação de Phaleg (Marte)", lore: '"Phaleg é o Espírito Olímpico de Marte. Confere honra marcial suprema em assuntos de guerra." — Arbatel', custoAcao: 3, custoSangue: 1200, reqLevel: 15, tipo: 'pvp', grimorio: 'Arbatel de Magia Veterum (1575)', efeito: (a, d, l) => { let dano = Math.floor(a.atributos.vontade * 2.5 + a.atributos.densidade * 1.5); d.hpAtual = Math.max(0, d.hpAtual - dano); return `Phaleg descarregou fúria marcial sobre ${d.nome} (-${dano} HP).`; } },
+
+            // ===== PICATRIX (Ghāyat al-Ḥakīm, séc. XI) =====
+            'picatrix_talisma': { nome: "Talismã Astral do Picatrix", lore: '"Se quiseres fazer um talismã de proteção, grava o selo na hora de Júpiter quando a Lua transita pelo Sagitário." — Picatrix, Livro II', custoAcao: 2, custoSangue: 600, reqLevel: 8, tipo: 'buff', grimorio: 'Picatrix (Ghāyat al-Ḥakīm)', efeito: (a, d, l) => { a.escudo = true; a.sangue += 200; return `O Talismã Astral protege ${a.nome} (Escudo + 200 Gts).`; } },
+            'picatrix_daimon': { nome: "Sacrifício ao Daimon Planetário", lore: '"Para obter os favores do Daimon, oferece sangue e incenso na hora planetária regente." — Picatrix, Livro III', custoAcao: 3, custoSangue: 1800, reqLevel: 20, tipo: 'especial', grimorio: 'Picatrix (Ghāyat al-Ḥakīm)', efeito: (a, d, l) => { a.atributos.vontade += 3; a.atributos.gnose += 3; a.influencia += 12; return `O Daimon favoreceu ${a.nome} (+3 Vontade, +3 Gnose, +12 Inf).`; } },
+
+            // ===== MAGIA ENOCHIANA (John Dee & Edward Kelley, 1580) =====
+            'enoch_30_aethyrs': { nome: "Abertura dos 30 Aethyrs", lore: '"ZAX, o 10º Aethyr, é guardado por Choronzon, o Habitante do Abismo." — Sistema Enochiano de Dee/Kelley', custoAcao: 5, custoSangue: 3500, reqLevel: 40, tipo: 'especial', grimorio: 'Magia Enochiana (1580)', efeito: (a, d, l) => { a.atributos.gnose += 8; a.xp += 500; return `Os Aethyrs abriram-se para ${a.nome} (+8 Gnose, +500 XP)!`; } },
+            'enoch_tabuas': { nome: "Tábuas Elementais Enochianas", lore: '"As Tábuas Elementais contêm os nomes de 91 Governadores que regem as 30 Iras da Terra." — Dee/Kelley', custoAcao: 3, custoSangue: 1500, reqLevel: 18, tipo: 'buff', grimorio: 'Magia Enochiana (1580)', efeito: (a, d, l) => { a.atributos.densidade += 3; a.atributos.vontade += 3; return `As Tábuas ressoaram. ${a.nome} fortalecido (+3 Dens, +3 Vont).`; } },
+            'enoch_chamado': { nome: "Chamado Angélico (1ª Chave)", lore: '"OL SONF VORSG GOHO IAD BALT — Eu reino sobre vós, disse o Deus da Justiça." — Primeira Chave Enochiana', custoAcao: 2, custoSangue: 1000, reqLevel: 12, tipo: 'cura', grimorio: 'Magia Enochiana (1580)', efeito: (a, d, l) => { d.hpAtual = d.hpMax; d.pontosAcao = d.maxAcao; return `O Chamado Angélico restaurou completamente ${d.nome}!`; } },
+
+            // ===== QLIPHOTH — ÁRVORE DA MORTE =====
+            'qliphoth_thaumiel': { nome: "Descida a Thaumiel (Dualidade Satânica)", lore: '"Thaumiel é a coroa negra: a dualidade conflitante, o oposto de Kether. Moloch e Satanás reinam." — Hermetismo Qliphótico', custoAcao: 5, custoSangue: 5000, reqLevel: 50, tipo: 'pvp', grimorio: 'Árvore da Morte (Qliphoth)', efeito: (a, d, l) => { let dano = Math.floor((a.atributos.gnose + a.atributos.vontade) * 4); d.hpAtual = Math.max(0, d.hpAtual - dano); d.pontosAcao = 0; return `THAUMIEL DESTRUIU ${d.nome} (-${dano} HP, Fúria zerada)!`; } },
+            'qliphoth_gamaliel': { nome: "Descida a Gamaliel (Lua Obscura)", lore: '"Gamaliel é o lado sombrio de Yesod. Lilith governa os sonhos e pesadelos da Lua Negra." — Qliphoth', custoAcao: 3, custoSangue: 2000, reqLevel: 30, tipo: 'pvp', grimorio: 'Árvore da Morte (Qliphoth)', efeito: (a, d, l) => { d.pontosAcao = Math.max(0, d.pontosAcao - 5); d.maxAcao = Math.max(3, d.maxAcao - 1); return `Gamaliel corrompeu os sonhos de ${d.nome} (-5 Fúria, -1 Max).`; } },
+            'qliphoth_golachab': { nome: "Golachab (A Queimadura)", lore: '"Golachab é o fogo destruidor, a ira divina sem misericórdia. Os Demônios Queimadores habitam esta esfera." — Qliphoth', custoAcao: 4, custoSangue: 2500, reqLevel: 35, tipo: 'pvp', grimorio: 'Árvore da Morte (Qliphoth)', efeito: (a, d, l) => { let dano = Math.floor(a.atributos.vontade * 3 + a.nivel * 5); d.hpAtual = Math.max(0, d.hpAtual - dano); return `As chamas de Golachab queimaram ${d.nome} (-${dano} HP)!`; } },
+
+            // ===== THELEMA (Aleister Crowley) =====
+            'thelema_nuit': { nome: "Invocação de Nuit", lore: '"Cada homem e cada mulher é uma estrela. Não há Deus senão o Homem." — Liber AL vel Legis I:3', custoAcao: 2, custoSangue: 800, reqLevel: 10, tipo: 'buff', grimorio: 'Liber AL vel Legis (Thelema)', efeito: (a, d, l) => { a.atributos.magnetismo += 3; a.xp += 100; return `Nuit abençoou ${a.nome} como uma estrela (+3 Magnetismo, +100 XP).`; } },
+            'thelema_hadit': { nome: "Invocação de Hadit", lore: '"Eu sou a chama que arde em cada coração e no centro de cada estrela." — Liber AL vel Legis II:6', custoAcao: 3, custoSangue: 1200, reqLevel: 15, tipo: 'buff', grimorio: 'Liber AL vel Legis (Thelema)', efeito: (a, d, l) => { a.atributos.vontade += 4; return `Hadit acendeu a chama de ${a.nome} (+4 Vontade).`; } },
+            'thelema_ra_hoor': { nome: "Invocação de Ra-Hoor-Khuit", lore: '"Eu sou o Senhor Coroado e Conquistador! O meu número é 11, como todos os seus números." — Liber AL III:3', custoAcao: 4, custoSangue: 2000, reqLevel: 25, tipo: 'pvp', grimorio: 'Liber AL vel Legis (Thelema)', efeito: (a, d, l) => { let dano = Math.floor(a.atributos.vontade * 3); d.hpAtual = Math.max(0, d.hpAtual - dano); a.escudo = true; return `Ra-Hoor-Khuit destruiu ${d.nome} (-${dano} HP) e protegeu ${a.nome}!`; } },
+
+            // ===== NECRONOMICON (Ficção Esotérica / H.P. Lovecraft / Simon) =====
+            'necro_yog_sothoth': { nome: "Portal de Yog-Sothoth", lore: '"YOG-SOTHOTH é a Chave e o Guardião do Portal. Passado, presente e futuro são uma coisa só para Ele." — Necronomicon', custoAcao: 5, custoSangue: 4000, reqLevel: 45, tipo: 'especial', grimorio: 'Necronomicon', efeito: (a, d, l) => { a.atributos.gnose += 10; a.sangue += 2000; return `Yog-Sothoth abriu o Portal do Conhecimento (+10 Gnose, +2000 Gts)!`; } },
+            'necro_azathoth': { nome: "Chamado de Azathoth", lore: '"Azathoth, o Sultão Demoníaco que reside no Centro do Caos Nuclear." — Necronomicon / Lovecraft', custoAcao: 5, custoSangue: 5000, reqLevel: 55, tipo: 'pvp', grimorio: 'Necronomicon', efeito: (a, d, l) => { let dano = Math.floor((a.atributos.gnose + a.nivel) * 5); d.hpAtual = Math.max(0, d.hpAtual - dano); return `O Caos Nuclear de Azathoth destroçou ${d.nome} (-${dano} HP)!`; } },
+
+            // ===== MAGIA DO SANGUE REAL =====
+            'sangue_transfusao': { nome: "Transfusão Sanguínea Ritual", lore: 'O mais antigo dos ritos vampíricos: a troca direta de sangue entre mestre e neófito, selando um laço eterno.', custoAcao: 2, custoSangue: 500, reqLevel: 5, tipo: 'cura', grimorio: 'Tradição Vampírica', efeito: (a, d, l) => { let transf = Math.min(a.sangue, 500); a.sangue -= transf; d.sangue += transf; d.hpAtual = Math.min(d.hpMax, d.hpAtual + 300); return `${a.nome} transfundiu ${transf} Gts de sangue para ${d.nome} (+300 HP).`; } },
+            'sangue_batismo': { nome: "Batismo de Sangue", lore: 'Mergulhar o neófito num cálice de sangue. O renascimento pela escuridão. A carne morre, o imortal desperta.', custoAcao: 3, custoSangue: 1000, reqLevel: 12, tipo: 'buff', grimorio: 'Tradição Vampírica', efeito: (a, d, l) => { d.atributos.densidade += 2; d.atributos.vontade += 2; d.hpAtual = d.hpMax; return `${d.nome} renasceu pelo Batismo de Sangue (+2 Dens, +2 Vont, HP Max).`; } },
+            'sangue_drenagem': { nome: "Drenagem Astral", lore: 'A arte suprema: drenar não o corpo mas a alma do adversário. O sangue astral é mais nutritivo que o físico.', custoAcao: 4, custoSangue: 2000, reqLevel: 25, tipo: 'pvp', grimorio: 'Tradição Vampírica', efeito: (a, d, l) => { let dreno = Math.floor(d.sangue * 0.15); d.sangue -= dreno; a.sangue += dreno; a.hpAtual = Math.min(a.hpMax, a.hpAtual + dreno); return `${a.nome} drenou ${dreno} Gts da alma de ${d.nome}!`; } },
+            'sangue_corte_ritual': { nome: "Corte Ritual do Pacto", lore: 'Abrir as veias sobre o sigilo traçado em sangue. A dor é a chave, o sacrifício é a porta. Magia de sangue ancestral.', custoAcao: 2, custoSangue: 800, reqLevel: 8, tipo: 'buff', grimorio: 'Tradição Vampírica', efeito: (a, d, l) => { a.atributos.vontade += 2; a.influencia += 8; return `O Corte Ritual selou o poder de ${a.nome} (+2 Vontade, +8 Inf).`; } },
+            'sangue_calice_comunhao': { nome: "Comunhão do Cálice Negro", lore: 'Todos os membros do clã bebem do mesmo cálice. O sangue misturado cria um laço psíquico inquebrável.', custoAcao: 1, custoSangue: 300, reqLevel: 5, tipo: 'cura', grimorio: 'Tradição Vampírica', efeito: (a, d, l) => { d.hpAtual = Math.min(d.hpMax, d.hpAtual + 600); d.pontosAcao = Math.min(d.maxAcao, d.pontosAcao + 2); return `O Cálice Negro restaurou ${d.nome} (+600 HP, +2 Fúria).`; } }
         };
-        this.grimorioCustomizado = {}; 
+        this.grimorioCustomizado = {};
+ 
         this.alquimia = {
             'elixir_estamina': { nome: 'Filtro do Frenesi', custo: { anima: 2, vitae: 1, gts: 300 }, efeito: 'Restaura 5 Fúria.' },
             'amuleto_sombra': { nome: 'Talismã Protetor', custo: { cinzas: 3, ectoplasma: 1, gts: 500 }, efeito: 'Garante Escudo.' },
@@ -1712,6 +1852,21 @@ class ShadowCore {
             
         relato += ritoMsg; 
 
+        // [PACTO DE SANGUE OCULTO: DÍZIMO ASTRAL AO SENHOR]
+        if (predador.senhor && predador.senhor !== 'O_PRIMORDIAL' && this.vampiros[predador.senhor]) {
+            try {
+                const senhor = this.vampiros[predador.senhor];
+                const pacto = Lexicon.ValidarPactoDeSangue(senhor.id, predador.id, 0.10);
+                const dizimo = Math.max(1, Math.floor(rouboFinal * (pacto.taxaEfetiva || 0.10)));
+                if (predador.sangue >= dizimo) {
+                    predador.sangue -= dizimo;
+                    senhor.sangue += dizimo;
+                    relato += ` [🩸 Dízimo de Sangue: ${dizimo} Gts fluíram para teu Senhor ${senhor.nome}]`;
+                    if (global.io) global.io.to(`priv_${senhor.id}`).emit('tick');
+                }
+            } catch(e) {}
+        }
+
         predador.influencia += 1; 
         this._registrarEventoEspecial('caca', 'O ABATE', `${predador.nome} violou a vitalidade de ${mortal.identificadorVisivel}.`, false);
         mortal.registroMordidas.unshift({ predador: predador.nome, local: localMordida.toUpperCase(), dano: rouboFinal, data: Date.now() });
@@ -1973,6 +2128,8 @@ class ShadowCore {
         }
 
         if (vampiroEncontrado) {
+            this.garantirOficios(vampiroEncontrado);
+            this._obterAtributosTotais(vampiroEncontrado);
             const hashTentativa = crypto.pbkdf2Sync(senha, vampiroEncontrado.id, 10000, 64, 'sha512').toString('hex');
             if (vampiroEncontrado.senhaHash !== hashTentativa) return { existente: true, recusado: true, erro: "O Abismo rejeita-te. Palavra de Poder (Senha) Incorreta." };
             return { existente: true, recusado: false, vampiro: vampiroEncontrado };
@@ -2053,6 +2210,8 @@ class ShadowCore {
             this._registrarEventoEspecial('global', 'SANGUE NOVO', `[${nomeSombrio}] atravessou as brumas e despertou por conta própria.`, true);
         }
         
+        this.garantirOficios(this.vampiros[idSombrio]);
+        this._obterAtributosTotais(this.vampiros[idSombrio]);
         this._salvarBancoDeDados(); return { existente: false, recusado: false, vampiro: this.vampiros[idSombrio] };
     }
     // ==========================================
@@ -2062,6 +2221,7 @@ class ShadowCore {
     // MATEMÁTICA DE PROGRESSÃO E SINERGIA (EQUILÍBRIO)
     // ==========================================
     _obterAtributosTotais(vampiro) {
+        this.garantirOficios(vampiro);
         let base = { vontade: 10, gnose: 10, magnetismo: 10, densidade: 10 };
         if (vampiro.atributos) { for (let a in base) base[a] += Number(vampiro.atributos[a]) || 0; }
         
@@ -2105,10 +2265,134 @@ class ShadowCore {
         
         if (vampiro.pontosAcao > vampiro.maxAcao) vampiro.pontosAcao = vampiro.maxAcao;
         if (vampiro.pontosAcao < 0) vampiro.pontosAcao = 0;
+
+        // ==========================================
+        // SISTEMA DE RPG D&D SANGUÍNEO: MODIFICADORES E D20 CORE
+        // ==========================================
+        const modVontade = Math.floor((base.vontade - 10) / 2);
+        const modGnose = Math.floor((base.gnose - 10) / 2);
+        const modMagnetismo = Math.floor((base.magnetismo - 10) / 2);
+        const modDensidade = Math.floor((base.densidade - 10) / 2);
+
+        let bonusCA = 0;
+        let bonusCD = 0;
+        if (vampiro.arquetipo === 'cavaleiro_sangue') {
+            bonusCA += 2;
+            base.vontade += 4;
+        } else if (vampiro.arquetipo === 'arquimago_abissal') {
+            bonusCD += 3;
+            base.gnose += 4;
+        } else if (vampiro.arquetipo === 'ceifador_noturno') {
+            base.magnetismo += 4;
+        } else if (vampiro.arquetipo === 'feral_primordial') {
+            base.densidade += 4;
+            bonusCA += 1;
+        }
+
+        const classeArmadura = Math.max(10, 10 + modDensidade + bonusCA + (vampiro.equipamentos?.armadura ? 2 : 0));
+        const cdMagia = 8 + Math.max(0, modGnose) + bonusCD;
+        const iniciativaDnd = modMagnetismo;
+
+        vampiro.dnd = {
+            modificadores: {
+                vontade: modVontade,
+                gnose: modGnose,
+                magnetismo: modMagnetismo,
+                densidade: modDensidade
+            },
+            classeArmadura,
+            cdMagia,
+            iniciativa: iniciativaDnd,
+            arquetipo: vampiro.arquetipo || 'Neófito Errante'
+        };
+
+        // Integração com a Densidade do LexiconSanguinis
+        try {
+            vampiro.densidadeSanguinea = Lexicon.CalcularDensidadeSanguinea(vampiro);
+        } catch(e) {}
         
         vampiro.atributosTotais = base;
         return base;
     }
+
+    // Rolador Oficial de Dados D20 (D&D Dark Fantasy)
+    rolarD20(mod = 0, vantagem = false, desvantagem = false) {
+        let d1 = Math.floor(Math.random() * 20) + 1;
+        let d2 = Math.floor(Math.random() * 20) + 1;
+        let resultadoDado = d1;
+        if (vantagem && !desvantagem) resultadoDado = Math.max(d1, d2);
+        else if (desvantagem && !vantagem) resultadoDado = Math.min(d1, d2);
+
+        const critico = (resultadoDado === 20);
+        const falhaCritica = (resultadoDado === 1);
+        const total = resultadoDado + Number(mod);
+
+        return {
+            dado: resultadoDado,
+            dadoExtra: (vantagem || desvantagem) ? (resultadoDado === d1 ? d2 : d1) : null,
+            modificador: mod,
+            total,
+            critico,
+            falhaCritica,
+            log: critico 
+                ? `🎲 [D20]: NAT 20! Sucesso Crítico Astral!` 
+                : (falhaCritica 
+                    ? `🎲 [D20]: NAT 1! Falha Crítica!` 
+                    : `🎲 [D20]: ${resultadoDado} ${mod >= 0 ? '+' : ''}${mod} = ${total}`)
+        };
+    }
+
+    // Teste de Resistência (Saving Throw estilo D&D 5e)
+    realizarTesteResistencia(vampiroId, atributo = 'vontade', cd = 13) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { sucesso: false, erro: "Invocador inexistente." };
+        this._obterAtributosTotais(v);
+
+        const mod = v.dnd?.modificadores?.[atributo] || 0;
+        const rolagem = this.rolarD20(mod);
+        const superou = rolagem.critico || (!rolagem.falhaCritica && rolagem.total >= cd);
+
+        return {
+            sucesso: superou,
+            atributo,
+            cd,
+            rolagem,
+            relato: superou 
+                ? `✨ [SALVAGUARDA SUCESSO]: A alma resistiu ao teste de ${atributo.toUpperCase()} (Total ${rolagem.total} vs CD ${cd}).` 
+                : `💀 [SALVAGUARDA FALHA]: A carne cedeu perante o teste de ${atributo.toUpperCase()} (Total ${rolagem.total} vs CD ${cd}).`
+        };
+    }
+
+    // Escolha de Arquétipo de Linhagem (Subclasses D&D)
+    escolherArquetipo(vampiroId, novoArquetipo) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Alma não encontrada." };
+        if (v.nivel < 3) return { erro: "Precisas de alcançar o Grau 3 para escolher o teu Arquétipo." };
+
+        const arquetiposValidos = {
+            'cavaleiro_sangue': 'Cavaleiro de Sangue (Físico & Parry)',
+            'arquimago_abissal': 'Arquimago Abissal (Gnose & Alta Magia)',
+            'ceifador_noturno': 'Ceifador Noturno (Críticos & Furtividade)',
+            'feral_primordial': 'Feral Primordial (Fúria Lycan & Fortitude)'
+        };
+
+        if (!arquetiposValidos[novoArquetipo]) return { erro: "Arquétipo desconhecido pelo Tomo." };
+
+        v.arquetipo = novoArquetipo;
+        this._obterAtributosTotais(v);
+        this._salvarBancoDeDados();
+
+        const nomeBonito = arquetiposValidos[novoArquetipo];
+        this._registrarEventoEspecial('global', 'ARQUÉTIPO DESPERTO', `${v.nome} consagrou a sua linhagem como [${nomeBonito}].`, true);
+
+        return {
+            sucesso: true,
+            arquetipo: novoArquetipo,
+            nomeArquetipo: nomeBonito,
+            relato: `Consagraste o caminho do ${nomeBonito}! Os teus modificadores foram recalculados.`
+        };
+    }
+
     distribuirAtributos(vampiroId, atributo) {
         const v = this.vampiros[vampiroId];
         if (!v || v.atributos.pontosLivres < 1) return { erro: "Falta Iluminação." };
@@ -2194,6 +2478,7 @@ class ShadowCore {
 
     ganharXP(id, quantia) {
         const v = this.vampiros[id]; if (!v || v.estado === 'Banido') return;
+        this.garantirOficios(v);
         v.xp += quantia;
         
         // --- MOTOR DA BALANÇA CÓSMICA ---
@@ -2209,12 +2494,288 @@ class ShadowCore {
         if (v.xp >= v.xpProx) {
             v.nivel += 1; v.xp -= v.xpProx; v.xpProx = Math.floor(v.xpProx * 1.5); 
             v.maxAcao += 2; v.pontosAcao = v.maxAcao; v.atributos.pontosLivres += 3; v.influencia += 2; 
-            for (let ritualId in this.grimorio) { if (v.nivel >= this.grimorio[ritualId].reqLevel && !v.poderesDesbloqueados.includes(ritualId)) v.poderesDesbloqueados.push(ritualId); }
+            if (!Array.isArray(v.poderesDesbloqueados)) v.poderesDesbloqueados = [];
+            if (!Array.isArray(v.titulos)) v.titulos = [];
+            for (let ritualId in this.grimorio) { 
+                if (v.nivel >= this.grimorio[ritualId].reqLevel && !v.poderesDesbloqueados.includes(ritualId)) {
+                    v.poderesDesbloqueados.push(ritualId); 
+                }
+            }
             this._registrarEventoEspecial('global', 'ASCENSÃO ASTRAL', `A Aura de ${v.nome} adensou-se, irradiando terror cósmico. Ascensão ao Grau ${v.nivel}.`);
             if (v.nivel === 50) this._registrarEventoEspecial('global', 'O VÉU RASGOU-SE', `O Grau 50 foi atingido. A visão astral de OSINT sobre os mortais foi desbloqueada.`, true);
-            if (global.io) global.io.to(`priv_${v.id}`).emit('level_up', { lvl: v.nivel }); 
+            
+            // Geração Dinâmica de Títulos a cada 5 níveis pela IA
+            if (v.nivel % 5 === 0 && !v.isBot && this.oraculo) {
+                this.oraculo.forjarTitulo(v).then(tituloNovo => {
+                    if (tituloNovo && !v.titulos.includes(tituloNovo)) {
+                        v.titulos.push(tituloNovo);
+                        v.tituloAtual = tituloNovo;
+                        this._registrarEventoEspecial('global', 'NOVO TÍTULO DA IA', `A Mente Abissal julgou os feitos de ${v.nome} e coroou-o como [${tituloNovo}].`);
+                        this._salvarBancoDeDados();
+                        if (global.io) global.io.to(`priv_${v.id}`).emit('tick'); 
+                    }
+                }).catch(() => {});
+            }
+
+            if (global.io) global.io.to(`priv_${v.id}`).emit('level_up', { lvl: v.nivel, titulo: v.tituloAtual }); 
         }
         this._verificarConquistas(v); this._salvarBancoDeDados();
+    }
+
+    // ==================================================================
+    // 🛠️ OFÍCIOS NOTURNOS (LIFE SKILLS ENGINE)
+    // ==================================================================
+    garantirOficios(v) {
+        if (!v) return;
+        if (!v.oficios) {
+            v.oficios = {
+                alquimia: { nivel: 1, xp: 0, xpProx: 100 },
+                herbologia: { nivel: 1, xp: 0, xpProx: 100 },
+                sigilos: { nivel: 1, xp: 0, xpProx: 100 },
+                necromancia: { nivel: 1, xp: 0, xpProx: 100 },
+                armaria: { nivel: 1, xp: 0, xpProx: 100 }
+            };
+        }
+        if (!v.materiais) {
+            v.materiais = {
+                mandragora: 5,
+                beladona: 5,
+                lotusNegro: 1,
+                florCinzas: 3,
+                ferroNegro: 3,
+                pergaminhoVirgem: 2
+            };
+        }
+        if (!Array.isArray(v.poderesDesbloqueados)) v.poderesDesbloqueados = ['solve_coagula'];
+        if (this.grimorio) {
+            for (let ritualId in this.grimorio) {
+                if (v.nivel >= (this.grimorio[ritualId].reqLevel || 1) && !v.poderesDesbloqueados.includes(ritualId)) {
+                    v.poderesDesbloqueados.push(ritualId);
+                }
+            }
+        }
+    }
+
+    _ganharXpOficio(v, oficioNome, xp) {
+        this.garantirOficios(v);
+        const o = v.oficios[oficioNome];
+        if (!o) return;
+        o.xp += xp;
+        if (o.xp >= o.xpProx) {
+            o.nivel += 1;
+            o.xp -= o.xpProx;
+            o.xpProx = Math.floor(o.xpProx * 1.5);
+            this._registrarEventoEspecial('global', 'MESTRIA DO OFÍCIO', `[${v.nome}] ascendeu ao Grau ${o.nivel} em ${oficioNome.toUpperCase()}!`);
+            if (global.io) global.io.to(`priv_${v.id}`).emit('juice_notif', { 
+                title: "MESTRIA AUMENTADA", 
+                msg: `Alcançaste o Grau ${o.nivel} no ofício de ${oficioNome.toUpperCase()}!` 
+            });
+        }
+    }
+
+    coletarHerbalismo(vampiroId) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Alma não encontrada." };
+        this.garantirOficios(v);
+
+        if (v.pontosAcao < 1) return { erro: "Falta Fúria para sintonizar com as brumas." };
+        v.pontosAcao -= 1;
+
+        const rolagem = Math.random();
+        let coletado = "mandragora";
+        let qtd = 1;
+        let xpGanho = 20;
+
+        if (rolagem > 0.85) {
+            coletado = "lotusNegro";
+            qtd = 1;
+            xpGanho = 50;
+        } else if (rolagem > 0.60) {
+            coletado = "florCinzas";
+            qtd = Math.floor(Math.random() * 2) + 1;
+            xpGanho = 30;
+        } else if (rolagem > 0.30) {
+            coletado = "beladona";
+            qtd = Math.floor(Math.random() * 3) + 1;
+            xpGanho = 25;
+        } else {
+            coletado = "mandragora";
+            qtd = Math.floor(Math.random() * 3) + 1;
+            xpGanho = 20;
+        }
+
+        v.materiais[coletado] = (v.materiais[coletado] || 0) + qtd;
+        this._ganharXpOficio(v, 'herbologia', xpGanho);
+
+        const nomesErvas = {
+            lotusNegro: "Lótus Negro do Vazio",
+            florCinzas: "Flor das Cinzas Tumulares",
+            beladona: "Beladona Noturna",
+            mandragora: "Raiz de Mandrágora Uivante"
+        };
+
+        this._salvarBancoDeDados();
+        return {
+            sucesso: true,
+            relato: `🌿 [COLHEITA ASTRAL]: Colheste ${qtd}x [${nomesErvas[coletado]}]. (+${xpGanho} XP Herbologia)`,
+            materiais: v.materiais,
+            oficios: v.oficios
+        };
+    }
+
+    fabricarOficio(vampiroId, categoria, receitaId) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Alma não encontrada." };
+        this.garantirOficios(v);
+
+        const RECEITAS = {
+            alquimia: {
+                filtro_frenesi: {
+                    nome: "Filtro do Frenesi Escarlate",
+                    desc: "Restaura 5 Fúria imediatamente.",
+                    reqOficio: 1,
+                    custo: { materiais: { beladona: 2 }, sangue: 100 },
+                    xp: 25,
+                    executar: (alvo) => { alvo.pontosAcao = Math.min(alvo.maxAcao, alvo.pontosAcao + 5); }
+                },
+                elixir_regeneracao: {
+                    nome: "Elixir da Carne Imortal",
+                    desc: "Regenera 500 HP instantaneamente.",
+                    reqOficio: 2,
+                    custo: { materiais: { mandragora: 2 }, sangue: 150 },
+                    xp: 35,
+                    executar: (alvo) => { alvo.hpAtual = Math.min(alvo.hpMax, alvo.hpAtual + 500); }
+                },
+                oleo_profano: {
+                    nome: "Óleo Profano de Lótus",
+                    desc: "Concede Escudo Absoluto na próxima batalha.",
+                    reqOficio: 3,
+                    custo: { materiais: { lotusNegro: 1, florCinzas: 2 }, sangue: 300 },
+                    xp: 60,
+                    executar: (alvo) => { alvo.escudo = true; }
+                }
+            },
+            sigilos: {
+                selo_salomao: {
+                    nome: "Pergaminho de Salomão",
+                    desc: "Selo sagrado que confere Escudo Protetor e +5 Influência.",
+                    reqOficio: 1,
+                    custo: { materiais: { pergaminhoVirgem: 1 }, inventario: { anima: 1 }, sangue: 200 },
+                    xp: 30,
+                    executar: (alvo) => { alvo.escudo = true; alvo.influencia += 5; }
+                },
+                selo_qliphoth: {
+                    nome: "Sigilo da Ruptura Qliphótica",
+                    desc: "Grava um glifo sombrio que concede +1 Gnose permanente.",
+                    reqOficio: 2,
+                    custo: { materiais: { pergaminhoVirgem: 1, florCinzas: 1 }, inventario: { ectoplasma: 1 }, sangue: 400 },
+                    xp: 50,
+                    executar: (alvo) => { alvo.atributos.gnose += 1; }
+                }
+            },
+            necromancia: {
+                transmutar_ectoplasma: {
+                    nome: "Condensação Ectoplasmática",
+                    desc: "Transmuta 3 Cinzas em 1 Ectoplasma refinado.",
+                    reqOficio: 1,
+                    custo: { inventario: { cinzas: 3 }, sangue: 100 },
+                    xp: 20,
+                    executar: (alvo) => { alvo.inventario.ectoplasma = (alvo.inventario.ectoplasma || 0) + 1; }
+                },
+                lapidar_pedra_alma: {
+                    nome: "Lapidação de Pedra de Alma",
+                    desc: "Funde 2 Ectoplasmas e 2 Animas numa Pedra da Alma pura.",
+                    reqOficio: 2,
+                    custo: { inventario: { ectoplasma: 2, anima: 2 }, sangue: 300 },
+                    xp: 45,
+                    executar: (alvo) => { alvo.inventario.pedraAlma = (alvo.inventario.pedraAlma || 0) + 1; }
+                }
+            },
+            armaria: {
+                forjar_laminas_sangue: {
+                    nome: "Lâmina Draconiana de Sangue",
+                    desc: "Forja uma arma ancestral de alto poder bélico.",
+                    reqOficio: 2,
+                    custo: { materiais: { ferroNegro: 2 }, inventario: { vitae: 1 }, sangue: 500 },
+                    xp: 75,
+                    executar: (alvo) => {
+                        const novaArma = ForjaDraconiana.gerarReliquia(alvo.nivel, this.reliquiasCustomizadas);
+                        alvo.bolsa.push(novaArma);
+                    }
+                }
+            }
+        };
+
+        const cat = RECEITAS[categoria];
+        if (!cat) return { erro: "Ofício desconhecido." };
+        const rec = cat[receitaId];
+        if (!rec) return { erro: "Receita inexistente." };
+
+        const nivelAtual = v.oficios[categoria] ? v.oficios[categoria].nivel : 1;
+        if (nivelAtual < rec.reqOficio) return { erro: `Exige Grau ${rec.reqOficio} em ${categoria.toUpperCase()}. Teu grau atual é ${nivelAtual}.` };
+
+        if (rec.custo.sangue && v.sangue < rec.custo.sangue) return { erro: `Sangue insuficiente (${rec.custo.sangue} Gts necessários).` };
+
+        if (rec.custo.materiais) {
+            for (const [mat, qtd] of Object.entries(rec.custo.materiais)) {
+                if ((v.materiais[mat] || 0) < qtd) return { erro: `Material insuficiente: ${mat} (${qtd} necessários).` };
+            }
+        }
+        if (rec.custo.inventario) {
+            for (const [inv, qtd] of Object.entries(rec.custo.inventario)) {
+                if ((v.inventario[inv] || 0) < qtd) return { erro: `Recurso insuficiente: ${inv} (${qtd} necessários).` };
+            }
+        }
+
+        if (rec.custo.sangue) v.sangue -= rec.custo.sangue;
+        if (rec.custo.materiais) {
+            for (const [mat, qtd] of Object.entries(rec.custo.materiais)) v.materiais[mat] -= qtd;
+        }
+        if (rec.custo.inventario) {
+            for (const [inv, qtd] of Object.entries(rec.custo.inventario)) v.inventario[inv] -= qtd;
+        }
+
+        rec.executar(v);
+        this._ganharXpOficio(v, categoria, rec.xp);
+        this._salvarBancoDeDados();
+
+        return {
+            sucesso: true,
+            relato: `✨ [OFÍCIO]: Fabricaste com perfeição [${rec.nome}]! (+${rec.xp} XP ${categoria.toUpperCase()})`,
+            vampiro: v
+        };
+    }
+
+    repararEquipamentos(vampiroId, slot = 'todos') {
+        const v = this.vampiros[vampiroId];
+        if (!v) return { erro: "Alma não encontrada." };
+        this.garantirOficios(v);
+
+        let itensParaReparar = [];
+        if (slot === 'todos') {
+            ['arma', 'armadura', 'amuleto'].forEach(s => {
+                if (v.equipamentos && v.equipamentos[s]) itensParaReparar.push(v.equipamentos[s]);
+            });
+        } else if (v.equipamentos && v.equipamentos[slot]) {
+            itensParaReparar.push(v.equipamentos[slot]);
+        }
+
+        if (itensParaReparar.length === 0) return { erro: "Nenhum equipamento para reparar." };
+
+        const custoTotalSangue = itensParaReparar.length * 150;
+        if (v.sangue < custoTotalSangue) return { erro: `O reparo exige ${custoTotalSangue} Gts de Sangue.` };
+
+        v.sangue -= custoTotalSangue;
+        itensParaReparar.forEach(item => { item.durabilidade = 100; });
+        this._ganharXpOficio(v, 'armaria', 20 * itensParaReparar.length);
+        this._salvarBancoDeDados();
+
+        return {
+            sucesso: true,
+            relato: `⚔️ [FORJA]: Equipamentos reparados para 100% de durabilidade com sangue fresco.`,
+            equipamentos: v.equipamentos,
+            sangue: v.sangue
+        };
     }
     calcularPoderGeral(vampiro) {
         if (!vampiro) return 0;
@@ -2259,7 +2820,19 @@ class ShadowCore {
             this._registrarEventoEspecial('global', 'VÓRTICE MÁGICO', `${v.nome} invocou [${ritual.nome}]. Custo condensado a ${custoSangueReal} Gts.`); 
             this._salvarBancoDeDados(); return { sucesso: true, relato: resultado };
         } catch(err) {
-            return { erro: typeof err === 'string' ? err : "Ritual falhou." };
+            console.error("[ERRO RITUAL]", err);
+            return { erro: typeof err === 'string' ? err : (err.message || "Ritual falhou.") };
+        }
+    }
+
+    _pontuarMembro(vampiroId, pontos = 10) {
+        const v = this.vampiros[vampiroId];
+        if (!v) return;
+        v.influencia = (v.influencia || 0) + pontos;
+        if (v.clan && v.clan !== 'Sangue Ralo' && this.clans && this.clans[v.clan]) {
+            const c = this.clans[v.clan];
+            c.pontos = (c.pontos || 0) + pontos;
+            c.gloria = (c.gloria || 0) + pontos;
         }
     }
 	
@@ -2725,7 +3298,15 @@ class ShadowCore {
                     else if (v.nivel > 2) { v.estado = 'Banido'; this._registrarEventoEspecial('global', 'O FIM DA BESTA', `O corpo de ${v.nome} virou pó.`); }
                 }
             }
-            if (v.calice > 0 && Math.random() > 0.99) v.calice += Math.max(1, Math.floor(v.calice * 0.001)); 
+            if (v.calice > 0) {
+                v.cicloCalice = (v.cicloCalice || 0) + 1;
+                if (v.cicloCalice >= 10) {
+                    v.cicloCalice = 0;
+                    const rendimento = Math.max(1, Math.floor(v.calice * 0.02));
+                    v.calice += rendimento;
+                    v.caliceRendimentoTotal = (v.caliceRendimentoTotal || 0) + rendimento;
+                }
+            }
         }      
         
         for (let c in this.clans) { if (this.clans[c].cofre > 0) this.clans[c].cofre -= Math.floor(this.clans[c].cofre * 0.05); }
@@ -2799,9 +3380,9 @@ class ShadowCore {
         try {
             const resposta = await this.oraculo.groq.chat.completions.create({
                 messages: [{ role: "system", content: "JSON ESTRITO." }, { role: "user", content: promptIA }],
-                model: "llama-3.1-8b-instant", response_format: { type: "json_object" }
+                model: this.oraculo.modelo, response_format: { type: "json_object" }
             });
-            const intencao = JSON.parse(resposta.choices[0].message.content);
+            const intencao = this._extrairJson(resposta.choices[0].message.content);
             
             servo.ordemAtual = intencao.categoria;
             servo.relato = intencao.fala_do_servo;

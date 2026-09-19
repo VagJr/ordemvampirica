@@ -1,4 +1,5 @@
 // server.js
+try { process.loadEnvFile(); } catch(e) {}
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -20,7 +21,6 @@ const io = new Server(server, {
     pingTimeout: 60000,    // Só considera que o jogador caiu após 60s sem resposta
     transports: ['websocket', 'polling'] // Garante que se o websocket falhar, ele usa polling
 });
-global.io = io;
 global.io = io; 
 
 // ==========================================
@@ -360,10 +360,207 @@ app.post('/api/admin/aprovar_osint', (req, res) => {
         core._registrarEventoEspecial('global', 'O VÉU RASGOU', `A Mão Primordial de ${admin.nome} abriu os olhos de [${alvo.nome}] para a Magia Real.`, true);
         core._salvarBancoDeDados();
         forcarSyncJogador(alvo.id);
-        
         res.json({sucesso: true, relato: `[${alvo.nome}] agora pode ver a Teia Humana (OSINT).`});
     } catch(e) { res.status(500).json({erro: "A matriz falhou."}); }
 });
+
+app.post('/api/admin/consagrar_mestre', (req, res) => {
+    try {
+        const { chaveMestra, alvoNome, criarNovo, senha, raca } = req.body;
+        const chaveValida = process.env.ADMIN_KEY || "LILITH_ADMIN_666";
+        if (chaveMestra !== chaveValida) {
+            return res.status(403).json({ erro: "Palavra de Poder inválida. Acesso negado à Coroa de Sangue." });
+        }
+        
+        let vampiro = null;
+        if (alvoNome) {
+            for (let id in core.vampiros) {
+                if (core.vampiros[id].nome.toLowerCase() === alvoNome.trim().toLowerCase() || core.vampiros[id].id === alvoNome.trim()) {
+                    vampiro = core.vampiros[id];
+                    break;
+                }
+            }
+        }
+        
+        if (!vampiro && criarNovo) {
+            const novo = core.despertarViaTelegram(Date.now(), 'Admin_Primordial', alvoNome || 'Mestre_Supremo', senha || 'admin666', '', raca || 'vampiro');
+            vampiro = novo.vampiro;
+        }
+        
+        if (!vampiro) {
+            return res.status(404).json({ erro: "Nenhum iniciado encontrado com este nome para consagrar." });
+        }
+        
+        vampiro.admin = true;
+        vampiro.geracao = 1;
+        vampiro.nivel = 99;
+        vampiro.osintAprovado = true;
+        vampiro.sangue = Math.max(vampiro.sangue || 0, 999999);
+        vampiro.calice = Math.max(vampiro.calice || 0, 500000);
+        vampiro.pontosAcao = 100;
+        vampiro.maxAcao = 100;
+        vampiro.hpAtual = 50000;
+        vampiro.hpMax = 50000;
+        vampiro.atributos = { vontade: 100, gnose: 100, magnetismo: 100, densidade: 100, pontosLivres: 99 };
+        if (!vampiro.titulos.includes('Mestre Supremo do Abismo')) vampiro.titulos.push('Mestre Supremo do Abismo');
+        if (!vampiro.titulos.includes('Alfa Primordial')) vampiro.titulos.push('Alfa Primordial');
+        vampiro.tituloAtual = 'Mestre Supremo do Abismo';
+        vampiro.poderesDesbloqueados = Object.keys(core.grimorio);
+        vampiro.inventario = Object.assign(vampiro.inventario || {}, { anima: 100, cinzas: 100, vitae: 100, memoria: 100, ectoplasma: 100, pedraAlma: 100, ankh_sangue: 50 });
+        vampiro.materiais = { mandragora: 100, beladona: 100, lotusNegro: 100, florCinzas: 100, ferroNegro: 100, pergaminhoVirgem: 100, cinzas: 100 };
+        
+        core._obterAtributosTotais(vampiro);
+        core._registrarEventoEspecial('global', 'MESTRE SUPREMO CONSAGRADO', `[${vampiro.nome}] ascendeu como Administrador Supremo do Reino com Nível 99 e Sangue Primordial!`, true);
+        core._salvarBancoDeDados();
+        forcarSyncJogador(vampiro.id);
+        io.emit('sync_geral');
+        
+        res.json({ sucesso: true, relato: `[${vampiro.nome}] foi coroado como Mestre Supremo Nv.99 com Sangue Absoluto!`, vampiro });
+    } catch(e) {
+        console.error("Erro ao consagrar Mestre:", e);
+        res.status(500).json({ erro: "A consagração falhou." });
+    }
+});
+
+// ==========================================
+// PORTAL NOSFERATU — INTELIGÊNCIA OCULTA (OSINT)
+// ==========================================
+app.post('/api/nosferatu/rasgar_veu', async (req, res) => {
+    try {
+        const { adminId, nomeReal, instagram, twitter, urlPerfil, notas } = req.body;
+        const admin = core.vampiros[adminId];
+        if (!admin || (!admin.admin && admin.geracao !== 1 && admin.nivel < 99)) {
+            return res.status(403).json({ erro: "Heresia. Apenas Mestres Supremos Nv.99 podem rasgar o Véu." });
+        }
+
+        // Gerar Dossiê Criptográfico via LexiconSanguinis
+        const nomeAlvo = nomeReal || instagram || twitter || 'Desconhecido';
+        const alvoId = `nosf_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        
+        let sigilo = { sigilo: 'N/A', pesoOculto: 0, revelacao: '' };
+        let julgamento = { pesoEspiritual: 0, taxaCorrupcao: 0, essencia: 'Desconhecido' };
+        let gematria = 0;
+        
+        try {
+            if (instagram) sigilo = Lexicon.ForjarSigiloMortal('instagram', instagram);
+            else if (twitter) sigilo = Lexicon.ForjarSigiloMortal('twitter', twitter);
+            else sigilo = Lexicon.ForjarSigiloMortal('nome', nomeAlvo);
+            
+            julgamento = Lexicon.JulgarAlma(nomeAlvo);
+            gematria = Lexicon.CalcularGematria(nomeAlvo);
+        } catch(e) {
+            // Lexicon pode não estar inicializado, calcular manualmente
+            const GEMATRIA = {'a':1,'i':1,'j':1,'q':1,'y':1,'b':2,'k':2,'r':2,'c':3,'g':3,'l':3,'s':3,'d':4,'m':4,'t':4,'e':5,'h':5,'n':5,'x':5,'u':6,'v':6,'w':6,'o':7,'z':7,'f':8,'p':8};
+            gematria = nomeAlvo.toLowerCase().replace(/[^a-z]/g, '').split('').reduce((s, c) => s + (GEMATRIA[c] || 0), 0) || 13;
+            const corr = (gematria * Date.now()) % 100;
+            let qual = 'Humano Mundano';
+            if (corr > 90) qual = 'Sangue Negro (Pecador)';
+            else if (corr < 5) qual = 'Sangue Puro (Inocente)';
+            else if (gematria % 11 === 0) qual = 'Alma Fragmentada';
+            julgamento = { pesoEspiritual: gematria, taxaCorrupcao: corr, essencia: qual };
+            
+            const crypto = require('crypto');
+            sigilo = { sigilo: crypto.createHash('sha256').update(nomeAlvo + Date.now()).digest('hex').substring(0, 40), pesoOculto: gematria };
+        }
+
+        // Identificar plataformas vinculadas
+        const plataformas = [];
+        if (instagram) plataformas.push(`Instagram: ${instagram}`);
+        if (twitter) plataformas.push(`Twitter/X: ${twitter}`);
+        if (urlPerfil) plataformas.push(`Perfil: ${urlPerfil}`);
+
+        // Gerar Análise de IA via Groq
+        let analiseIA = 'A Mente Abissal não conseguiu contactar as dimensões exteriores.';
+        const groqKey = process.env.GROQ_API_KEY;
+        if (groqKey) {
+            try {
+                const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'llama-3.3-70b-versatile',
+                        messages: [
+                            { role: 'system', content: 'Tu és a Mente Abissal, o oráculo vampírico ancestral da Ordem Vampírica. Fala em português de Portugal com tom sombrio, místico e profético. Gera uma análise de personalidade oculta baseada no nome e dados fornecidos. Usa Gematria Caldéia, astrologia sombria e leitura de aura vampírica. Sê conciso mas profundo (máx 300 palavras). Inclui: Perfil Energético, Vulnerabilidades Astrais, Pontos de Poder e Recomendação Kármica.' },
+                            { role: 'user', content: `Analisa esta alma mortal para o Véu Nosferatu:\nNome: ${nomeReal || 'Desconhecido'}\nInstagram: ${instagram || 'N/A'}\nTwitter: ${twitter || 'N/A'}\nPerfil: ${urlPerfil || 'N/A'}\nNotas: ${notas || 'Nenhuma'}\nPeso Gematria: ${gematria}\nEssência: ${julgamento.essencia}\nCorrupção: ${julgamento.taxaCorrupcao}%` }
+                        ],
+                        max_tokens: 600,
+                        temperature: 0.85
+                    })
+                });
+                if (groqRes.ok) {
+                    const groqData = await groqRes.json();
+                    analiseIA = groqData.choices?.[0]?.message?.content || analiseIA;
+                }
+            } catch(e) { console.error('Groq Nosferatu Error:', e.message); }
+        }
+
+        // Determinar cor da alma
+        let corAlma = '#d080ff';
+        if (julgamento.essencia.includes('Negro')) corAlma = '#ff3333';
+        else if (julgamento.essencia.includes('Puro')) corAlma = '#00ff88';
+        else if (julgamento.essencia.includes('Fragmentada')) corAlma = '#ff8800';
+
+        // Construir dossiê congelado
+        const dossie = {
+            alvoId,
+            nomeAstral: nomeAlvo,
+            pesoKarmico: gematria,
+            essencia: julgamento.essencia,
+            taxaCorrupcao: julgamento.taxaCorrupcao,
+            sigilo: sigilo.sigilo,
+            plataformas,
+            analiseIA,
+            corAlma,
+            dataVarredura: Date.now()
+        };
+
+        // Persistir no vampiro admin
+        if (!admin.alvosNosferatu) admin.alvosNosferatu = [];
+        admin.alvosNosferatu.push(dossie);
+        core._salvarBancoDeDados();
+
+        res.json({ sucesso: true, dossie });
+    } catch(e) {
+        console.error('Nosferatu Rasgar Véu Error:', e);
+        res.status(500).json({ erro: "A Fenda Cósmica rejeitou a varredura." });
+    }
+});
+
+app.post('/api/nosferatu/acao_karmica', async (req, res) => {
+    try {
+        const { adminId, alvoId, acao } = req.body;
+        const admin = core.vampiros[adminId];
+        if (!admin || (!admin.admin && admin.geracao !== 1 && admin.nivel < 99)) {
+            return res.status(403).json({ erro: "Heresia. Acesso negado ao Véu." });
+        }
+
+        const acoes = {
+            'drenar_vitalidade': { nome: 'Drenagem de Vitalidade', custo: 500, desc: 'A energia vital do alvo foi drenada pelas sombras. As forças do Véu respondem com um arrepio dimensional.' },
+            'sussurro_veu': { nome: 'Sussurro no Véu', custo: 200, desc: 'Um sussurro astral foi enviado através do Véu. O alvo sentirá um arrepio inexplicável, como se estivesse a ser observado.' },
+            'maldicao_espelho': { nome: 'Maldição do Espelho', custo: 1000, desc: 'O espelho negro reflecte a verdade oculta do alvo. Cada reflexo que vir conterá uma sombra a mais.' },
+            'laco_sangue': { nome: 'Laço de Sangue', custo: 800, desc: 'Um laço kármico de sangue foi estabelecido. O destino do alvo está agora entrelaçado com o do invocador.' },
+            'olho_seth': { nome: 'Olho de Seth', custo: 600, desc: 'O Olho de Seth foi aberto sobre o alvo. Cada acção será registada nos anais do Véu Nosferatu.' },
+            'sombra_akasha': { nome: 'Sombra de Akasha', custo: 1500, desc: 'A Sombra de Akasha desceu sobre o alvo. O peso de todas as vidas passadas agora pesa sobre a sua consciência.' }
+        };
+
+        const acaoData = acoes[acao];
+        if (!acaoData) return res.status(400).json({ erro: "Acção kármica desconhecida." });
+        if (admin.sangue < acaoData.custo) return res.status(400).json({ erro: `Sangue insuficiente. Necessário: ${acaoData.custo} Gts.` });
+
+        admin.sangue -= acaoData.custo;
+
+        // Registar nos logs
+        core._registrarEventoEspecial(admin.id, 'KARMA NOSFERATU', `${admin.nome} executou [${acaoData.nome}] sobre o alvo [${alvoId}].`, false);
+        core._salvarBancoDeDados();
+        forcarSyncJogador(admin.id);
+
+        res.json({ sucesso: true, relato: `🕸️ ${acaoData.nome.toUpperCase()}: ${acaoData.desc}` });
+    } catch(e) {
+        console.error('Nosferatu Ação Kármica Error:', e);
+        res.status(500).json({ erro: "O Véu rejeitou a acção kármica." });
+    }
+});
+
 // O Mercado Negro (Leilão)
 app.get('/api/leilao', (req, res) => {
     try { res.json(core.leilaoP2P || []); } 
@@ -444,10 +641,6 @@ app.get('/api/pve/aldeia', (req, res) => {
     catch(e) { res.status(500).json({erro: "Falha na patrulha."}); } 
 });
 
-app.post('/api/pve/cacar_aldeia', (req, res) => { 
-    try { res.json(core.massacrarAldeiaHumana(req.body.vampiroId, req.body.aldeiaId)); io.emit('sync_geral'); } 
-    catch(e) { res.status(500).json({erro: "Falha no massacre."}); } 
-});
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 app.post('/api/auth', async (req, res) => {
@@ -486,12 +679,6 @@ app.post('/api/dungeon/vitoria', (req, res) => {
     } catch(e) { res.status(500).json({erro: "Falha na resolução."}); }
 });
 
-// --- SISTEMA DE REINOS ---
-app.post('/api/reino/fundar', (req, res) => {
-    try { res.json(core.fundarReino(req.body.id, req.body.nomeReino)); io.emit('sync_geral'); } 
-    catch(e){ res.status(500).json({erro:"Falha na fundação."}); }
-});
-
 // --- SISTEMA DE REINOS E SERVOS ---
 app.post('/api/reino/fundar', (req, res) => {
     try { res.json(core.fundarReino(req.body.id, req.body.nomeReino)); io.emit('sync_geral'); } 
@@ -523,10 +710,119 @@ app.post('/api/servo/coletar', (req, res) => {
     try { res.json(core.coletarTributosServo(req.body.id, req.body.servoId)); io.emit('sync_status', {id: req.body.id}); } 
     catch(e){ res.status(500).json({erro:"Falha na coleta."}); }
 });
-// --- RITUAIS PRAÍTICOS ---
-// Prepara o ritual, gerando a arte procedural e definindo o minigame
-// --- RITUAIS PRÁTICOS ---
-// Prepara o ritual, gerando a arte procedural e definindo o minigame
+
+app.post('/api/tutorial/concluido', (req, res) => {
+    try {
+        const { id } = req.body;
+        const v = core.vampiros[id];
+        if (v) {
+            v.tutorialConcluido = true;
+            v.sangue = (v.sangue || 0) + 500;
+            core.ganharXP(v.id, 100);
+            core._salvarBancoDeDados();
+            io.emit('sync_status', { id: v.id });
+        }
+        res.json({ sucesso: true, recompensa: { sangue: 500, xp: 100 } });
+    } catch(e) { res.status(500).json({ erro: "Falha ao selar o treino." }); }
+});
+// ==========================================
+// ROTAS DE ALTA MAGIA, CÍRCULO SALOMÔNICO & DENSIDADE DO LEXICON
+// ==========================================
+app.post('/api/magia/canalizar_circulo', (req, res) => {
+    try {
+        const { id, ritualId, chaveEnochiana, seloPlaneta, volumeSangue } = req.body;
+        const invocador = core.vampiros[id];
+        if (!invocador) return res.status(404).json({ erro: "Invocador astral não encontrado." });
+
+        const custo = Number(volumeSangue) || 100;
+        if (invocador.sangue < custo) return res.status(400).json({ erro: "Sangue insuficiente para ativar o Círculo." });
+
+        invocador.sangue -= custo;
+        const faseLua = core.faseLua || "Lua Cheia";
+        const ritoResult = Lexicon.CanalizarCirculoMagico({
+            invocador,
+            ritualId: ritualId || "circulo_abissal",
+            chaveEnochiana: chaveEnochiana || "",
+            seloPlaneta: seloPlaneta || "sol",
+            volumeSangue: custo,
+            faseLua
+        });
+
+        // Aplica os bônus espirituais ao jogador
+        if (ritoResult.chaveEnochianaAtiva === 'ZACAR') invocador.pontosAcao = Math.min(invocador.maxAcao, invocador.pontosAcao + 5);
+        if (ritoResult.chaveEnochianaAtiva === 'VOVIN') invocador.escudo = true;
+        if (ritoResult.chaveEnochianaAtiva === 'BABALON') invocador.sangue += 500;
+
+        core.ganharXP(id, Math.round(ritoResult.potenciaFinal * 0.5));
+        core._obterAtributosTotais(invocador);
+        core._salvarBancoDeDados();
+
+        io.emit('sync_status', { id });
+        res.json({
+            sucesso: true,
+            resultado: ritoResult,
+            vampiro: invocador
+        });
+    } catch(e) {
+        console.error("Erro na canalização do Círculo:", e);
+        res.status(500).json({ erro: e.message || "A geometria sagrada do Círculo colapsou." });
+    }
+});
+
+app.get('/api/magia/densidade_status', (req, res) => {
+    try {
+        const id = req.query.id;
+        const invocador = core.vampiros[id];
+        if (!invocador) return res.status(404).json({ erro: "Invocador não encontrado." });
+
+        const densidade = Lexicon.CalcularDensidadeSanguinea(invocador, core.faseLua || "Lua Cheia");
+        const grimorios = Lexicon.ObterArquivoGrimorios();
+
+        res.json({
+            sucesso: true,
+            densidade,
+            grimorios,
+            dnd: invocador.dnd || {}
+        });
+    } catch(e) {
+        res.status(500).json({ erro: "Falha ao calcular ressonância astral." });
+    }
+});
+
+// ==========================================
+// ROTAS DO SISTEMA RPG D&D SANGUÍNEO
+// ==========================================
+app.post('/api/rpg/escolher_arquetipo', (req, res) => {
+    try {
+        const { id, arquetipo } = req.body;
+        const result = core.escolherArquetipo(id, arquetipo);
+        if (result.erro) return res.status(400).json(result);
+        io.emit('sync_status', { id });
+        res.json(result);
+    } catch(e) {
+        res.status(500).json({ erro: "Falha ao consagrar o arquétipo." });
+    }
+});
+
+app.post('/api/rpg/rolar_dado', (req, res) => {
+    try {
+        const { mod, vantagem, desvantagem } = req.body;
+        const resultado = core.rolarD20(Number(mod) || 0, !!vantagem, !!desvantagem);
+        res.json(resultado);
+    } catch(e) {
+        res.status(500).json({ erro: "Os dados astrais recusaram-se a girar." });
+    }
+});
+
+app.post('/api/rpg/teste_resistencia', (req, res) => {
+    try {
+        const { id, atributo, cd } = req.body;
+        const result = core.realizarTesteResistencia(id, atributo || 'vontade', Number(cd) || 13);
+        res.json(result);
+    } catch(e) {
+        res.status(500).json({ erro: "A salvaguarda espiritual falhou." });
+    }
+});
 
 app.get('/api/reinos', (req, res) => {
     try { res.json(Object.values(core.reinos)); } 
@@ -622,11 +918,104 @@ app.post('/api/clan/fundar', (req, res) => { try { res.json(core.fundarClan(req.
 app.post('/api/clan/cofre', (req, res) => { try { res.json(core.operarCofreClan(req.body.id, req.body.quantia, req.body.operacao)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 app.post('/api/clan/egregora', (req, res) => { try { res.json(core.nutrirEgregoraClã(req.body.id, req.body.material)); io.emit('sync_geral'); } catch(e){ res.status(500).json({erro:"Falha."}); } });
 
-app.post('/api/banco/transferir', (req, res) => { 
-    try { 
-        res.json(core.transferirSangue(req.body.remetenteId, req.body.alvoId, req.body.quantia)); 
-        io.emit('sync_geral'); io.emit('tick'); 
-    } catch(e){ res.status(500).json({erro:"Falha."}); } 
+// --- OFÍCIOS NOTURNOS (LIFE SKILLS) ---
+app.post('/api/lifeskill/coletar', (req, res) => {
+    try {
+        const vId = req.body.id || req.body.vampiroId;
+        const r = core.coletarHerbalismo(vId);
+        if (r.sucesso) forcarSyncJogador(vId);
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "As brumas fecharam-se." }); }
+});
+
+app.post('/api/lifeskill/fabricar', (req, res) => {
+    try {
+        const vId = req.body.id || req.body.vampiroId;
+        const r = core.fabricarOficio(vId, req.body.categoria, req.body.receitaId);
+        if (r.sucesso) forcarSyncJogador(vId);
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "A matéria escura explodiu." }); }
+});
+
+app.post('/api/lifeskill/reparar', (req, res) => {
+    try {
+        const vId = req.body.id || req.body.vampiroId;
+        const r = core.repararEquipamentos(vId, req.body.slot || 'todos');
+        if (r.sucesso) forcarSyncJogador(vId);
+        res.json(r);
+    } catch(e) { res.status(500).json({ erro: "A bigorna astral rachou." }); }
+});
+
+// --- AS 4 CONSCIÊNCIAS PRIMORDIAIS ---
+app.post('/api/oraculo/evocar_entidade', async (req, res) => {
+    try {
+        const vId = req.body.id || req.body.vampiroId;
+        const { entidadeId, mensagem } = req.body;
+        const v = core.vampiros[vId];
+        if (!v) return res.status(404).json({ erro: "Alma inexistente." });
+
+        const resultado = await core.oraculo.evocarEntidade(entidadeId, v, mensagem);
+        let respostaTexto = resultado.resposta || resultado.texto || resultado;
+        
+        if (typeof respostaTexto === 'string') {
+            const matchSangue = respostaTexto.match(/\[GOTA:\s*(\d+)\]/i);
+            if (matchSangue && matchSangue[1]) {
+                const gota = parseInt(matchSangue[1]);
+                v.sangue = (v.sangue || 0) + gota;
+                respostaTexto = respostaTexto.replace(/\[GOTA:\s*\d+\]/i, '').trim();
+                respostaTexto += `\n\n*(Recebeste +${gota} Gts de Sangue da Entidade)*`;
+                forcarSyncJogador(v.id);
+            }
+        }
+
+        core._salvarBancoDeDados();
+        res.json({
+            sucesso: true,
+            entidade: resultado.entidade || entidadeId,
+            resposta: respostaTexto,
+            vampiro: v
+        });
+    } catch(e) {
+        console.error("[ERRO EVOCAR ENTIDADE]", e);
+        res.status(500).json({ erro: "O vórtice das consciências colapsou." });
+    }
+});
+
+// --- MAGIA ENOCHIANA & PALAVRAS DE PODER ---
+app.post('/api/magia/enochiano', (req, res) => {
+    try {
+        const vId = req.body.id || req.body.vampiroId;
+        const frase = req.body.frase || req.body.palavra || '';
+        const v = core.vampiros[vId];
+        if (!v) return res.status(404).json({ erro: "Alma inexistente." });
+
+        const decodificado = Lexicon.DecodificarChaveEnochiana(frase);
+        if (!decodificado) return res.json({ erro: "Esta palavra não vibra na malha do Abismo." });
+
+        if (decodificado.efeito === 'furia') v.pontosAcao = Math.min(v.maxAcao, v.pontosAcao + (decodificado.bonus || 10));
+        else if (decodificado.efeito === 'escudo') v.escudo = true;
+        else if (decodificado.efeito === 'sangue') v.sangue += (decodificado.bonus || 100);
+        else if (decodificado.efeito === 'gnose') v.atributos.gnose += (decodificado.bonus || 5);
+        else if (decodificado.efeito === 'densidade') v.atributos.densidade += (decodificado.bonus || 5);
+
+        const gematria = Lexicon.CalcularGematria(frase);
+        const ruptura = Lexicon.VerificarRupturaQliphoth(gematria, v.id);
+
+        forcarSyncJogador(v.id);
+        core._registrarEventoEspecial('global', 'PALAVRA DE PODER', `[${v.nome}] pronunciou a chave enochiana [${decodificado.palavra || frase}] e alterou a malha astral!`);
+        core._salvarBancoDeDados();
+
+        res.json({
+            sucesso: true,
+            relato: `✨ [CHAVE DE PODER]: ${decodificado.lore || 'Palavra de poder pronunciada'}`,
+            dados: decodificado,
+            gematria,
+            ruptura
+        });
+    } catch(e) {
+        console.error("[ERRO ENOCHIANO]", e);
+        res.status(500).json({ erro: "A invocação quebrou as correntes." });
+    }
 });
 // --- RESSURREIÇÃO ---
 app.post('/api/ritual/ressuscitar', (req, res) => {
@@ -803,7 +1192,9 @@ app.get('/api/status', (req, res) => {
             fendaAtiva: core.fendaAtiva, caravanaAtiva: core.caravanaAtiva,
             heregeMarcado: core.heregeMarcado, altarEclipse: core.altarEclipse,
             reinos: core.reinos, climaAstral: core.oraculo.climaAstral,
-            faseLua: AstrolabioLunar.obterFaseAtual()
+            faseLua: AstrolabioLunar.obterFaseAtual(),
+            grimorio: core.grimorio,
+            alquimia: core.alquimia
         };
 
         // Injeta os dados formatados diretamente no vampiro
@@ -850,12 +1241,15 @@ io.on('connection', (socket) => {
     // SINALIZAÇÃO WEBRTC (VOIP DO CLÃ)
     // ==========================================
     socket.on('voip_join', (dados) => {
+        if (!dados || !dados.clan) return;
         socket.join(`voip_${dados.clan}`);
         // Avisa os outros membros do clã que alguém ligou o rádio
-        socket.broadcast.to(`voip_${dados.clan}`).emit('voip_user_joined', { socketId: socket.id, nome: core.vampiros[dados.id].nome });
+        const nomeMembro = (dados.id && core.vampiros[dados.id]) ? core.vampiros[dados.id].nome : "Um Irmão de Sangue";
+        socket.broadcast.to(`voip_${dados.clan}`).emit('voip_user_joined', { socketId: socket.id, nome: nomeMembro });
     });
 
     socket.on('voip_leave', (dados) => {
+        if (!dados || !dados.clan) return;
         socket.leave(`voip_${dados.clan}`);
         socket.broadcast.to(`voip_${dados.clan}`).emit('voip_user_left', { socketId: socket.id });
     });
@@ -1326,7 +1720,7 @@ class SimuladorDeAlmas {
         try {
             const resposta = await this.core.oraculo.groq.chat.completions.create({
                 messages: [{ role: "user", content: promptContexto }],
-                model: "llama-3.1-8b-instant"
+                model: this.core.oraculo.modelo || "openai/gpt-oss-120b"
             });
             let txt = resposta.choices[0].message.content.trim().replace(/^["']|["']$/g, '');
             const msgObjeto = { autor: `[${bot.tituloAtual}] ${bot.nome}`, texto: txt, hora: new Date().toLocaleTimeString(), canal: 'global' };

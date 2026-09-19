@@ -235,6 +235,251 @@ class LexiconSanguinis {
             essencia: qualidade
         });
     }
+
+    // ==================================================================
+    // 🔮 GEMATRIA & PESO ASTRAL
+    // ==================================================================
+    CalcularGematria(identificador) {
+        this.#verificarSelo();
+        return this.#calcularPesoGematrico(identificador);
+    }
+
+    // ==================================================================
+    // 🔮 GEMATRIA COMPOSTA & RESSONÂNCIA CÁRMICA
+    // ==================================================================
+    CalcularGematriaComposta(nome1, nome2) {
+        this.#verificarSelo();
+        const p1 = this.#calcularPesoGematrico(nome1);
+        const p2 = this.#calcularPesoGematrico(nome2);
+        const soma = p1 + p2;
+        const ressonante = (soma % 7 === 0 || soma % 13 === 0);
+        const multiplicador = ressonante ? 1.33 : (soma % 2 === 0 ? 1.15 : 0.95);
+        return Object.freeze({
+            peso1: p1,
+            peso2: p2,
+            somaKarmica: soma,
+            ressonante: ressonante,
+            multiplicadorSinergia: multiplicador
+        });
+    }
+
+    // ==================================================================
+    // 🩸 VALIDAÇÃO E TRIBUTO DO PACTO DE SANGUE OCULTO
+    // ==================================================================
+    ValidarPactoDeSangue(mestreId, vassaloId, taxaDizimo = 0.10) {
+        this.#verificarSelo();
+        const pacto = this.ForjarPactoAbsoluto(mestreId, vassaloId, "Dízimo de Sangue");
+        const pesoM = this.#calcularPesoGematrico(mestreId);
+        const pesoV = this.#calcularPesoGematrico(vassaloId);
+        const taxaAjustada = Math.min(0.25, Math.max(0.05, taxaDizimo + ((pesoM % 5) * 0.01)));
+
+        return Object.freeze({
+            seloId: pacto.seloId,
+            mestre: mestreId,
+            vassalo: vassaloId,
+            taxaEfetiva: taxaAjustada,
+            penalidadeRuptura: Math.floor((pesoM + pesoV) * 250),
+            seladoEm: pacto.dataSelo
+        });
+    }
+
+    // ==================================================================
+    // ⚡ VERIFICAÇÃO DE RUPTURA QLIPHÓTICA CÓSMICA
+    // ==================================================================
+    VerificarRupturaQliphoth(valorAcao, invocadorId) {
+        this.#verificarSelo();
+        const peso = this.#calcularPesoGematrico(invocadorId);
+        const semente = (Number(valorAcao) * peso + Date.now()) % 1000;
+        const rasgou = (semente % 13 === 0 || semente === 666);
+
+        return Object.freeze({
+            ruptura: rasgou,
+            grauCaos: rasgou ? (semente % 3 + 1) : 0,
+            mensagem: rasgou 
+                ? "⚡ [RUPTURA QLIPHÓTICA]: A malha do plano astral rompeu-se! Uma entidade das profundezas espreita."
+                : null
+        });
+    }
+
+    // ==================================================================
+    // 📜 DECODIFICAÇÃO DE PALAVRAS DE PODER ENOCHIANAS
+    // ==================================================================
+    DecodificarChaveEnochiana(texto) {
+        this.#verificarSelo();
+        if (!texto || typeof texto !== 'string') return null;
+        const limpo = texto.toUpperCase();
+        
+        const PALAVRAS_PODER = {
+            "ZACAR": { efeito: "furia", bonus: 5, lore: "Movei-vos! O sangue ferve com a ira primordial." },
+            "VOVIN": { efeito: "escudo", bonus: 1, lore: "O Dragão de Tiamat envolve a tua carne com escamas astrais." },
+            "BABALON": { efeito: "sangue", bonus: 500, lore: "O Santo Graal escarlate derrama vitae nos teus vasos." },
+            "CHORONZON": { efeito: "caos", bonus: 2.0, lore: "O Habitante do Abismo distorce a realidade em teu favor." },
+            "LILITH": { efeito: "gnose", bonus: 10, lore: "A Mãe Noturna sussurra segredos ancestrais à tua mente." },
+            "SETH": { efeito: "densidade", bonus: 10, lore: "A Fúria do Chacal petrifica os teus músculos e ossos." },
+            "SOLVE": { efeito: "dissipar", bonus: 15, lore: "Solve et Coagula: Dissolve os laços astrais do adversário." },
+            "COAGULA": { efeito: "coagular", bonus: 25, lore: "Condensa o sangue espiritual em armadura física impenetrável." }
+        };
+
+        for (const [palavra, dados] of Object.entries(PALAVRAS_PODER)) {
+            if (limpo.includes(palavra)) {
+                return Object.freeze({
+                    palavra,
+                    efeito: dados.efeito,
+                    bonus: dados.bonus,
+                    lore: dados.lore,
+                    timestamp: Date.now()
+                });
+            }
+        }
+        return null;
+    }
+
+    // ==================================================================
+    // 📚 ARQUIVO DOS GRIMÓRIOS HISTÓRICOS & TRADIÇÕES OCULTAS REAIS
+    // ==================================================================
+    ObterArquivoGrimorios() {
+        return Object.freeze({
+            claviculaSalomonis: {
+                nome: "Clavicula Salomonis (A Chave de Salomão)",
+                origem: "Tratado Renascentista / Manuscritos Hebraicos",
+                selosPlanetarios: {
+                    sol: { virtude: "Soberania e Visão Espiritual", anjo: "Michael", metal: "Ouro" },
+                    lua: { virtude: "Clarividência e Fluxo de Vitae", anjo: "Gabriel", metal: "Prata" },
+                    marte: { virtude: "Fúria Bélica e Destruição", anjo: "Camael", metal: "Ferro" },
+                    mercurio: { virtude: "Gnose Hermética e Transmutação", anjo: "Raphael", metal: "Mercúrio" },
+                    jupiter: { virtude: "Abundância e Pactos Feudais", anjo: "Sachiel", metal: "Estanho" },
+                    venus: { virtude: "Magnetismo Astral e Atração de Almas", anjo: "Anael", metal: "Cobre" },
+                    saturno: { virtude: "Densidade, Tempo e Inércia do Abismo", anjo: "Cassiel", metal: "Chumbo" }
+                }
+            },
+            heptameron: {
+                nome: "Heptameron de Pietro d'Abano (1310)",
+                circulosMagicos: "Círculos Concéntricos de Proteção Tripla com Nomes Divinos em Hebraico",
+                quatroTorres: ["Oriente (Amaymon)", "Ocidente (Paymon)", "Norte (Egyn)", "Sul (Oriens)"]
+            },
+            deOccultaPhilosophia: {
+                nome: "De Occulta Philosophia (Heinrich Cornelius Agrippa, 1533)",
+                tresMundos: ["Magia Natural (Ervas e Minerais)", "Magia Celeste (Astros e Números)", "Magia Cerimonial (Pactos e Evocações)"]
+            },
+            arvoreQliphoth: {
+                nome: "A Árvore da Morte (Qliphoth Hermética)",
+                esferas: [
+                    "Thaumiel (A Dualidade Satânica)", "Ghagiel (O Caos Predador)", "Satariel (O Ocultamento)",
+                    "Gha'agsheblah (O Assassino)", "Golachab (A Queimadura)", "Thagirion (O Sol Negro)",
+                    "A'arab Zaraq (Os Corvos da Morte)", "Samael (O Veneno Divino)", "Gamaliel (A Lua Obscura)",
+                    "Nahemoth (As Cascas Terrenas)"
+                ]
+            }
+        });
+    }
+
+    // ==================================================================
+    // 🩸 FÓRMULA AVANÇADA DE DENSIDADE SANGUÍNEA & CRIPTO-FÍSICA
+    // ==================================================================
+    // Transforma o sangue num tensor criptográfico com densidade, viscosidade e inércia
+    CalcularDensidadeSanguinea(vampiro, faseLua = "Lua Nova") {
+        this.#verificarSelo();
+        if (!vampiro) return { densidade: 1.0, viscosidadePct: "100%", classificacao: "Sangue Mundano", inerciaEspiritual: 10 };
+
+        const nome = vampiro.nome || "Anônimo";
+        const pesoNome = this.#calcularPesoGematrico(nome);
+        const volume = Number(vampiro.sangue || 100);
+        const grau = Number(vampiro.nivel || 1);
+        const densidadeAtributo = Number(vampiro.atributos?.densidade || 10);
+        const gnoseAtributo = Number(vampiro.atributos?.gnose || 10);
+
+        // Modificador da Fase Lunar
+        let modLua = 1.0;
+        if (faseLua.includes("Cheia")) modLua = 1.25;
+        else if (faseLua.includes("Negra") || faseLua.includes("Nova")) modLua = 1.15;
+        else if (faseLua.includes("Minguante")) modLua = 1.10;
+        else if (faseLua.includes("Crescente")) modLua = 1.05;
+
+        // Modificador de Linhagem (Raça)
+        const modRaca = (vampiro.raca === 'lycan') ? 1.20 : 1.10; // Lycans têm maior densidade muscular, Vampiros maior gnose
+
+        // Fórmula: Densidade = ( (Gematria * 1.5 + DensidadeAtributo * 2 + Grau * 0.8) / 35 ) * ModLua * ModRaca
+        const rho = Number((((pesoNome * 1.5 + densidadeAtributo * 2.0 + grau * 0.8) / 35.0) * modLua * modRaca).toFixed(3));
+
+        let classificacao = "Sangue Ralo (Incipiente)";
+        let corAura = "#ff5555";
+        if (rho >= 1.0 && rho < 1.4) {
+            classificacao = "Sangue Nobre (Transmutado)";
+            corAura = "#d4af37";
+        } else if (rho >= 1.4 && rho < 1.9) {
+            classificacao = "Sangue Gravitacional (Abissal)";
+            corAura = "#9333ea";
+        } else if (rho >= 1.9) {
+            classificacao = "Mônada Escarlate (Buraco Negro)";
+            corAura = "#00e1d9";
+        }
+
+        const viscosidadePct = Math.round(rho * 100) + "%";
+        const inerciaEspiritual = Math.round((densidadeAtributo * 1.5 + gnoseAtributo) * rho);
+        const pesoPactoMaximo = Math.round(gnoseAtributo * 12 + densidadeAtributo * 6);
+
+        return Object.freeze({
+            densidade: rho,
+            viscosidadePct,
+            classificacao,
+            corAura,
+            inerciaEspiritual,
+            pesoPactoMaximo,
+            pesoGematrico: pesoNome,
+            faseLua
+        });
+    }
+
+    // ==================================================================
+    // 🔮 CANALIZAÇÃO DE CÍRCULO MÁGICO SALOMÔNICO & ENOCHIANO
+    // ==================================================================
+    CanalizarCirculoMagico({ invocador, ritualId, chaveEnochiana = "", seloPlaneta = "sol", volumeSangue = 100, faseLua = "Lua Cheia" }) {
+        this.#verificarSelo();
+        if (!invocador) throw new Error("Invocador astral inexistente.");
+
+        const statusDensidade = this.CalcularDensidadeSanguinea(invocador, faseLua);
+        const enochianData = this.DecodificarChaveEnochiana(chaveEnochiana);
+        const grimorios = this.ObterArquivoGrimorios();
+        const dadosPlaneta = grimorios.claviculaSalomonis.selosPlanetarios[seloPlaneta.toLowerCase()] || grimorios.claviculaSalomonis.selosPlanetarios.sol;
+
+        // Frequência de ressonância harmônica (Hz Solfeggio / Pitagórica)
+        const frequencias = [432, 528, 639, 741, 852, 963];
+        const freqEscolhida = frequencias[(statusDensidade.pesoGematrico + (enochianData?.bonus || 0)) % frequencias.length];
+
+        // Assinatura criptográfica do círculo (HMAC SHA-384)
+        const timestamp = Date.now();
+        const payloadSelo = `${invocador.id}::${ritualId}::${seloPlaneta}::${chaveEnochiana}::${statusDensidade.densidade}::${timestamp}`;
+        const hashCirculo = crypto.createHmac('sha384', this.#CHAVE_MESTRA + this.#SELO_DE_SANGUE)
+            .update(payloadSelo)
+            .digest('hex');
+
+        // Cálculo de Potência Real do Rito com Peso de Pacto
+        const potenciaBase = (Number(invocador.atributos?.gnose || 10) * 2.5) + (Number(invocador.nivel || 1) * 3);
+        const multiplicadorDensidade = statusDensidade.densidade;
+        const bonusEnochian = enochianData ? (enochianData.bonus * 2) : 0;
+        const potenciaFinal = Math.round((potenciaBase + bonusEnochian) * multiplicadorDensidade);
+
+        // Verificação de Tensão Astral / Ruptura
+        const rupturaTeste = this.VerificarRupturaQliphoth(potenciaFinal, invocador.id);
+
+        return Object.freeze({
+            sucesso: true,
+            rito: ritualId,
+            hashSelo: hashCirculo.substring(0, 24).toUpperCase(),
+            frequenciaHarmonica: `${freqEscolhida} Hz`,
+            planetaRegente: seloPlaneta.toUpperCase(),
+            virtudePlanetaria: dadosPlaneta.virtude,
+            anjoRegente: dadosPlaneta.anjo,
+            densidadeUtilizada: statusDensidade.densidade,
+            classificacaoSangue: statusDensidade.classificacao,
+            potenciaFinal,
+            chaveEnochianaAtiva: enochianData ? enochianData.palavra : "NENHUMA",
+            efeitoEnochiano: enochianData ? enochianData.lore : "Canalização sem Chave Angélica.",
+            ruptura: rupturaTeste.ruptura,
+            mensagemRuptura: rupturaTeste.mensagem,
+            timestamp
+        });
+    }
 }
 
 // Exporta uma instância ÚNICA E IMUTÁVEL (Singleton Congelado)
