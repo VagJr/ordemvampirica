@@ -1,7 +1,7 @@
 const { MongoClient } = require('mongodb');
 const { ShadowCore, AstrolabioLunar } = require('../ShadowCore.js');
 
-const MONGO_URI = "mongodb+srv://ordem:J6VBrGAT9qKSLwzS@cluster0.ubbpacg.mongodb.net/?retryWrites=true&w=majority";
+const MONGO_URI = "mongodb+srv://RESTORE_USERNAME:RESTORE_PASSWORD@cluster0.ubbpacg.mongodb.net/?retryWrites=true&w=majority";
 
 async function runTests() {
     console.log("==================================================");

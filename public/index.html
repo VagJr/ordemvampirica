@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#0b0d10">
+<meta name="description" content="Vampiros, lobisomens e magia ancestral. Explore, lute e dispute o destino das linhagens em tempo real.">
+<title>SANGUINIS — A noite é sua</title>
+<link rel="icon" type="image/svg+xml" href="/sigil.svg"><link rel="stylesheet" href="/styles.css">
+<script src="/socket.io/socket.io.js" defer></script><script src="/app.js" type="module"></script>
+</head>
+<body>
+<a class="skip-link" href="#content">Ir para o conteúdo</a>
+<aside class="sidebar" id="sidebar">
+<a class="brand" href="#overview" aria-label="Sanguinis, início"><img src="/sigil.svg" alt=""><span>SANGUINIS<small>O PACTO DO SANGUE</small></span></a>
+<div class="realm-label"><span class="status-dot"></span> REINO DE NOCTIS <span class="realm-tag">BR</span></div>
+<div class="nav-section-label">SUA JORNADA</div><nav id="navigation" aria-label="Navegação principal"></nav>
+<div class="sidebar-bottom"><div class="chapter"><span class="chapter-number">I</span><div><small>CAPÍTULO I</small><strong>O despertar da noite</strong><span>Seu sangue escreve a história.</span></div></div>
+<button class="sidebar-link" data-command="help"><span data-icon="book"></span> Guia do despertar <span class="help-key">?</span></button>
+<button class="sidebar-link" data-command="settings"><span data-icon="settings"></span> Preferências</button>
+<button class="profile" data-command="account"><span class="profile-avatar"><img src="/art/vampire.webp" alt=""></span><span><strong id="profile-name">Uma nova sombra</strong><small id="profile-class">Escolha sua linhagem</small></span><span data-icon="chevron"></span></button></div>
+</aside>
+<div class="app-shell"><header class="topbar"><div class="topbar-left"><button class="icon-button mobile-menu" data-command="menu" aria-label="Abrir navegação"><span data-icon="menu"></span></button><span class="breadcrumb">O MUNDO DAS SOMBRAS <span>/</span> <strong id="breadcrumb-title">Visão geral</strong></span></div>
+<div class="topbar-right"><span class="server-status" id="connection"><span class="status-dot"></span> REINO DISPONÍVEL</span><span class="online-number" id="online-count">0 almas online</span><span class="header-divider"></span><button class="currency" data-page="market" title="Abrir mercado"><span data-icon="coin"></span><strong id="gold">—</strong></button><button class="icon-button" data-command="notifications" aria-label="Ver contratos e avisos"><span data-icon="bell"></span><i id="notification-dot"></i></button></div></header>
+<main id="content" tabindex="-1"><div class="loading-state"><img src="/sigil.svg" alt=""><p>O véu está se abrindo…</p></div></main>
+<footer class="footer"><span>SANGUINIS <span class="footer-dot">·</span> A eternidade começa ao anoitecer.</span><span>CAPÍTULO I <span class="footer-dot">·</span> NOCTIS</span></footer></div>
+<div id="modal-root"></div><div class="toast-stack" id="toasts" role="status" aria-live="polite"></div>
+</body></html>
+

@@ -1,4 +1,16 @@
 {
+  "name": "sanguinis",
+  "version": "2.0.0",
+  "private": true,
+  "description": "MMO de ação no navegador: vampiros, lobisomens e magia de sangue.",
+  "scripts": {
+    "start": "node server-rework.js",
+    "dev": "node --watch server-rework.js",
+    "start:legacy": "node server.js",
+    "test": "node --test tests/*.test.js",
+    "check": "node --check server-rework.js && node --check game/world.js && node --check public/app.js && node --check public/arena.js"
+  },
+  "engines": { "node": ">=20" },
   "dependencies": {
     "axios": "^1.14.0",
     "express": "^5.2.1",

@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-04T05:29:47.518Z",
+  "ai": {
+    "configured": true,
+    "ok": true,
+    "characters": 5022,
+    "private": true
+  },
+  "publicSource": {
+    "provider": "GitHub public API",
+    "ok": true,
+    "status": 200
+  }
+}

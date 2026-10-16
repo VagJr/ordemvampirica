@@ -1,0 +1,15 @@
+node_modules
+.env
+.env.*
+!.env.example
+data
+output
+scratch
+tests
+scripts
+legacy
+*.bak*
+index.pre-rework.html
+public/art/4k
+public/art/*.png
+.git

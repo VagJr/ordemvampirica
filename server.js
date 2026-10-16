@@ -28,7 +28,7 @@ global.io = io;
 
 // ==========================================
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || ""; 
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://ordem:J6VBrGAT9qKSLwzS@cluster0.ubbpacg.mongodb.net/?retryWrites=true&w=majority"; 
+const MONGO_URI = process.env.MONGO_URI || ""; 
 
 let bot = null;
 if(BOT_TOKEN && BOT_TOKEN.length > 10) {
@@ -86,7 +86,7 @@ function forcarSyncJogador(id) {
 }
 
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(express.static(__dirname, { index: false }));
 app.get('/api/build-info', (req, res) => {
     res.json({
         app: 'ordemvampirica',
@@ -751,7 +751,8 @@ app.post('/api/nosferatu/rasgar_veu', async (req, res) => {
             pesquisadoEm: pesquisa.pesquisadoEm,
             historicoAcoes: [],
             bencaosAtivas: [],
-            maldicoesAtivas: []
+            maldicoesAtivas: [],
+            fontes: pesquisa.fontes || []
         };
 
         if (!admin.alvosNosferatu) admin.alvosNosferatu = [];
@@ -1339,7 +1340,7 @@ app.get('/api/pve/aldeia', (req, res) => {
     catch(e) { res.status(500).json({erro: "Falha na patrulha."}); } 
 });
 
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'legacy/index.html')));
 
 app.post('/api/auth', async (req, res) => {
     try {

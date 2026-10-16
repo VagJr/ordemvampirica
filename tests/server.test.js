@@ -1,0 +1,14 @@
+'use strict';
+const test=require('node:test');const assert=require('node:assert/strict');
+const{createServer}=require('../server-rework');const{World}=require('../game/world');
+test('HTTP sessions, safe public assets, authenticated actions and isolated private data',async t=>{const instance=createServer({world:new World({file:null})});await new Promise(resolve=>instance.server.listen(0,'127.0.0.1',resolve));t.after(()=>instance.close());const url=`http://127.0.0.1:${instance.server.address().port}`;
+ const request=(path,body,cookie)=>fetch(url+path,{method:body?'POST':'GET',headers:{...(body?{'Content-Type':'application/json'}:{}),...(cookie?{Cookie:cookie}:{})},body:body?JSON.stringify(body):undefined});
+ assert.equal((await request('/api/health')).status,200);assert.equal((await request('/server.js')).status,404);assert.equal((await request('/.env')).status,404);assert.equal((await request('/data/sanguinis_banco.json')).status,404);
+ assert.equal((await request('/api/action',{action:'daily'})).status,401);
+ const guest=await request('/api/auth/guest',{name:'HTTP aventureiro',species:'vampire'});assert.equal(guest.status,200);const cookie=guest.headers.get('set-cookie').split(';')[0];assert.ok(guest.headers.get('set-cookie').includes('HttpOnly'));const player=(await guest.json()).player;
+ const session=await request('/api/session',null,cookie);assert.equal((await session.json()).player.id,player.id);
+ const first=await request('/api/action',{action:'daily'},cookie);assert.equal(first.status,200);const repeat=await request('/api/action',{action:'daily'},cookie);assert.equal(repeat.status,400);
+ const badOrigin=await fetch(url+'/api/action',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://malicious.example',Cookie:cookie},body:JSON.stringify({action:'daily'})});assert.equal(badOrigin.status,403);
+ const register=await request('/api/auth/register',{username:'http_teste',password:'SenhaDoTeste123'},cookie);assert.equal(register.status,200);const login=await request('/api/auth/login',{username:'http_teste',password:'SenhaDoTeste123'});assert.equal(login.status,200);const wrong=await request('/api/auth/login',{username:'http_teste',password:'SenhaErrada'});assert.equal(wrong.status,400);
+ const publicState=await request('/api/platform');assert.equal((await publicState.json()).records.length,0);
+});

@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instala as dependências
-RUN npm install
+RUN npm ci --omit=dev
 
 # Copia o restante do código
 COPY . .
@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 8080
 
 # Comando para iniciar sua aplicação
-CMD ["node", "server.js"]
+CMD ["npm", "start"]

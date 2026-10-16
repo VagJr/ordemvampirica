@@ -1,0 +1,1370 @@
+{
+ "format": 1,
+ "source_root": "C:\\ordemvampirica",
+ "repository": "VagJr/ordemvampirica",
+ "backup_branch": "backup/codex-2026-10-16-ordemvampirica",
+ "created_local_date": "2026-10-16",
+ "content": "code-and-art-only",
+ "local_only": [
+  {
+   "path": ".env",
+   "type": "configuration-key-or-save",
+   "bytes": 234
+  },
+  {
+   "path": "scratch/check_atlas_doc.js",
+   "type": "possible-embedded-secret",
+   "bytes": 552
+  },
+  {
+   "path": "scratch/test_atlas_update.js",
+   "type": "possible-embedded-secret",
+   "bytes": 811
+  },
+  {
+   "path": "scratch/test_mongodb_and_master_ai.js",
+   "type": "possible-embedded-secret",
+   "bytes": 7023
+  },
+  {
+   "path": "data/rework-world.json",
+   "type": "local-save-or-account-state",
+   "bytes": 6323
+  },
+  {
+   "path": "data/sanguinis_banco.json",
+   "type": "local-save-or-account-state",
+   "bytes": 465048
+  }
+ ],
+ "sanitized_files": [
+  "scratch/check_atlas_doc.js",
+  "scratch/test_atlas_update.js",
+  "scratch/test_mongodb_and_master_ai.js"
+ ],
+ "excluded_categories": {
+  "generated-or-downloadable-directory": 1
+ },
+ "files": {
+  ".dockerignore": {
+   "sha": "100eb28bc5d83c7800bba9c100d932f58a1fada3",
+   "mode": "100644",
+   "bytes": 145
+  },
+  ".env.example": {
+   "sha": "253beb14f2d2a832ade4414db3d87da3da92d946",
+   "mode": "100644",
+   "bytes": 252
+  },
+  "CombatEngine.js": {
+   "sha": "ad0e95bac7a57856562e42470d91f4a89ba14db0",
+   "mode": "100644",
+   "bytes": 22768
+  },
+  "Dockerfile": {
+   "sha": "bbcbc18129572f222d2a6582990ac4a08dab0b82",
+   "mode": "100644",
+   "bytes": 379
+  },
+  "GeradorDeItensProcedural.js": {
+   "sha": "d3cdbd21fb5b34c8e2b58b76bdb3ad43f8bb0c0e",
+   "mode": "100644",
+   "bytes": 16735
+  },
+  "LexiconSanguinis.js": {
+   "sha": "03d6bc41a9b531b1376180e8bc4de8ba23110fb3",
+   "mode": "100644",
+   "bytes": 24562
+  },
+  "MundoAberto2D.js": {
+   "sha": "709a5ef78ab7df56d0fc47876ef3ebcbd944446e",
+   "mode": "100644",
+   "bytes": 39693
+  },
+  "OrdemMagicaCore.js": {
+   "sha": "ca9826fcdebf469642a808221229526cb29e82bc",
+   "mode": "100644",
+   "bytes": 73169
+  },
+  "README.md": {
+   "sha": "ee042171337e6e784a15da1e2cc8dad39974fd43",
+   "mode": "100644",
+   "bytes": 6625
+  },
+  "ShadowCore.js": {
+   "sha": "3a1e71848dc5c1d93906c0367f3ca96f72e60f06",
+   "mode": "100644",
+   "bytes": 284745
+  },
+  "ShadowCore.js.bak_before_v4_1_2026-09-19T01-14-41-595Z": {
+   "sha": "999a77c3eadd460de4bb6341b5dfa63aa8b5743b",
+   "mode": "100644",
+   "bytes": 223973
+  },
+  "ShadowCore.js.bak_osint_20260919": {
+   "sha": "ff7b768a1492627931023527d2d6c22d2ad3e893",
+   "mode": "100644",
+   "bytes": 280281
+  },
+  "ShadowCore.js.bak_osint_v4_2026-09-19T01-12-29-944Z": {
+   "sha": "c37da99de32a314d2142d33ab3e772f74843e049",
+   "mode": "100644",
+   "bytes": 210867
+  },
+  "ShadowCore.js.bak_osint_v4_2026-09-19T01-12-38-773Z": {
+   "sha": "32e5f66a38fbab8b0f68075c05bf50ada76af72f",
+   "mode": "100644",
+   "bytes": 216836
+  },
+  "ShadowCore.js.bak_osint_v5_2026-09-19T01-32-36-219Z": {
+   "sha": "e10b3a8d4ba2c42d0c3c16a45dc847f42a44eeea",
+   "mode": "100644",
+   "bytes": 216791
+  },
+  "ShadowCore.js.bak_osint_v5_2026-09-19T03-44-08-598Z": {
+   "sha": "6adef7ac4c1f1f950c5e7fae8612c3ce1967a2f7",
+   "mode": "100644",
+   "bytes": 239232
+  },
+  "ShadowCore.js.bak_survival_balance_20260919": {
+   "sha": "ad32450dcafee66c89b7415f61a70f6e249db28a",
+   "mode": "100644",
+   "bytes": 274146
+  },
+  "SocialCore.js": {
+   "sha": "c6fdbfa0a08be94623a0dace0d3fd21575d2d1bf",
+   "mode": "100644",
+   "bytes": 23093
+  },
+  "docs/adaptacao.md": {
+   "sha": "ab06def17e9d1207125677f38080999f50ebfe6c",
+   "mode": "100644",
+   "bytes": 5611
+  },
+  "docs/art-manifest.json": {
+   "sha": "6fabbbfa8e145df299406c62f124b310aec662b3",
+   "mode": "100644",
+   "bytes": 16202
+  },
+  "fly.toml": {
+   "sha": "9bf6589a91f4d7ad0913eda30b9a113c4ecaad74",
+   "mode": "100644",
+   "bytes": 421
+  },
+  "game/catalog.js": {
+   "sha": "99b134d3562bd4bd2fe98dc6b9bd9ffa634f0965",
+   "mode": "100644",
+   "bytes": 6118
+  },
+  "game/platform.js": {
+   "sha": "e13cb2278d49a123835ecceecc3efc4c63310ad8",
+   "mode": "100644",
+   "bytes": 42921
+  },
+  "game/world.js": {
+   "sha": "545666d287951d2d18d60c22a4031f77a88c07a2",
+   "mode": "100644",
+   "bytes": 28256
+  },
+  "index.html": {
+   "sha": "c0ceeba48f85c5b2b15abc8e79614f1b62fa67a8",
+   "mode": "100644",
+   "bytes": 3127
+  },
+  "index.html.bak_assinatura_premium_20260919_021216": {
+   "sha": "f133166f3a4730d5978030edcf046a4ae15a3bd4",
+   "mode": "100644",
+   "bytes": 722047
+  },
+  "index.html.bak_assinatura_premium_20260919_021335": {
+   "sha": "f133166f3a4730d5978030edcf046a4ae15a3bd4",
+   "mode": "100644",
+   "bytes": 722047
+  },
+  "index.html.bak_before_v4_1_2026-09-19T01-14-41-595Z": {
+   "sha": "4e8522adebc118582216e84c9f5c1b1acd87339f",
+   "mode": "100644",
+   "bytes": 481479
+  },
+  "index.html.bak_flicker_fix_20260919": {
+   "sha": "df8affb8fe34fce5e38fe352c3400c29314cf73d",
+   "mode": "100644",
+   "bytes": 802993
+  },
+  "index.html.bak_mobile_combat_20260919": {
+   "sha": "f7d2041e813da25f622b6110cc84046abfe64603",
+   "mode": "100644",
+   "bytes": 766286
+  },
+  "index.html.bak_nosferatu_v3_20260918_220151": {
+   "sha": "f64cfb6da94bab37fd05e27cf6b2b2af39abef4e",
+   "mode": "100644",
+   "bytes": 482025
+  },
+  "index.html.bak_osint_v4_2026-09-19T01-12-29-944Z": {
+   "sha": "4fa387d0849e1367ef0486056fe7c2bdf4df0c6b",
+   "mode": "100644",
+   "bytes": 485562
+  },
+  "index.html.bak_osint_v4_2026-09-19T01-12-38-773Z": {
+   "sha": "4e8522adebc118582216e84c9f5c1b1acd87339f",
+   "mode": "100644",
+   "bytes": 481479
+  },
+  "index.pre-rework.html": {
+   "sha": "fcce05b39c4a19a6c06dbd8d3505fb700af8456a",
+   "mode": "100644",
+   "bytes": 804775
+  },
+  "intro.mp4": {
+   "sha": "63dc2721dafc7712f095811bbb8eb600a76af1c7",
+   "mode": "100644",
+   "bytes": 1303651
+  },
+  "legacy/index.html": {
+   "sha": "fcce05b39c4a19a6c06dbd8d3505fb700af8456a",
+   "mode": "100644",
+   "bytes": 804775
+  },
+  "output/qa/arena-desktop.png": {
+   "sha": "328288b0f1144587c0935ee07c79185531de6e19",
+   "mode": "100644",
+   "bytes": 965538
+  },
+  "output/qa/integrations.json": {
+   "sha": "6c2510e4cd74fefd3111bb50e8536ce5c2cacfc1",
+   "mode": "100644",
+   "bytes": 233
+  },
+  "output/qa/library-mobile.png": {
+   "sha": "eab34a47622c165392d2e90e6ed9c995b841b8fa",
+   "mode": "100644",
+   "bytes": 111328
+  },
+  "output/qa/overview-desktop.png": {
+   "sha": "ac9c7021fc47317e3244f8a6d3c51cd87e0fa837",
+   "mode": "100644",
+   "bytes": 875592
+  },
+  "output/qa/overview-mobile.png": {
+   "sha": "f0c118b40ffb23eac7d2eabcaefb53266434e938",
+   "mode": "100644",
+   "bytes": 382480
+  },
+  "output/qa/ritual.png": {
+   "sha": "f47d197db388d5f4e3e4c4b3f4418bc99d47e79d",
+   "mode": "100644",
+   "bytes": 527897
+  },
+  "package-lock.json": {
+   "sha": "d09e635aa1e5f07f7d4565eca7a72bf769847990",
+   "mode": "100644",
+   "bytes": 122683
+  },
+  "package.json": {
+   "sha": "a04c43bd30781f220a3b6bc68f393e25e1f31b20",
+   "mode": "100644",
+   "bytes": 699
+  },
+  "public/app.js": {
+   "sha": "75f8f5686fc41a4bec6f007a81ea43e5fb0c3223",
+   "mode": "100644",
+   "bytes": 33244
+  },
+  "public/arena.js": {
+   "sha": "5510e08c6697b2129f7f1f4174fa3370229fe503",
+   "mode": "100644",
+   "bytes": 16571
+  },
+  "public/art/4k/devourer-sprite.png": {
+   "sha": "c38be4e6e163c73ea5c53f9f056c344fe47c871a",
+   "mode": "100644",
+   "bytes": 12012262
+  },
+  "public/art/4k/guardian-sprite.png": {
+   "sha": "924e3e2340d7ab5b0fdd31ead767f837b3acbd0c",
+   "mode": "100644",
+   "bytes": 13136177
+  },
+  "public/art/4k/hunt.png": {
+   "sha": "d4b6ee93b1d7399e9d5dbaa36ee06bcd8f22e322",
+   "mode": "100644",
+   "bytes": 17414681
+  },
+  "public/art/4k/lycan-sprite.png": {
+   "sha": "731e2ed93424ee7273fa220833c89141035e5096",
+   "mode": "100644",
+   "bytes": 13064428
+  },
+  "public/art/4k/lycan.png": {
+   "sha": "57b19bc8773e48c63c159dfa056ab37883c8b61c",
+   "mode": "100644",
+   "bytes": 18937585
+  },
+  "public/art/4k/noctis.png": {
+   "sha": "334ff97515df72d6b951f2b2635cebd13c8511cd",
+   "mode": "100644",
+   "bytes": 15318951
+  },
+  "public/art/4k/ritual.png": {
+   "sha": "b067cb9ba656669e895d440c29cd121443127d58",
+   "mode": "100644",
+   "bytes": 18699139
+  },
+  "public/art/4k/vampire-sprite.png": {
+   "sha": "6b7faaf15f37f7985b0e00ee65d89011d3661cf5",
+   "mode": "100644",
+   "bytes": 10178360
+  },
+  "public/art/4k/vampire.png": {
+   "sha": "f0b48825638e372686c98be957bb3160144c866b",
+   "mode": "100644",
+   "bytes": 16998567
+  },
+  "public/art/4k/war.png": {
+   "sha": "fa782df99d0acb1e8b8cb86b5cdfff8d8503e543",
+   "mode": "100644",
+   "bytes": 17550885
+  },
+  "public/art/devourer-sprite.png": {
+   "sha": "774ba92f49dc0c25801e26dfc80dde92176fb96f",
+   "mode": "100644",
+   "bytes": 1895307
+  },
+  "public/art/devourer-sprite.webp": {
+   "sha": "4d50a608b4c42db5c2276271eeeed1322615eece",
+   "mode": "100644",
+   "bytes": 404932
+  },
+  "public/art/guardian-sprite.png": {
+   "sha": "4cf72a4b66d401b1206bf5c33ee509d18d46aff4",
+   "mode": "100644",
+   "bytes": 2156417
+  },
+  "public/art/guardian-sprite.webp": {
+   "sha": "6dc7d73e0f91a9d0e37bc60bf2fb293b80623bd2",
+   "mode": "100644",
+   "bytes": 491018
+  },
+  "public/art/hunt.png": {
+   "sha": "1d4c08271dc155a452900241f2f9500f540930b8",
+   "mode": "100644",
+   "bytes": 2753381
+  },
+  "public/art/hunt.webp": {
+   "sha": "61eff326d4c44733422e45ed29496c317ee81254",
+   "mode": "100644",
+   "bytes": 362334
+  },
+  "public/art/lycan-sprite.png": {
+   "sha": "a33dce513c23b464416136e9c489ee771301ef4f",
+   "mode": "100644",
+   "bytes": 2227276
+  },
+  "public/art/lycan-sprite.webp": {
+   "sha": "e0307c68989b510217f2f5426b8a88c04b29585d",
+   "mode": "100644",
+   "bytes": 431230
+  },
+  "public/art/lycan.png": {
+   "sha": "eff97f89f6ba813fba2895794fbade63aa066bc8",
+   "mode": "100644",
+   "bytes": 2932301
+  },
+  "public/art/lycan.webp": {
+   "sha": "2b2a6ce97b0279f27510bd42b9250c6006c0d7a5",
+   "mode": "100644",
+   "bytes": 381678
+  },
+  "public/art/noctis.png": {
+   "sha": "7490e2cba4922f5c5eb045c8dcb4174077733c06",
+   "mode": "100644",
+   "bytes": 2355529
+  },
+  "public/art/noctis.webp": {
+   "sha": "a6b85a4b4f3db31bde820a5bf9a9b3cd23d13a2e",
+   "mode": "100644",
+   "bytes": 248610
+  },
+  "public/art/ritual.png": {
+   "sha": "82afda467b33e4b285f8042f7ad8dddf83b9e3b2",
+   "mode": "100644",
+   "bytes": 2698904
+  },
+  "public/art/ritual.webp": {
+   "sha": "21ebf204d4c98707a4215f39a48dd534c320fcde",
+   "mode": "100644",
+   "bytes": 396124
+  },
+  "public/art/vampire-sprite.png": {
+   "sha": "14d1ca8efa8e128000181201ae0bd9dbaca336d9",
+   "mode": "100644",
+   "bytes": 1643811
+  },
+  "public/art/vampire-sprite.webp": {
+   "sha": "82fdbae9a0b1fc44d508c33e6a4e14ac6292faaa",
+   "mode": "100644",
+   "bytes": 321422
+  },
+  "public/art/vampire.png": {
+   "sha": "c315d90033589397bb4eeb2f6bab40819a1897b0",
+   "mode": "100644",
+   "bytes": 2556063
+  },
+  "public/art/vampire.webp": {
+   "sha": "7cb93f8c1dbbc24c14b4ca33376e903bc861d28c",
+   "mode": "100644",
+   "bytes": 301100
+  },
+  "public/art/war.png": {
+   "sha": "17c640d28c4bb5ac9e15235d69c6bcd4e73917d7",
+   "mode": "100644",
+   "bytes": 2467387
+  },
+  "public/art/war.webp": {
+   "sha": "2cc59df78d26da31dfff9205e704ea05881a36f7",
+   "mode": "100644",
+   "bytes": 284860
+  },
+  "public/icons.js": {
+   "sha": "7a62dbc0eb7bc47d1b6a2a80b0c4381e0628abd6",
+   "mode": "100644",
+   "bytes": 3416
+  },
+  "public/index.html": {
+   "sha": "c0ceeba48f85c5b2b15abc8e79614f1b62fa67a8",
+   "mode": "100644",
+   "bytes": 3127
+  },
+  "public/platform-views.js": {
+   "sha": "e00a25a5878be14f89025fa69f08c9ca45622c8d",
+   "mode": "100644",
+   "bytes": 23006
+  },
+  "public/sigil.svg": {
+   "sha": "2e05c9c6e5c4019342a232a0c7c44e2d83b4e87c",
+   "mode": "100644",
+   "bytes": 340
+  },
+  "public/styles.css": {
+   "sha": "da4d21d942f95453586019525665f1d3f6ef8f51",
+   "mode": "100644",
+   "bytes": 39691
+  },
+  "public/views.js": {
+   "sha": "3bfe7ab70fd153de18b53fb75b4b2a22afd97474",
+   "mode": "100644",
+   "bytes": 19020
+  },
+  "scratch/add_id_heal.js": {
+   "sha": "0228772d67b11eeab1d3dae3c7c4e74b2581a734",
+   "mode": "100644",
+   "bytes": 261
+  },
+  "scratch/add_pc_dock_items.js": {
+   "sha": "0c112e0e1b611a18311ef6a19c2facdd0b0c53c1",
+   "mode": "100644",
+   "bytes": 1110
+  },
+  "scratch/analyze_abas.js": {
+   "sha": "e561305601d3b81f86704d33a1912ffc67b248a8",
+   "mode": "100644",
+   "bytes": 1156
+  },
+  "scratch/analyze_combat.js": {
+   "sha": "7ce2d8f4f356ee1a7a553223fb7dde07e1a632c2",
+   "mode": "100644",
+   "bytes": 948
+  },
+  "scratch/apply_button_fit_fixes.js": {
+   "sha": "63712fca02f99e5881a0365d675894d089805a21",
+   "mode": "100644",
+   "bytes": 17715
+  },
+  "scratch/apply_button_fit_v2.js": {
+   "sha": "ab5bc7d9f884032e27d4e8a1e002b9c39aed950e",
+   "mode": "100644",
+   "bytes": 21383
+  },
+  "scratch/apply_flicker_and_stutter_fixes.js": {
+   "sha": "c35047cd2f6d64195635458a37b3988fc926ba7c",
+   "mode": "100644",
+   "bytes": 8700
+  },
+  "scratch/apply_mobile_fixes.js": {
+   "sha": "de850eb22980e3867172d43d4d10fddcd4734c26",
+   "mode": "100644",
+   "bytes": 49240
+  },
+  "scratch/apply_shadowcore_ai_fixes.js": {
+   "sha": "2bef89d6744c7a99fb72cbe052ab716bdb7a26ab",
+   "mode": "100644",
+   "bytes": 28359
+  },
+  "scratch/apply_shadowcore_survival.js": {
+   "sha": "0f9f20fe1655178cb1c3e094e7f37e347f536362",
+   "mode": "100644",
+   "bytes": 19571
+  },
+  "scratch/apply_stage2_fixes.js": {
+   "sha": "d84aa127c3bde776f037f465cd6579ad300987a7",
+   "mode": "100644",
+   "bytes": 28631
+  },
+  "scratch/audit_all_subsections.js": {
+   "sha": "725fee5f3f8c4afd9a4e0fdf6b5cc5f2ef3a1698",
+   "mode": "100644",
+   "bytes": 1786
+  },
+  "scratch/audit_css_math.js": {
+   "sha": "df02aac4774b95dc2de493abde76797a64c94e15",
+   "mode": "100644",
+   "bytes": 3163
+  },
+  "scratch/audit_dom.js": {
+   "sha": "85d78dd6e8a2f75511ae735f9d0eb7f4f8b59b91",
+   "mode": "100644",
+   "bytes": 1353
+  },
+  "scratch/audit_pre_uimain.js": {
+   "sha": "f7a1567e7427474d807f262e3afbacc5a3b322b9",
+   "mode": "100644",
+   "bytes": 1504
+  },
+  "scratch/audit_tab_balance.js": {
+   "sha": "c642ca2f8226e9e0b972f46fa892a2a716d68644",
+   "mode": "100644",
+   "bytes": 2042
+  },
+  "scratch/audit_top_elements.js": {
+   "sha": "5bd96bfa78bdc2b17b4059a7a2ecd0ee4d6d161d",
+   "mode": "100644",
+   "bytes": 2510
+  },
+  "scratch/audit_unlogged_view.js": {
+   "sha": "3463d66d8cd9a53251469d4d22721a138daf7b39",
+   "mode": "100644",
+   "bytes": 1167
+  },
+  "scratch/check_arena_buttons.js": {
+   "sha": "44a1e27ed6e32468c5afcf44040c705386454b1f",
+   "mode": "100644",
+   "bytes": 243
+  },
+  "scratch/check_arena_refs.js": {
+   "sha": "b97ed891a2798246600735410295863054e28f7a",
+   "mode": "100644",
+   "bytes": 952
+  },
+  "scratch/check_arena_styles.js": {
+   "sha": "6442cf1f5886f53de01a7eb5ab4ea9e9e32cace8",
+   "mode": "100644",
+   "bytes": 228
+  },
+  "scratch/check_atlas_doc.js": {
+   "sha": "96e04d617478fc3b2355d0329bea3aeb768ee087",
+   "mode": "100644",
+   "bytes": 575
+  },
+  "scratch/check_botnav_html.js": {
+   "sha": "67ad1c3b04770f61d51d7f4c5faa50e94fd47d8d",
+   "mode": "100644",
+   "bytes": 280
+  },
+  "scratch/check_button_refs.js": {
+   "sha": "30fb90b397139bd98df2d8a7086f4f6eedb940ce",
+   "mode": "100644",
+   "bytes": 743
+  },
+  "scratch/check_combate_func.js": {
+   "sha": "26ef3f70e215bd16abc4719ee361fa0438d7f016",
+   "mode": "100644",
+   "bytes": 185
+  },
+  "scratch/check_db_accounts.js": {
+   "sha": "df688c65dc4184d0edb94fab6b74b3c6a81b2db9",
+   "mode": "100644",
+   "bytes": 971
+  },
+  "scratch/check_dock_pc.js": {
+   "sha": "b5f09cf815c075ef3da9f13bc6347361962c96bd",
+   "mode": "100644",
+   "bytes": 242
+  },
+  "scratch/check_fixed_elements.js": {
+   "sha": "ceaf81d218cd4a716c5f45315c1b8c0003045914",
+   "mode": "100644",
+   "bytes": 622
+  },
+  "scratch/check_functions.js": {
+   "sha": "66a5f7bc3955b0fb94499cd685eb80158d119048",
+   "mode": "100644",
+   "bytes": 323
+  },
+  "scratch/check_html_syntax.js": {
+   "sha": "dc7599a2c2985a649ae161bfb81298eaf1dfd9d3",
+   "mode": "100644",
+   "bytes": 891
+  },
+  "scratch/check_routes.js": {
+   "sha": "a6db550150a35e2b28e9d262938e926c0d986fd5",
+   "mode": "100644",
+   "bytes": 378
+  },
+  "scratch/check_scrollbar.js": {
+   "sha": "5e109f671f30ee037fcc0d48ed0c00ef36540437",
+   "mode": "100644",
+   "bytes": 371
+  },
+  "scratch/check_zindexes.js": {
+   "sha": "eba694122d7896437a9b31eab03b7b051709917c",
+   "mode": "100644",
+   "bytes": 708
+  },
+  "scratch/ddg_sample.html": {
+   "sha": "c34fe68508c01014785a3a9806d859eb79fcfd2d",
+   "mode": "100644",
+   "bytes": 14211
+  },
+  "scratch/debug_ui_main.js": {
+   "sha": "d03aa63bb6c787394378f74857ac5c9f61a5f2f8",
+   "mode": "100644",
+   "bytes": 1325
+  },
+  "scratch/find_aba_insertion.js": {
+   "sha": "3512581498a8b9b22774b36384058f708ac144ff",
+   "mode": "100644",
+   "bytes": 297
+  },
+  "scratch/find_arena_exact.js": {
+   "sha": "c1e87cbeff93fe57dec50cf9256ac1f6d590604f",
+   "mode": "100644",
+   "bytes": 303
+  },
+  "scratch/find_arena_hud_css.js": {
+   "sha": "f9f625dec92a173bb824b58ab3fbfd912ba2e188",
+   "mode": "100644",
+   "bytes": 206
+  },
+  "scratch/find_arena_oculto.js": {
+   "sha": "55c5124b9f84ad29c001d221cdf75654be09b8b1",
+   "mode": "100644",
+   "bytes": 311
+  },
+  "scratch/find_arena_oculto_id.js": {
+   "sha": "3801fe679ef8eef6b432987172a52a8a16059724",
+   "mode": "100644",
+   "bytes": 326
+  },
+  "scratch/find_boundaries.js": {
+   "sha": "c2d329c85bc1611f51b8c44fd69fb1c6fd30427e",
+   "mode": "100644",
+   "bytes": 2616
+  },
+  "scratch/find_canvas.js": {
+   "sha": "0c7a8768a4a62abef326b0861d3b8b51ffb990b4",
+   "mode": "100644",
+   "bytes": 294
+  },
+  "scratch/find_canvas_render.js": {
+   "sha": "f8fc63176d3ad92149f67ac5323e2c2ffe7d579e",
+   "mode": "100644",
+   "bytes": 363
+  },
+  "scratch/find_colecao.js": {
+   "sha": "6f886437d52d862981ad96dc00dbaf8a7dadf5f6",
+   "mode": "100644",
+   "bytes": 244
+  },
+  "scratch/find_combat_css.js": {
+   "sha": "e76f6f64dd9ece61977cf7a3fbc0892b5639add9",
+   "mode": "100644",
+   "bytes": 752
+  },
+  "scratch/find_combat_triggers.js": {
+   "sha": "79c10af085073b21dace2f039909acc3dcf9b169",
+   "mode": "100644",
+   "bytes": 806
+  },
+  "scratch/find_css_line.js": {
+   "sha": "5be3b5773e7b9af3084899ce6f2696fa427ac3c3",
+   "mode": "100644",
+   "bytes": 331
+  },
+  "scratch/find_dead_assignments.js": {
+   "sha": "93ea54441b8f829d6f0dd1bdd9ceb843cd1f4e0a",
+   "mode": "100644",
+   "bytes": 644
+  },
+  "scratch/find_deck_line.js": {
+   "sha": "39aeb27c21685fe2f3977d5f99bb9394bdc87b9b",
+   "mode": "100644",
+   "bytes": 318
+  },
+  "scratch/find_deck_occurrences.js": {
+   "sha": "e9c282ac5444a51d182f465e8b88cddff8625323",
+   "mode": "100644",
+   "bytes": 338
+  },
+  "scratch/find_dock_cat.js": {
+   "sha": "f59ce12415af630be00ef558afa52bc94c5453db",
+   "mode": "100644",
+   "bytes": 234
+  },
+  "scratch/find_dock_styles.js": {
+   "sha": "9ee624f9eb1d6a3bf8e6417cc252a06ca3ff093e",
+   "mode": "100644",
+   "bytes": 259
+  },
+  "scratch/find_drawer_refs.js": {
+   "sha": "cfcd3f63113abf6fb911a342be3d0b6b2e00625e",
+   "mode": "100644",
+   "bytes": 357
+  },
+  "scratch/find_habs.js": {
+   "sha": "f8e5e28c4f19457690d055bd53fffee98ed4158b",
+   "mode": "100644",
+   "bytes": 485
+  },
+  "scratch/find_habs_line.js": {
+   "sha": "87f342073c4485dfe0fc46f8741bad4bb1a3cfc4",
+   "mode": "100644",
+   "bytes": 348
+  },
+  "scratch/find_key_handler.js": {
+   "sha": "dd48d48c88e82b33b7e3dc0fbe3a5d83a26cb8a8",
+   "mode": "100644",
+   "bytes": 236
+  },
+  "scratch/find_keyframes.js": {
+   "sha": "c17a963ce531f1b4d98822d210713dba178b9946",
+   "mode": "100644",
+   "bytes": 266
+  },
+  "scratch/find_login.js": {
+   "sha": "62ae74d3a47cb7b8965f9eee520493231ca20519",
+   "mode": "100644",
+   "bytes": 291
+  },
+  "scratch/find_login_ids.js": {
+   "sha": "50e6c464e4fdc19a9eea7511bc5bfff30db8318b",
+   "mode": "100644",
+   "bytes": 247
+  },
+  "scratch/find_modals.js": {
+   "sha": "5dc4c783c999f41d92fcae3db4d1aeec5ac44b45",
+   "mode": "100644",
+   "bytes": 328
+  },
+  "scratch/find_mundo2d_end.js": {
+   "sha": "200651fbafbc822096f13788f6910bab404ab9d4",
+   "mode": "100644",
+   "bytes": 283
+  },
+  "scratch/find_nav.js": {
+   "sha": "e39cae3cede5eb0357dcefe34a73aec0feb1d365",
+   "mode": "100644",
+   "bytes": 212
+  },
+  "scratch/find_nav_func.js": {
+   "sha": "0aa38fc0bbef17a7510dbee70ab25f85b2bbb276",
+   "mode": "100644",
+   "bytes": 215
+  },
+  "scratch/find_render_loop.js": {
+   "sha": "5a884722a61d3b74c16ec2eba5cee611fc9910c3",
+   "mode": "100644",
+   "bytes": 229
+  },
+  "scratch/find_script_tags.js": {
+   "sha": "0fbfcf820e59e6e9a1ba8aa424ba8540bb840afd",
+   "mode": "100644",
+   "bytes": 373
+  },
+  "scratch/find_ticker_css.js": {
+   "sha": "2eb27758c4f880f9e591bd2d0d612028e492d907",
+   "mode": "100644",
+   "bytes": 382
+  },
+  "scratch/find_user_death_logs.js": {
+   "sha": "e62d9a9a11d772ea75b6c8378709266ef33a668b",
+   "mode": "100644",
+   "bytes": 1527
+  },
+  "scratch/find_visceral_line.js": {
+   "sha": "2ce3c30dc9a1402fb972812d35b4115ccc1a3a78",
+   "mode": "100644",
+   "bytes": 287
+  },
+  "scratch/fix_frontend_injection.js": {
+   "sha": "1aee0577021dda9aacd81ce709ab87ece0637290",
+   "mode": "100644",
+   "bytes": 20710
+  },
+  "scratch/fix_mobile_drawer.js": {
+   "sha": "7dd4b10250409750677b3ff9868b1e60c766baef",
+   "mode": "100644",
+   "bytes": 188
+  },
+  "scratch/inject_frontend_ordens_and_combat.js": {
+   "sha": "dff080478fd8bbbf2bc0d859d282a4f2104e003e",
+   "mode": "100644",
+   "bytes": 44635
+  },
+  "scratch/inject_server_routes.js": {
+   "sha": "6142536db3900aea81522086e66d27d914a2ecd6",
+   "mode": "100644",
+   "bytes": 8469
+  },
+  "scratch/inject_social_client_logic.js": {
+   "sha": "a1dbcfebdd0446f6a9a1303d4ca09d4e14b0b863",
+   "mode": "100644",
+   "bytes": 36384
+  },
+  "scratch/inject_social_system.js": {
+   "sha": "f4f470df68d168484a1155ba08e1ca4c059b3734",
+   "mode": "100644",
+   "bytes": 22836
+  },
+  "scratch/inspect_abismo_void.js": {
+   "sha": "14c47250cfe782374b955f25c45bc581010d5660",
+   "mode": "100644",
+   "bytes": 206
+  },
+  "scratch/inspect_all_death_lines.js": {
+   "sha": "392d3bbe4c4c095a874525e19602712d1e6d74bd",
+   "mode": "100644",
+   "bytes": 820
+  },
+  "scratch/inspect_arena.js": {
+   "sha": "9e11beb2ad3c43e5643c5e7712513a97f5f8c458",
+   "mode": "100644",
+   "bytes": 229
+  },
+  "scratch/inspect_arena_css.js": {
+   "sha": "5a4cb1f5549959411822ee9af41d4864e644e9c5",
+   "mode": "100644",
+   "bytes": 211
+  },
+  "scratch/inspect_arena_habs.js": {
+   "sha": "57577ef7fa68022b2cbb906a87a8d8060593e953",
+   "mode": "100644",
+   "bytes": 222
+  },
+  "scratch/inspect_arena_html.js": {
+   "sha": "a8d3fbb6dfd31f1f0c2ca07e21cfd4ad4fe9b59b",
+   "mode": "100644",
+   "bytes": 219
+  },
+  "scratch/inspect_arena_parts.js": {
+   "sha": "1ab08dc23fae819ca21a2599f12a215a75b54280",
+   "mode": "100644",
+   "bytes": 218
+  },
+  "scratch/inspect_atualizar_barras.js": {
+   "sha": "e2a0a61a9cf7b5852c3e752e7a5cd74e7227e002",
+   "mode": "100644",
+   "bytes": 211
+  },
+  "scratch/inspect_auth.js": {
+   "sha": "95fac0424d7cd887260a381aaa92063b5d3f806e",
+   "mode": "100644",
+   "bytes": 343
+  },
+  "scratch/inspect_aventura_detail.js": {
+   "sha": "c4bcaa7ba7ffcdb967955cb95432a60b061d4a78",
+   "mode": "100644",
+   "bytes": 227
+  },
+  "scratch/inspect_body_children.js": {
+   "sha": "21cf0745f70febe9584a7d21f14da577a9594e8c",
+   "mode": "100644",
+   "bytes": 1679
+  },
+  "scratch/inspect_btn_hab.js": {
+   "sha": "0476e2a446f15aed72798f4758c8226f3a988349",
+   "mode": "100644",
+   "bytes": 283
+  },
+  "scratch/inspect_button_style.js": {
+   "sha": "f5cf912d4ca6abda29f24719bf69709d73782f62",
+   "mode": "100644",
+   "bytes": 204
+  },
+  "scratch/inspect_card_css.js": {
+   "sha": "37b7fa0f88d3fdfc8be1d9aeb1ce21d90d1d03b7",
+   "mode": "100644",
+   "bytes": 264
+  },
+  "scratch/inspect_combat_action_js.js": {
+   "sha": "f2f9641081df930877692b291b2441dc4ec8197a",
+   "mode": "100644",
+   "bytes": 218
+  },
+  "scratch/inspect_combat_buttons.js": {
+   "sha": "d62e95a8af29085c0569cfc06af8609e86b9375a",
+   "mode": "100644",
+   "bytes": 556
+  },
+  "scratch/inspect_combat_fn.js": {
+   "sha": "8ec96ceb6d62dc90c3ba6da95ee198de630ef1be",
+   "mode": "100644",
+   "bytes": 218
+  },
+  "scratch/inspect_combat_lifecycle.js": {
+   "sha": "646d6ce00902a4e816a570af01a59c24ba91f1e1",
+   "mode": "100644",
+   "bytes": 429
+  },
+  "scratch/inspect_combat_tabs.js": {
+   "sha": "ce99b31b89e05d1968ad0d34eae8d673d486c9e1",
+   "mode": "100644",
+   "bytes": 535
+  },
+  "scratch/inspect_combat_ui.js": {
+   "sha": "c72aa4f2afe08eb875708277ac09c25090cb2fcd",
+   "mode": "100644",
+   "bytes": 883
+  },
+  "scratch/inspect_css_details.js": {
+   "sha": "2cdeac5937a31f8a5a1a5b0f9c917b5c4bece6cb",
+   "mode": "100644",
+   "bytes": 1133
+  },
+  "scratch/inspect_db_players.js": {
+   "sha": "af80d32043a2904dec9273d7630ac4c58e7cc0e5",
+   "mode": "100644",
+   "bytes": 759
+  },
+  "scratch/inspect_dng_html.js": {
+   "sha": "72f5131b4b2c1042a1599cd00dfa9b652302ae49",
+   "mode": "100644",
+   "bytes": 218
+  },
+  "scratch/inspect_dock.js": {
+   "sha": "0e891263a8405112fbe143b1916a5aa20f9abe26",
+   "mode": "100644",
+   "bytes": 305
+  },
+  "scratch/inspect_dock_css.js": {
+   "sha": "40089a8d6621751e26b69c8f230f53f442b1958f",
+   "mode": "100644",
+   "bytes": 406
+  },
+  "scratch/inspect_dock_full.js": {
+   "sha": "857c8c8f90839350a1bfbce1b31914de94fe27d9",
+   "mode": "100644",
+   "bytes": 222
+  },
+  "scratch/inspect_full_mobile_nav.js": {
+   "sha": "fd991d31d2137bcc5a926127bf8f386901532f0b",
+   "mode": "100644",
+   "bytes": 528
+  },
+  "scratch/inspect_heal_flee.js": {
+   "sha": "a97b6f81e2f0795a37902837c4ae1cb378182855",
+   "mode": "100644",
+   "bytes": 277
+  },
+  "scratch/inspect_insert_point.js": {
+   "sha": "5b5f8cfaaf5edf2562632ce0b4fbd418f2afdc50",
+   "mode": "100644",
+   "bytes": 382
+  },
+  "scratch/inspect_lines_200.js": {
+   "sha": "5a0c57238a9bcc945e1a69c150baa588df868ed3",
+   "mode": "100644",
+   "bytes": 227
+  },
+  "scratch/inspect_lines_2195.js": {
+   "sha": "c8fd0a627c9e3693bf9c90316444c17ae538f9e7",
+   "mode": "100644",
+   "bytes": 231
+  },
+  "scratch/inspect_lines_440.js": {
+   "sha": "7d4ecf353ad6fdbe78f36d0b5712709962c97b95",
+   "mode": "100644",
+   "bytes": 187
+  },
+  "scratch/inspect_lines_470.js": {
+   "sha": "ada673de7d1be64f31365e2c02765276d9b72892",
+   "mode": "100644",
+   "bytes": 187
+  },
+  "scratch/inspect_lines_560.js": {
+   "sha": "d5c7be66bf3f4680ce36288fb546efa2af6ce3f7",
+   "mode": "100644",
+   "bytes": 187
+  },
+  "scratch/inspect_lines_655.js": {
+   "sha": "cc79b90e62bb0b503964dad5ba074a0ff449e18c",
+   "mode": "100644",
+   "bytes": 227
+  },
+  "scratch/inspect_lines_7980.js": {
+   "sha": "e073ea2fb22b4c264ca1701a3f4bcae15098dd72",
+   "mode": "100644",
+   "bytes": 189
+  },
+  "scratch/inspect_media_query.js": {
+   "sha": "596191e557912eb871b3645865b7a745e758bcdb",
+   "mode": "100644",
+   "bytes": 227
+  },
+  "scratch/inspect_nav.js": {
+   "sha": "a346923135579f813e6808ff55ab6c57c3b16164",
+   "mode": "100644",
+   "bytes": 813
+  },
+  "scratch/inspect_nav_systems.js": {
+   "sha": "0b6f3282e59384b1d099a093fb58087b829126ba",
+   "mode": "100644",
+   "bytes": 911
+  },
+  "scratch/inspect_postura_visceral.js": {
+   "sha": "eb079601f6384bee07eab2654457082fe6bf5ad5",
+   "mode": "100644",
+   "bytes": 312
+  },
+  "scratch/inspect_render_habs.js": {
+   "sha": "236dba5f047b17c03725ff1b2da1f6ff8a43515a",
+   "mode": "100644",
+   "bytes": 195
+  },
+  "scratch/inspect_sections.js": {
+   "sha": "fd651753cc8f391993ccb8b8c6e419e43d71c841",
+   "mode": "100644",
+   "bytes": 416
+  },
+  "scratch/inspect_socket_listeners.js": {
+   "sha": "9332367377e7f8e32e2c73cf432e8004237851ad",
+   "mode": "100644",
+   "bytes": 356
+  },
+  "scratch/inspect_tab_switching.js": {
+   "sha": "3eee7ab7d13d4816cd9f7f410d8552bbc1a63a9a",
+   "mode": "100644",
+   "bytes": 859
+  },
+  "scratch/inspect_vex_logs.js": {
+   "sha": "396eb9307f6b4200f572aa9cda59bca5fb313c88",
+   "mode": "100644",
+   "bytes": 1427
+  },
+  "scratch/parse_ddg.js": {
+   "sha": "417c021724423b290f43b9862600b8ec52b3c649",
+   "mode": "100644",
+   "bytes": 1025
+  },
+  "scratch/patch_canvas_social.js": {
+   "sha": "f858333a9224437133a468670108aacd571666e8",
+   "mode": "100644",
+   "bytes": 5966
+  },
+  "scratch/patch_ordem_core_params.js": {
+   "sha": "da98d876640bf9279a2c703225e1fe56b6333edd",
+   "mode": "100644",
+   "bytes": 5782
+  },
+  "scratch/query_atlas.js": {
+   "sha": "bf7d3853e83308902b7ebc62bc1d56fe1b78aed4",
+   "mode": "100644",
+   "bytes": 1409
+  },
+  "scratch/query_atlas_clean.js": {
+   "sha": "530102fc8f4f9df1c0295110e3b7e1dc843b23e7",
+   "mode": "100644",
+   "bytes": 1673
+  },
+  "scratch/read_death_logs.js": {
+   "sha": "4b36e25e491b1add1a3a001aa518a3a4bab72885",
+   "mode": "100644",
+   "bytes": 1376
+  },
+  "scratch/rendered_dom.html": {
+   "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+   "mode": "100644",
+   "bytes": 0
+  },
+  "scratch/replace_arena_html.js": {
+   "sha": "525069d33159c2e49ab5cf624a06bd7a6e8bfcbe",
+   "mode": "100644",
+   "bytes": 6714
+  },
+  "scratch/replace_drawer_sections.js": {
+   "sha": "e8b38bd3d1eccf46327b84a1cf95e9959f8a1d2f",
+   "mode": "100644",
+   "bytes": 6333
+  },
+  "scratch/revive_masters_in_atlas.js": {
+   "sha": "94658ae13b3b6b14828d792e29d2de46707a0f91",
+   "mode": "100644",
+   "bytes": 2626
+  },
+  "scratch/search_bots_server.js": {
+   "sha": "b357268d4c5337a0b163ca4b78c7cb8044de05e9",
+   "mode": "100644",
+   "bytes": 343
+  },
+  "scratch/search_combat_actions.js": {
+   "sha": "c89bed1a61e2999918e69c8497a78db5600b4318",
+   "mode": "100644",
+   "bytes": 444
+  },
+  "scratch/search_combat_glitches.js": {
+   "sha": "c3c7ab5c09e6351fff00d773f113001d8d8c5fb5",
+   "mode": "100644",
+   "bytes": 381
+  },
+  "scratch/search_deaths.js": {
+   "sha": "042f63786794161d5867d094a2fb66173b481ebc",
+   "mode": "100644",
+   "bytes": 699
+  },
+  "scratch/test_admin_consecrate.js": {
+   "sha": "0434ac494b73cb2e5f576ca17636b4b5c15bd0a2",
+   "mode": "100644",
+   "bytes": 1590
+  },
+  "scratch/test_atlas_update.js": {
+   "sha": "90a3e965d0cfb530685f4d1d9162dc2c766222ec",
+   "mode": "100644",
+   "bytes": 845
+  },
+  "scratch/test_browser_init.js": {
+   "sha": "c3a2826d3e9a64fa5ad80010477ee7ed0d917490",
+   "mode": "100644",
+   "bytes": 3518
+  },
+  "scratch/test_calice.js": {
+   "sha": "234dedb630e5a258bb50f28610bb30c9acc3546e",
+   "mode": "100644",
+   "bytes": 1500
+  },
+  "scratch/test_complete_osint.js": {
+   "sha": "1a187bd3561ef42efebbfc6fc02d613eff283afa",
+   "mode": "100644",
+   "bytes": 10086
+  },
+  "scratch/test_core_systems.js": {
+   "sha": "d5039daf6d8e451db63ee28960c533f5ee8e316b",
+   "mode": "100644",
+   "bytes": 2128
+  },
+  "scratch/test_e2e_api_endpoints.js": {
+   "sha": "03e1ea217fb8b4e4872f3f3fbfa96ebde5a255d2",
+   "mode": "100644",
+   "bytes": 5916
+  },
+  "scratch/test_e2e_veu.js": {
+   "sha": "67a4cea84a786dea24d09f0e04a939eabfb274a0",
+   "mode": "100644",
+   "bytes": 3003
+  },
+  "scratch/test_engines.js": {
+   "sha": "b3d2d218bcbc239edcb614883f2321c302bf20f6",
+   "mode": "100644",
+   "bytes": 809
+  },
+  "scratch/test_extended_nosferatu.js": {
+   "sha": "929f27e737d4e5913ace07c0a0c32eaa49b046e3",
+   "mode": "100644",
+   "bytes": 5303
+  },
+  "scratch/test_habs_sample.js": {
+   "sha": "b17e5784d5942260865816462ae42e26ffba50d2",
+   "mode": "100644",
+   "bytes": 586
+  },
+  "scratch/test_html_syntax.js": {
+   "sha": "904e1db6c1a86dc1e9daa19bf7c1cbdd64acf8d9",
+   "mode": "100644",
+   "bytes": 748
+  },
+  "scratch/test_live_osint.js": {
+   "sha": "91914cc69e0093a52d2da7480fb3551556da6af8",
+   "mode": "100644",
+   "bytes": 4676
+  },
+  "scratch/test_live_server.js": {
+   "sha": "dc86adc392a8bbc56b25053486060326b88d6962",
+   "mode": "100644",
+   "bytes": 4775
+  },
+  "scratch/test_mongodb_and_master_ai.js": {
+   "sha": "53cac48ed81be199894a2b087b256bc4de208b40",
+   "mode": "100644",
+   "bytes": 7171
+  },
+  "scratch/test_ordens_and_combat.js": {
+   "sha": "7794936b7feb4f0a2f03b46136d45c014866d440",
+   "mode": "100644",
+   "bytes": 9284
+  },
+  "scratch/test_osint_engine.js": {
+   "sha": "113bf28c88ade6797ec0c1875a12ab10062c5401",
+   "mode": "100644",
+   "bytes": 3373
+  },
+  "scratch/test_pipeline.js": {
+   "sha": "17d7ecb3ed6d4eb97254bc7f4ddde9bfdcea1c1b",
+   "mode": "100644",
+   "bytes": 4269
+  },
+  "scratch/test_pipeline_gameplay.js": {
+   "sha": "963354bb72057ead01167339d53c8bb11cf820cb",
+   "mode": "100644",
+   "bytes": 1602
+  },
+  "scratch/test_rpg_magick.js": {
+   "sha": "27df6de1755c583258b63b68461f9aee086e1979",
+   "mode": "100644",
+   "bytes": 2579
+  },
+  "scratch/test_search.js": {
+   "sha": "3c1e06c43a1f7ce1b10b2c70204965a7755c8971",
+   "mode": "100644",
+   "bytes": 927
+  },
+  "scratch/test_search_vectors.js": {
+   "sha": "950d8effd2fbca66b23758ccd87e318589322cb4",
+   "mode": "100644",
+   "bytes": 6192
+  },
+  "scratch/test_shadowcore_live_osint.js": {
+   "sha": "ed6e8712d9092e8454462c9c5a3f2d4e6e806f89",
+   "mode": "100644",
+   "bytes": 1455
+  },
+  "scratch/test_shadowcore_osint_method.js": {
+   "sha": "4ea98024138fb050bb72e75805821e66a5df4689",
+   "mode": "100644",
+   "bytes": 16463
+  },
+  "scratch/test_social_and_hotfixes.js": {
+   "sha": "f254f637dd4acea23b909de24ad069fda539d360",
+   "mode": "100644",
+   "bytes": 11088
+  },
+  "scratch/test_survival_rules.js": {
+   "sha": "c668cdd31c06bbf9627631e5ef3231c8f704680d",
+   "mode": "100644",
+   "bytes": 3288
+  },
+  "scratch/update_acao_karmica.js": {
+   "sha": "cb7c57d35e174f06f3ffcb9f88694b4d6bf5a50f",
+   "mode": "100644",
+   "bytes": 17993
+  },
+  "scratch/update_index_nosferatu.js": {
+   "sha": "5963d08c285d2c21a9f81943c56406cd671f0e8e",
+   "mode": "100644",
+   "bytes": 27272
+  },
+  "scratch/update_models.js": {
+   "sha": "21620007edf7ddc0c175afb48dbc65a7fea058d2",
+   "mode": "100644",
+   "bytes": 1069
+  },
+  "scratch/update_server_social.js": {
+   "sha": "7df880bb770c60cfb3ce2e57434a0fe11e07d8ba",
+   "mode": "100644",
+   "bytes": 11743
+  },
+  "scratch/update_shadowcore_combat.js": {
+   "sha": "145cd807ce2c384a7b3f596b41b857eae889ae5d",
+   "mode": "100644",
+   "bytes": 14375
+  },
+  "scratch/update_shadowcore_integration.js": {
+   "sha": "7a9e0fa88ad1d652b943f32d3e11589bc5c39afd",
+   "mode": "100644",
+   "bytes": 1627
+  },
+  "scratch/validate_frontend_html.js": {
+   "sha": "c0d56a0bdf246f62d5b58d97a28c69fef690c50d",
+   "mode": "100644",
+   "bytes": 1007
+  },
+  "scratch/validate_scripts.js": {
+   "sha": "60200c4af3c4548a285b7ec577a6c6a41bec4647",
+   "mode": "100644",
+   "bytes": 641
+  },
+  "scratch/validate_tags.js": {
+   "sha": "40537ce2e9de484dd6eac1afdea8f0e0dfb08bee",
+   "mode": "100644",
+   "bytes": 3336
+  },
+  "scratch/verify_changes.js": {
+   "sha": "a21555e5053e03dae3f80b4267ec44ae80a64bef",
+   "mode": "100644",
+   "bytes": 2313
+  },
+  "scratch/verify_dom_rendered.js": {
+   "sha": "fd5b2c9e7afdc00cbdd484a213dffa710e7c2878",
+   "mode": "100644",
+   "bytes": 3022
+  },
+  "scripts/prepare-legacy.cjs": {
+   "sha": "e141105da488b0273355a0908641f967e1f9434c",
+   "mode": "100644",
+   "bytes": 722
+  },
+  "scripts/smoke-integrations.cjs": {
+   "sha": "105cdfd970d5f1044220e2f6ab3b848a00896aa0",
+   "mode": "100644",
+   "bytes": 1337
+  },
+  "server-rework.js": {
+   "sha": "20e809c6a21975856b62f8603a78756bafb051e4",
+   "mode": "100644",
+   "bytes": 12122
+  },
+  "server.js": {
+   "sha": "2ff9d21f99b241bbdb79800ccec61d2661f5c9fe",
+   "mode": "100644",
+   "bytes": 159094
+  },
+  "server.js.bak_before_v4_1_2026-09-19T01-14-41-595Z": {
+   "sha": "a1741a79cac151600204d8d29abe4f10df297438",
+   "mode": "100644",
+   "bytes": 89353
+  },
+  "server.js.bak_mente_abissal_v2_20260918_215243": {
+   "sha": "580239fa335bb5844d366189722f990b4358e042",
+   "mode": "100644",
+   "bytes": 90104
+  },
+  "server.js.bak_nosferatu_v3_20260918_220151": {
+   "sha": "faf17792290d5631f45ce177eeb4e7d2a26432e5",
+   "mode": "100644",
+   "bytes": 94640
+  },
+  "server.js.bak_osint_v4_2026-09-19T01-12-29-944Z": {
+   "sha": "902157a1913bb60e34371846aacbd00ffb2be235",
+   "mode": "100644",
+   "bytes": 95197
+  },
+  "server.js.bak_osint_v4_2026-09-19T01-12-38-773Z": {
+   "sha": "e220b90d8d8b08eb243be5749185589ee66efa7b",
+   "mode": "100644",
+   "bytes": 89314
+  },
+  "tests/browser.cjs": {
+   "sha": "4093bab508bfbce3177991ade0ade0c5ffe4edc5",
+   "mode": "100644",
+   "bytes": 6469
+  },
+  "tests/server.test.js": {
+   "sha": "b6519f0a22be5bf2b763fbd0c1a3f85d43107f1b",
+   "mode": "100644",
+   "bytes": 2360
+  },
+  "tests/world.test.js": {
+   "sha": "75daf11a78c57e1afe5778117293dae364c952a4",
+   "mode": "100644",
+   "bytes": 8748
+  }
+ }
+}

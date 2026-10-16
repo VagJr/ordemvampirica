@@ -1,0 +1,6 @@
+'use strict';
+const fs=require('node:fs');const{World}=require('../game/world');const{Platform}=require('../game/platform');
+(async()=>{const world=new World({file:null}),platform=new Platform(world),p=world.createPlayer('Tutor de verificação','vampire');const report={at:new Date().toISOString(),ai:{configured:Boolean(process.env.GROQ_API_KEY)},publicSource:{provider:'GitHub public API'}};
+try{const r=await platform.action(p,'aiStudy',{tradition:'hermetismo',topic:'Como registrar intenção, observação e reflexão separadamente em um diário de estudos.'});report.ai.ok=true;report.ai.characters=r.tome.content.length;report.ai.private=r.tome.visibility==='private';}catch(error){report.ai.ok=false;report.ai.error=error.message.slice(0,500);}
+try{const r=await fetch('https://api.github.com/users/octocat',{headers:{'User-Agent':'Sanguinis-Integration-Verification','Accept':'application/vnd.github+json'},signal:AbortSignal.timeout(10000)});report.publicSource.ok=r.ok;report.publicSource.status=r.status;}catch(error){report.publicSource.ok=false;report.publicSource.error=error.message;}
+fs.mkdirSync('output/qa',{recursive:true});fs.writeFileSync('output/qa/integrations.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));})().catch(error=>{console.error(error.message);process.exitCode=1;});

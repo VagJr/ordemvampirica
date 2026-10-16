@@ -860,8 +860,8 @@ RETORNE EXATAMENTE UM JSON VÁLIDO:
         const plataforma = String(dados.plataforma || '').trim().toLowerCase();
         const identificador = String(dados.identificador || '').trim();
         const nome = String(dados.nome || '').trim();
-        const instagram = String(dados.instagram || '').trim();
-        const twitter = String(dados.twitter || '').trim();
+        const instagram = String(dados.instagram || '').trim().replace(/^@/, '');
+        const twitter = String(dados.twitter || '').trim().replace(/^@/, '');
         const urlPerfil = String(dados.urlPerfil || '').trim();
         const notas = String(dados.notas || '').trim();
 
@@ -869,360 +869,370 @@ RETORNE EXATAMENTE UM JSON VÁLIDO:
         if (plataforma === 'whatsapp' || pareceTelefone) {
             return {
                 sucesso: false,
-                erro: "A varredura publica nao usa telefone/WhatsApp. Informe nome publico, @handle ou URL publica.",
+                erro: "A varredura pública não usa telefone/WhatsApp. Informe nome público, @handle ou URL pública.",
                 osintReal: false
             };
         }
 
-        const limparHandle = (valor) => String(valor || '')
-            .trim()
-            .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
-            .replace(/^https?:\/\/(www\.)?(x\.com|twitter\.com)\//i, '')
-            .replace(/^https?:\/\/(www\.)?tiktok\.com\/@?/i, '')
-            .replace(/^@/, '')
-            .split(/[/?#]/)[0];
+        const termoPrincipal = nome || (instagram ? `@${instagram}` : '') || (twitter ? `@${twitter}` : '') || identificador || 'Desconhecido';
+        const termoBusca = nome || instagram || twitter || identificador;
 
-        const handleIdentificador = limparHandle(identificador);
-        const handleInstagram = limparHandle(instagram);
-        const handleTwitter = limparHandle(twitter);
-
-        const consultas = [];
-        const adicionarConsulta = (q, dominios = []) => {
-            q = String(q || '').trim();
-            if (!q) return;
-            if (consultas.some(x => x.q.toLowerCase() === q.toLowerCase())) return;
-            consultas.push({ q, dominios });
-        };
-
-        // Busca geral por identidade.
-        if (nome) {
-            const complementos = [
-                handleInstagram ? `instagram ${handleInstagram}` : '',
-                handleTwitter ? `x twitter ${handleTwitter}` : '',
-                identificador && !pareceTelefone ? identificador : ''
-            ].filter(Boolean).join(' ');
-            adicionarConsulta(`"${nome}" ${complementos}`.trim());
-        }
-
-        // Busca exata por identificador/handle.
-        if (identificador && !pareceTelefone) {
-            adicionarConsulta(`"${identificador}"`);
-        }
-
-        // Busca especifica por rede para aumentar a chance de achar perfis indexados.
-        if (handleInstagram) {
-            adicionarConsulta(`"${handleInstagram}" instagram`, ['instagram.com']);
-        }
-        if (handleTwitter) {
-            adicionarConsulta(`"${handleTwitter}"`, ['x.com', 'twitter.com']);
-        }
-        if (plataforma === 'instagram' && handleIdentificador) {
-            adicionarConsulta(`"${handleIdentificador}" instagram`, ['instagram.com']);
-        }
-        if ((plataforma === 'twitter' || plataforma === 'x') && handleIdentificador) {
-            adicionarConsulta(`"${handleIdentificador}"`, ['x.com', 'twitter.com']);
-        }
-        if (plataforma === 'tiktok' && handleIdentificador) {
-            adicionarConsulta(`"${handleIdentificador}" tiktok`, ['tiktok.com']);
-        }
-        if (plataforma === 'telegram' && handleIdentificador) {
-            adicionarConsulta(`"${handleIdentificador}" telegram`, ['t.me']);
-        }
-
-        // URL publica: pesquisa o URL e o slug separadamente.
-        if (urlPerfil) {
-            adicionarConsulta(`"${urlPerfil}"`);
-            try {
-                const u = new URL(urlPerfil);
-                const slug = u.pathname.split('/').filter(Boolean).pop();
-                if (slug) adicionarConsulta(`"${slug}" "${u.hostname}"`);
-            } catch (_) {}
-        }
-
-        if (consultas.length === 0) {
+        if (!termoBusca && !urlPerfil) {
             return {
                 sucesso: false,
-                erro: "Nenhum identificador publico valido foi fornecido para pesquisa.",
+                erro: "Nenhum identificador público válido foi fornecido para pesquisa.",
                 osintReal: false
             };
         }
-
-        // Limita custo/latencia sem perder os sinais mais fortes.
-        const consultasExecutadas = consultas.slice(0, 5);
-
-        const chamarGroqREST = async (body) => {
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 45000);
-
-            try {
-                const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${this.apiKey}`,
-                        'Content-Type': 'application/json',
-                        'Groq-Model-Version': 'latest'
-                    },
-                    body: JSON.stringify(body),
-                    signal: controller.signal
-                });
-
-                const raw = await resp.text();
-                let json = {};
-                try { json = raw ? JSON.parse(raw) : {}; } catch (_) {}
-
-                if (!resp.ok) {
-                    const msg = json?.error?.message || raw || `HTTP ${resp.status}`;
-                    throw new Error(`Groq HTTP ${resp.status}: ${String(msg).slice(0, 500)}`);
-                }
-
-                return json;
-            } finally {
-                clearTimeout(timeout);
-            }
-        };
-
-        const extrairResultados = (mensagem) => {
-            const ferramentas = Array.isArray(mensagem?.executed_tools)
-                ? mensagem.executed_tools
-                : [];
-
-            const resultados = [];
-
-            for (const ferramenta of ferramentas) {
-                const sr = ferramenta?.search_results;
-                if (!sr) continue;
-
-                const lista = Array.isArray(sr)
-                    ? sr
-                    : Array.isArray(sr.results)
-                        ? sr.results
-                        : [];
-
-                for (const item of lista) {
-                    if (!item) continue;
-                    const url = String(item.url || '').trim();
-                    const title = String(item.title || '').trim();
-                    const content = String(item.content || item.snippet || '').trim();
-                    const score = Number.isFinite(Number(item.score)) ? Number(item.score) : null;
-
-                    if (!url && !content) continue;
-                    resultados.push({ url, title, content, score });
-                }
-            }
-
-            return { ferramentas, resultados };
-        };
 
         const evidencias = [];
         const errosBusca = [];
+        console.log(`👁️ [OSINT REAL] A varrer fontes abertas no éter para: "${termoPrincipal}"...`);
 
-        for (const consulta of consultasExecutadas) {
+        // 1. Wikipedia Search & Summary (PT e EN)
+        for (const lang of ['pt', 'en']) {
+            if (!termoBusca) break;
             try {
-                const searchSettings = { country: 'brazil' };
-                if (consulta.dominios?.length) {
-                    searchSettings.include_domains = consulta.dominios;
-                }
-
-                const respostaBusca = await chamarGroqREST({
-                    model: process.env.GROQ_OSINT_SEARCH_MODEL || 'groq/compound-mini',
-                    messages: [{
-                        role: 'user',
-                        content:
-                            `Use obrigatoriamente WEB SEARCH para pesquisar esta identidade publica. ` +
-                            `Nao responda por memoria. Consulta exata: ${consulta.q}. ` +
-                            `Procure correspondencias de nome, handle, perfil, atividade publica e referencias cruzadas.`
-                    }],
-                    compound_custom: {
-                        tools: {
-                            enabled_tools: ['web_search']
+                const wUrl = `https://${lang}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(termoBusca)}&format=json&utf8=1`;
+                const wRes = await fetch(wUrl, { headers: { 'User-Agent': 'OrdemVampiricaBot/2.0' }, signal: AbortSignal.timeout(5000) });
+                if (wRes.ok) {
+                    const wData = await wRes.json();
+                    const hits = wData?.query?.search || [];
+                    if (hits.length > 0) {
+                        const topHit = hits[0];
+                        try {
+                            const sumRes = await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topHit.title)}`, {
+                                headers: { 'User-Agent': 'OrdemVampiricaBot/2.0' },
+                                signal: AbortSignal.timeout(4000)
+                            });
+                            if (sumRes.ok) {
+                                const sumData = await sumRes.json();
+                                evidencias.push({
+                                    origem: `Wikipedia (${lang.toUpperCase()})`,
+                                    titulo: sumData.title || topHit.title,
+                                    url: sumData.content_urls?.desktop?.page || `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(topHit.title)}`,
+                                    conteudo: sumData.extract || topHit.snippet.replace(/<[^>]+>/g, '')
+                                });
+                            }
+                        } catch (_) {
+                            evidencias.push({
+                                origem: `Wikipedia (${lang.toUpperCase()})`,
+                                titulo: topHit.title,
+                                url: `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(topHit.title)}`,
+                                conteudo: topHit.snippet.replace(/<[^>]+>/g, '')
+                            });
                         }
-                    },
-                    citation_options: 'enabled',
-                    search_settings: searchSettings,
-                    temperature: 0,
-                    max_completion_tokens: 500
-                });
-
-                const mensagem = respostaBusca?.choices?.[0]?.message;
-                const extraido = extrairResultados(mensagem);
-
-                console.log(
-                    `[OSINT] query=${JSON.stringify(consulta.q)} tools=${extraido.ferramentas.length} results=${extraido.resultados.length}`
-                );
-
-                if (extraido.ferramentas.length === 0) {
-                    errosBusca.push(`${consulta.q}: nenhuma ferramenta web executada`);
-                    continue;
-                }
-
-                for (const item of extraido.resultados) {
-                    evidencias.push({
-                        ...item,
-                        consulta: consulta.q
-                    });
+                    }
                 }
             } catch (e) {
-                const detalhe = e?.name === 'AbortError'
-                    ? 'timeout'
-                    : (e?.message || 'erro desconhecido');
-                console.error(`[OSINT] Falha na consulta ${JSON.stringify(consulta.q)}:`, detalhe);
-                errosBusca.push(`${consulta.q}: ${detalhe}`);
+                errosBusca.push(`Wiki ${lang}: ${e.message}`);
             }
         }
 
-        // Deduplicar por URL; se nao houver URL, por titulo+conteudo.
-        const vistos = new Set();
-        const unicas = [];
-
-        for (const item of evidencias) {
-            const chave = item.url
-                ? item.url.toLowerCase()
-                : `${item.title}|${item.content}`.toLowerCase();
-
-            if (!chave || vistos.has(chave)) continue;
-            vistos.add(chave);
-
-            unicas.push({
-                ...item,
-                content: item.content.slice(0, 1800)
-            });
+        // 2. Google News Real-time RSS
+        if (termoBusca) {
+            try {
+                const gnewsUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(termoBusca)}&hl=pt-BR&gl=BR&ceid=BR:pt-419`;
+                const gnewsRes = await fetch(gnewsUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(5000) });
+                if (gnewsRes.ok) {
+                    const xml = await gnewsRes.text();
+                    const items = [...xml.matchAll(/<item>[\s\S]*?<title>([\s\S]*?)<\/title>[\s\S]*?<link>([\s\S]*?)<\/link>[\s\S]*?<pubDate>([\s\S]*?)<\/pubDate>[\s\S]*?<source[^>]*>([\s\S]*?)<\/source>/g)];
+                    items.slice(0, 4).forEach(item => {
+                        evidencias.push({
+                            origem: `Notícias (${item[4] || 'Imprensa'})`,
+                            titulo: item[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'"),
+                            url: item[2],
+                            conteudo: `Publicado em ${item[3]}: ${item[1]}`
+                        });
+                    });
+                }
+            } catch (e) {
+                errosBusca.push(`Google News: ${e.message}`);
+            }
         }
 
-        // Ordena pelos resultados mais relevantes quando o provedor fornece score.
-        unicas.sort((a, b) => {
-            const sa = a.score ?? -1;
-            const sb = b.score ?? -1;
-            return sb - sa;
-        });
+        // 3. DuckDuckGo Instant Knowledge API
+        if (termoBusca) {
+            try {
+                const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(termoBusca)}&format=json&no_html=1`;
+                const ddgRes = await fetch(ddgUrl, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(4000) });
+                if (ddgRes.ok) {
+                    const ddgData = await ddgRes.json();
+                    if (ddgData.AbstractText) {
+                        evidencias.push({
+                            origem: 'DuckDuckGo Knowledge Base',
+                            titulo: ddgData.Heading || termoPrincipal,
+                            url: ddgData.AbstractURL || 'https://duckduckgo.com',
+                            conteudo: ddgData.AbstractText
+                        });
+                    }
+                    if (Array.isArray(ddgData.RelatedTopics)) {
+                        const topTopics = ddgData.RelatedTopics.filter(t => t.Text).slice(0, 3).map(t => t.Text);
+                        if (topTopics.length > 0) {
+                            evidencias.push({
+                                origem: 'DuckDuckGo Tópicos Relacionados',
+                                titulo: `Tópicos públicos de ${termoPrincipal}`,
+                                url: ddgData.AbstractURL || 'https://duckduckgo.com',
+                                conteudo: topTopics.join('; ')
+                            });
+                        }
+                    }
+                }
+            } catch (e) {
+                errosBusca.push(`DuckDuckGo API: ${e.message}`);
+            }
+        }
 
-        const selecionadas = unicas.slice(0, 24);
+        // 4. DuckDuckGo Lite Web Search
+        const qSearch = nome || (instagram ? `${instagram} instagram` : '') || (twitter ? `${twitter} twitter` : '') || identificador;
+        if (qSearch) {
+            try {
+                const ddlRes = await fetch('https://lite.duckduckgo.com/lite/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+                    },
+                    body: 'q=' + encodeURIComponent(qSearch),
+                    signal: AbortSignal.timeout(5000)
+                });
+                if (ddlRes.ok) {
+                    const html = await ddlRes.text();
+                    const tdLinks = [...html.matchAll(/<td[^>]*valign=['"]top['"][^>]*>[\s\S]*?<a[^>]*href=['"]([^'"]+)['"][^>]*>([\s\S]*?)<\/a>/g)];
+                    const snippetMatches = [...html.matchAll(/class=['"]result-snippet['"][^>]*>([\s\S]*?)<\/td>/g)];
+                    for (let i = 0; i < Math.min(tdLinks.length, snippetMatches.length, 3); i++) {
+                        const url = tdLinks[i][1];
+                        const title = tdLinks[i][2].replace(/<[^>]+>/g, '').trim();
+                        const snippet = snippetMatches[i][1].replace(/<[^>]+>/g, '').trim();
+                        if (!evidencias.some(e => e.url === url)) {
+                            evidencias.push({
+                                origem: 'Web Indexada',
+                                titulo: title,
+                                url,
+                                conteudo: snippet
+                            });
+                        }
+                    }
+                }
+            } catch (e) {
+                errosBusca.push(`DuckDuckGo Lite: ${e.message}`);
+            }
+        }
 
-        if (selecionadas.length === 0) {
-            return {
-                sucesso: true,
-                osintReal: true,
-                motor: 'groq/compound-mini:web_search',
-                pesquisadoEm: Date.now(),
-                consultas: consultasExecutadas.map(x => x.q),
-                fontes: [],
-                totalFontes: 0,
-                conteudo:
-                    `IDENTIDADE PUBLICA ENCONTRADA\n` +
-                    `EVIDENCIA PUBLICA INSUFICIENTE.\n\n` +
-                    `A Mente Abissal executou pesquisa web real, mas nao encontrou resultados publicos ` +
-                    `indexados suficientes para relacionar com seguranca esta identidade.\n\n` +
-                    `Consultas executadas:\n- ${consultasExecutadas.map(x => x.q).join('\n- ')}`
+        // 5. URL de Perfil Direta (Scrape de Metadados)
+        if (urlPerfil && /^https?:\/\//i.test(urlPerfil)) {
+            try {
+                const pRes = await fetch(urlPerfil, {
+                    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+                    signal: AbortSignal.timeout(5000)
+                });
+                if (pRes.ok) {
+                    const html = await pRes.text();
+                    const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/<[^>]+>/g, '').trim();
+                    const desc = html.match(/<meta[^>]+(?:name|property)=["'](?:description|og:description)["'][^>]+content=["']([^"']+)["']/i)?.[1];
+                    if (title || desc) {
+                        evidencias.push({
+                            origem: 'URL de Perfil Oficial',
+                            titulo: title || urlPerfil,
+                            url: urlPerfil,
+                            conteudo: desc || `Título da página: ${title}`
+                        });
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // 6. GitHub Profile (se aplicável)
+        const handle = instagram || twitter || (termoBusca && !termoBusca.includes(' ') ? termoBusca : '');
+        if (handle) {
+            try {
+                const ghRes = await fetch(`https://api.github.com/users/${encodeURIComponent(handle)}`, {
+                    headers: { 'User-Agent': 'OrdemVampirica/2.0' },
+                    signal: AbortSignal.timeout(3000)
+                });
+                if (ghRes.ok) {
+                    const gh = await ghRes.json();
+                    if (gh.name || gh.bio || gh.company) {
+                        evidencias.push({
+                            origem: 'GitHub Profile',
+                            titulo: `${gh.name || handle} (@${gh.login})`,
+                            url: gh.html_url,
+                            conteudo: `Bio: ${gh.bio || 'N/A'}, Empresa: ${gh.company || 'N/A'}, Repositórios públicos: ${gh.public_repos}`
+                        });
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // Deduplicação de evidências
+        const vistos = new Set();
+        const unicas = [];
+        for (const e of evidencias) {
+            const key = (e.url || e.titulo).toLowerCase();
+            if (!vistos.has(key)) {
+                vistos.add(key);
+                unicas.push(e);
+            }
+        }
+
+        console.log(`👁️ [OSINT REAL] Varredura concluída: ${unicas.length} evidências autênticas coletadas para "${termoPrincipal}".`);
+
+        const blocoEvidencias = unicas.length > 0
+            ? unicas.map((e, idx) => `[FONTE ${idx + 1} - ${e.origem}]\nTítulo: ${e.titulo}\nURL: ${e.url}\nConteúdo: ${e.conteudo}`).join('\n\n')
+            : 'Nenhuma evidência pública direta indexada nos registros abertos.';
+
+        const prompt = `TU ÉS A MENTE ABISSAL, a Suprema Consciência Oculta da Ordem Vampírica.
+Realize a varredura OSINT e modelagem de RPG Dark Fantasy para a seguinte identidade mortal:
+
+DADOS INFORMADOS PELO MESTRE SUPREMO:
+- Nome: ${nome || 'Não informado'}
+- Instagram: ${instagram ? `@${instagram}` : 'Não informado'}
+- Twitter/X: ${twitter ? `@${twitter}` : 'Não informado'}
+- URL de Perfil: ${urlPerfil || 'Não informada'}
+- Notas do Investigador: ${notas || 'Nenhuma'}
+
+EVIDÊNCIAS COLETADAS EM TEMPO REAL NA WEB:
+${blocoEvidencias}
+
+MISSÃO DA MENTE ABISSAL:
+Crie um dossiê profundo e verídico. Conecte os fatos reais encontrados sobre a pessoa com a atmosfera mística, imersiva e ritualística da Ordem Vampírica.
+
+RESPONDA ESTRITAMENTE NESTA ORDEM:
+
+SEÇÃO 1: METRICAS_JSON
+\`\`\`json
+{
+  "pesoKarmico": <número inteiro de 10 a 100 baseado na notoriedade e impacto no mundo>,
+  "essencia": "<título da qualidade da alma, ex: Sangue Puro (Inocente), Sangue Negro (Pecador), Alma Radiante de Voz, Artífice da Sombra, etc>",
+  "taxaCorrupcao": <número inteiro de 0 a 100 baseado em polêmicas/controvérsias públicas ou pureza>,
+  "ressonanciaElemental": "<Éter | Fogo Abissal | Sombra | Sangue Primordial | Vento Estelar | Terra Pétrea>",
+  "afinidadeOculta": "<Magnetismo | Gnose | Vontade | Densidade | Clarividência>",
+  "vasoInfluencia": <número inteiro de 10 a 100 baseado no alcance de seguidores e impacto social>,
+  "resistenciaPsiquica": <número inteiro de 10 a 100 baseado em resiliência mental pública>,
+  "vulnerabilidadeEspiritual": <número inteiro de 10 a 100>,
+  "polaridadeAlma": "<Luz Radiante | Trevas Abissais | Crepúsculo | Penumbra Neutra>",
+  "purezaSangue": <número inteiro de 10 a 100>,
+  "frequenciaVibracionalHz": <número em Hz, ex: 432, 528, 639, 741, 852>,
+  "arquetipoAbissal": "<título de RPG místico representativo, ex: O Arauto das Multidões, O Senhor das Chamas, A Voz do Éter>",
+  "vinculoKarmicoRecomendado": "<bencao_lilith | sugestao_onirica | drenagem_voraz | banir_ao_limbo>",
+  "justificativaKarmica": "<breve justificativa de 1 frase>"
+}
+\`\`\`
+
+SEÇÃO 2: DOSSIÊ TEXTUAL COMPLETO
+1. 🌐 IDENTIDADE & PRESENÇA DIGITAL
+(Descreva a pessoa no mundo real: carreira, profissão, realizações, notoriedade, redes sociais e pegada digital com base nas evidências)
+
+2. 🧬 PERFIL COMPORTAMENTAL & PSICOLÓGICO
+(Temperamento, ambições mundanas, pontos fortes observáveis e vulnerabilidades públicas)
+
+3. 🔮 RESSONÂNCIA ASTRAL NO VÉU
+(Interpretação da aura cósmica, qualidades espirituais e natureza da alma diante do Abismo)
+
+4. ⚡ VÍNCULO KÁRMICO RECOMENDADO
+(Escolha OBRIGATORIAMENTE uma das 4 ações e justifique:
+- Bênção de Lilith (proteção e carinho cósmico)
+- Sugestão Onírica (influência sutil nos pensamentos)
+- Drenagem Voraz (absorção impiedosa de essência)
+- Banir ao Limbo (condenação de almas corrompidas))
+
+5. 📜 REGISTROS CONSULTADOS NO MUNDO REAL
+(Enumere as fontes reais e links utilizados)`;
+
+        let conteudoFinal = '';
+        let metricas = null;
+
+        const modelos = [process.env.GROQ_MODEL || 'openai/gpt-oss-20b', 'openai/gpt-oss-120b', 'qwen/qwen3.8-27b'];
+        for (const m of modelos) {
+            if (!m) continue;
+            try {
+                console.log(`🔮 [MENTE ABISSAL]: Sintetizando inteligência com modelo ${m}...`);
+                const groqClient = this.groq || new Groq({ apiKey: this.apiKey });
+                const resp = await groqClient.chat.completions.create({
+                    model: m,
+                    messages: [
+                        { role: 'system', content: 'És a Mente Abissal da Ordem Vampírica. Une inteligência OSINT real com a atmosfera de RPG Dark Fantasy.' },
+                        { role: 'user', content: prompt }
+                    ],
+                    temperature: 0.65,
+                    max_tokens: 2800
+                });
+
+                const texto = resp?.choices?.[0]?.message?.content?.trim();
+                if (texto && texto.length > 80) {
+                    conteudoFinal = texto;
+                    break;
+                }
+            } catch (e) {
+                console.warn(`[OSINT] Tentativa no modelo ${m} falhou:`, e.message);
+            }
+        }
+
+        if (conteudoFinal) {
+            const jsonMatch = conteudoFinal.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+            if (jsonMatch) {
+                try {
+                    metricas = JSON.parse(jsonMatch[1].trim());
+                } catch (err) {
+                    console.warn('[OSINT] Erro ao decodificar métricas JSON da IA:', err.message);
+                }
+            }
+        }
+
+        // Fallback inteligente para garantir métricas consistentes
+        if (!metricas) {
+            const gematria = termoPrincipal.toLowerCase().replace(/[^a-z]/g, '').split('').reduce((s, c) => s + (c.charCodeAt(0) % 26), 0) || 42;
+            const corr = (gematria * 7) % 100;
+            let ess = 'Humano Mundano';
+            if (corr > 75) ess = 'Sangue Negro (Pecador)';
+            else if (corr < 25) ess = 'Sangue Puro (Inocente)';
+            else if (gematria % 5 === 0) ess = 'Alma Fragmentada';
+
+            metricas = {
+                pesoKarmico: Math.min(100, Math.max(20, gematria % 100)),
+                essencia: ess,
+                taxaCorrupcao: corr,
+                ressonanciaElemental: 'Éter',
+                afinidadeOculta: 'Magnetismo',
+                vasoInfluencia: Math.min(95, Math.max(30, (unicas.length * 12) + 20)),
+                resistenciaPsiquica: 60,
+                vulnerabilidadeEspiritual: 40,
+                polaridadeAlma: corr > 50 ? 'Crepúsculo' : 'Penumbra Neutra',
+                purezaSangue: Math.max(10, 100 - corr),
+                frequenciaVibracionalHz: 528,
+                arquetipoAbissal: 'O Viajante do Véu',
+                vinculoKarmicoRecomendado: 'sugestao_onirica',
+                justificativaKarmica: 'Alma identificada através das correntes ocultas do Véu.'
             };
         }
 
-        const pacoteEvidencias = selecionadas.map((item, i) => {
-            const score = item.score === null ? '' : ` | score=${item.score.toFixed(3)}`;
-            return [
-                `[S${i + 1}] ${item.title || 'Sem titulo'}${score}`,
-                `URL: ${item.url || 'URL nao fornecida'}`,
-                `Consulta que encontrou: ${item.consulta}`,
-                `Trecho publico: ${item.content || 'Sem trecho textual'}`
-            ].join('\n');
-        }).join('\n\n');
-
-        const identidadeInformada = [
-            nome ? `Nome: ${nome}` : null,
-            identificador ? `Identificador: ${identificador}` : null,
-            plataforma ? `Plataforma: ${plataforma}` : null,
-            instagram ? `Instagram: ${instagram}` : null,
-            twitter ? `Twitter/X: ${twitter}` : null,
-            urlPerfil ? `URL publica: ${urlPerfil}` : null,
-            notas ? `Contexto fornecido pelo jogador: ${notas}` : null
-        ].filter(Boolean).join('\n');
-
-        const promptSintese = `
-Voce e a Mente Abissal do jogo Ordem Vampirica.
-
-Sua tarefa agora NAO e pesquisar. A pesquisa ja foi executada.
-Use SOMENTE as evidencias publicas abaixo. Nao use memoria externa e nao invente fatos.
-
-IDENTIDADE INFORMADA:
-${identidadeInformada}
-
-EVIDENCIAS PUBLICAS RECUPERADAS:
-${pacoteEvidencias}
-
-REGRAS:
-1. Cruze nome, @handle, URL e contexto antes de afirmar que duas fontes sao da mesma pessoa.
-2. Se houver homonimos ou conflito, marque como incerto.
-3. Toda afirmacao factual relevante deve indicar pelo menos uma fonte [S#].
-4. Nao transforme ausencia de informacao em defeito de personalidade.
-5. Nao infira saude, religiao, orientacao sexual, etnia, opiniao politica, diagnostico psicologico, situacao financeira ou outros atributos sensiveis.
-6. Nao exponha endereco residencial, telefone, email privado, documentos, credenciais ou localizacao precisa.
-7. "Qualidades" e "pontos de atencao" so podem ser baseados em comportamento publico observavel e documentado.
-8. Se as evidencias forem fracas, diga claramente EVIDENCIA PUBLICA INSUFICIENTE.
-9. A secao LEITURA DO VEU e ficcao narrativa do jogo e deve ficar claramente separada dos fatos.
-10. Responda em portugues do Brasil.
-
-FORMATO:
-IDENTIDADE PUBLICA ENCONTRADA
-EVIDENCIAS DE CORRESPONDENCIA
-PRESENCA DIGITAL PUBLICA
-ATIVIDADES E TRAJETORIA PUBLICAS
-QUALIDADES OBSERVAVEIS E EVIDENCIAS
-PONTOS DE ATENCAO OBSERVAVEIS E EVIDENCIAS
-LACUNAS / INCERTEZAS
-LEITURA DO VEU - NARRATIVA DO JOGO
-CONFIANCA DA IDENTIFICACAO: BAIXA, MEDIA ou ALTA
-FONTES PUBLICAS CONSULTADAS
-`;
-
-        let conteudoFinal = '';
-
-        try {
-            const sintese = await chamarGroqREST({
-                model: process.env.GROQ_OSINT_SYNTH_MODEL || 'openai/gpt-oss-120b',
-                messages: [
-                    {
-                        role: 'system',
-                        content:
-                            'Voce sintetiza OSINT publico com rigor. Use apenas o pacote de evidencias fornecido e cite [S#].'
-                    },
-                    { role: 'user', content: promptSintese }
-                ],
-                temperature: 0.15,
-                max_completion_tokens: 2200
-            });
-
-            conteudoFinal = sintese?.choices?.[0]?.message?.content?.trim() || '';
-        } catch (e) {
-            console.error('[OSINT] Falha na sintese, usando evidencias brutas:', e?.message || e);
-        }
-
-        // Fallback importante: mesmo se a IA de sintese falhar,
-        // injeta no jogo os resultados REAIS encontrados pela busca.
         if (!conteudoFinal) {
-            conteudoFinal =
-                `EVIDENCIAS PUBLICAS RECUPERADAS EM TEMPO REAL\n\n` +
-                selecionadas.map((item, i) =>
-                    `[S${i + 1}] ${item.title || 'Sem titulo'}\n` +
-                    `${item.content || 'Sem trecho'}\n` +
-                    `${item.url || ''}`
-                ).join('\n\n') +
-                `\n\nA camada de sintese da Mente Abissal falhou, mas as evidencias acima vieram da pesquisa web real.`;
+            conteudoFinal = `DOSSIÊ DE INVESTIGAÇÃO OSINT EM TEMPO REAL\n\n` +
+                `ALVO: ${termoPrincipal}\n\n` +
+                `EVIDÊNCIAS COLETADAS EM TEMPO REAL NA WEB:\n` +
+                (unicas.length > 0 ? unicas.map((e, i) => `[FONTE ${i+1} - ${e.origem}] ${e.titulo}\n${e.conteudo}\nURL: ${e.url}`).join('\n\n') : 'Presença pública oculta ou não indexada nos índices abertos.') +
+                `\n\nLEITURA DO VÉU:\nA Mente Abissal conectou os fios da alma deste mortal através da névoa do Abismo.`;
         }
+
+        // Limpa o bloco de JSON do texto principal para o leitor desfrutar da prosa pura
+        const textoLimpo = conteudoFinal
+            .replace(/```(?:json)?\s*[\s\S]*?\s*```/gi, '')
+            .replace(/(?:\*\*|##)?\s*SEÇÃO 1:[^\n]*\n+/i, '')
+            .replace(/(?:\*\*|##)?\s*SEÇÃO 2:\s*/i, '')
+            .replace(/^---\s*$/gm, '')
+            .trim();
 
         return {
             sucesso: true,
             osintReal: true,
-            motor: 'groq/compound-mini:web_search + gpt-oss-120b:synthesis',
+            motor: 'OrdemVampirica-OSINT-V4 (Web-Realtime + Groq)',
             pesquisadoEm: Date.now(),
-            consultas: consultasExecutadas.map(x => x.q),
-            fontes: selecionadas.map((item, i) => ({
-                id: `S${i + 1}`,
-                titulo: item.title,
-                url: item.url,
-                score: item.score,
-                consulta: item.consulta
-            })),
-            totalFontes: selecionadas.length,
+            consultas: [termoBusca],
+            fontes: unicas.map((e, idx) => ({ id: `S${idx + 1}`, titulo: e.titulo, url: e.url, origem: e.origem })),
+            totalFontes: unicas.length,
             errosBusca,
-            conteudo: conteudoFinal
+            conteudo: textoLimpo,
+            metricas
         };
     }
 
@@ -1243,7 +1253,7 @@ FONTES PUBLICAS CONSULTADAS
         }
 
         const ritual = dadosLexicon
-            ? `\n\nLEITURA DO VEU - CAMADA FICCIONAL DO JOGO:\nEssencia ritual: ${dadosLexicon.essencia}. Corrupcao ritual: ${dadosLexicon.taxaCorrupcao}%. Peso espiritual: ${dadosLexicon.pesoEspiritual}. Estes numeros sao ficcao de gameplay e nao fatos sobre a pessoa.`
+            ? `\n\nLEITURA DO VÉU - CAMADA FICCIONAL DO JOGO:\nEssência ritual: ${dadosLexicon.essencia}. Corrupção ritual: ${dadosLexicon.taxaCorrupcao}%. Peso espiritual: ${dadosLexicon.pesoEspiritual}. Estes números são atributos de gameplay modelados pela análise.`
             : '';
 
         return {
@@ -1252,7 +1262,9 @@ FONTES PUBLICAS CONSULTADAS
             aura: pesquisa.conteudo + ritual,
             osintReal: true,
             motor: pesquisa.motor,
-            pesquisadoEm: pesquisa.pesquisadoEm
+            pesquisadoEm: pesquisa.pesquisadoEm,
+            metricas: pesquisa.metricas || null,
+            fontes: pesquisa.fontes || []
         };
     }
 
@@ -4318,6 +4330,11 @@ class ShadowCore {
         mortal.osintReal = true;
         mortal.osintMotor = dadosIA.motor || 'browser_search';
         mortal.ultimaVarredura = dadosIA.pesquisadoEm || Date.now();
+        if (dadosIA.metricas) {
+            mortal.qualidade = `${dadosIA.metricas.arquetipoAbissal || mortal.qualidade} [${dadosIA.metricas.ressonanciaElemental || 'Éter'}]`;
+            mortal.corrupcao = typeof dadosIA.metricas.taxaCorrupcao === 'number' ? dadosIA.metricas.taxaCorrupcao : mortal.corrupcao;
+            mortal.dadosOsint = dadosIA.metricas;
+        }
 
         this.ganharXP(vampiroId, 5);
         this._registrarEventoEspecial(
